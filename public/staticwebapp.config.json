@@ -9,6 +9,15 @@
       "allowedRoles": ["anonymous"]
     },
     {
+      "route": "/login",
+      "rewrite": "/login.html",
+      "allowedRoles": ["anonymous"]
+    },
+    {
+      "route": "/login.html",
+      "allowedRoles": ["anonymous"]
+    },
+    {
       "route": "/signed-out.html",
       "allowedRoles": ["anonymous"]
     },
@@ -34,11 +43,7 @@
   },
   "responseOverrides": {
     "401": {
-      "redirect": "/.auth/login/github?post_login_redirect_uri=.referrer",
-      "statusCode": 302
-    },
-    "403": {
-      "redirect": "/access-denied.html",
+      "redirect": "/login",
       "statusCode": 302
     }
   },

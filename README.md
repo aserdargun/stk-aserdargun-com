@@ -65,8 +65,12 @@ every app and API route except the minimal `/api/healthz` probe and public acces
 pages. The API independently matches the GitHub identity to the configured
 `aserdargun` owner before returning personal data. This avoids relying on a
 custom role that may not be reflected in an existing Static Web Apps session.
-Unauthenticated requests go directly to GitHub sign-in. A signed-in account that
-does not match the configured owner receives a forbidden response.
+Unauthenticated requests go to the public `/login` page rather than starting an
+automatic GitHub OAuth round trip. GitHub sign-in begins only after the user
+selects the button, and sign-out remains on a public signed-out page. Before the
+React application mounts, `/api/session` confirms that the signed-in GitHub
+identity matches the configured owner. Other authenticated accounts are sent to
+the access-denied page, while all data endpoints retain the same owner check.
 
 ## Privacy
 

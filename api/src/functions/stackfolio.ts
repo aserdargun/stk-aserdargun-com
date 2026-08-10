@@ -97,6 +97,19 @@ app.http("healthz", {
   handler: async () => json({ status: "ok" }),
 });
 
+app.http("session", {
+  route: "session",
+  methods: ["GET"],
+  authLevel: "anonymous",
+  handler: async (request) =>
+    json({
+      owner: isAllowedOwner(
+        request.headers.get("x-ms-client-principal"),
+        process.env.STACKFOLIO_ALLOWED_GITHUB_USER,
+      ),
+    }),
+});
+
 app.http("health", {
   route: "health",
   methods: ["GET"],
