@@ -65,9 +65,9 @@ app and API route except the minimal `/api/healthz` probe and public access
 pages. The API independently validates the GitHub identity and owner role before
 returning personal data. Assign that role to `aserdargun` via Static Web Apps
 Role Management (or the Azure CLI invitation workflow) before enabling access.
-Unauthenticated requests go directly to GitHub sign-in. A stale or roleless
-Static Web Apps session is signed out and sent through a fresh GitHub login so it
-does not stop on the platform's default 403 page.
+Unauthenticated requests go directly to GitHub sign-in. A signed-in user without
+the owner role is sent to the public access page, avoiding an automatic
+logout/login loop while keeping the platform's default 403 page out of the flow.
 
 ## Privacy
 
