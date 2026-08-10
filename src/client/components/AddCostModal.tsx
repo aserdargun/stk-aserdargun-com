@@ -65,7 +65,7 @@ export function AddCostModal({ onClose, onCreated }: { onClose: () => void; onCr
           <div className="form-grid two">
             <label className="field full">
               <span>Name</span>
-              <input name="name" required maxLength={140} placeholder="e.g. Figma Professional" autoFocus />
+              <input name="name" required maxLength={140} placeholder="e.g. Figma Professional" />
             </label>
             <label className="field">
               <span>Category</span>

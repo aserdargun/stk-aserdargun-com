@@ -84,8 +84,27 @@ export function CostsPage({ onChanged }: { onChanged: (message: string) => void 
             <span>Try a different search or clear the filters.</span>
           </div>
         ) : (
-          <div className="table-scroll">
-            <table className="cost-table">
+          <>
+            <div className="mobile-cost-list" aria-label="Costs">
+              {items.map((item) => (
+                <button className="mobile-cost-card" key={item.id} onClick={() => setSelectedId(item.id)}>
+                  <span className="mobile-cost-main">
+                    <strong>{item.name}</strong>
+                    <small>{item.plan || `${item.entryCount} ledger ${item.entryCount === 1 ? "entry" : "entries"}`}</small>
+                  </span>
+                  <strong className="mobile-cost-amount">{formatMoney(item.lifetimeSpend)}</strong>
+                  <span className="mobile-cost-meta">
+                    <span className={`category-pill category-${item.category.toLowerCase()}`}>{item.category}</span>
+                    <span className={`status-pill ${item.status}`}>{item.status}</span>
+                    <span>{formatBillingType(item.billingType)}</span>
+                    <span>{formatDate(item.latestPeriod, { month: "short", year: "numeric" })}</span>
+                  </span>
+                  <ChevronRight className="mobile-cost-chevron" size={18} aria-hidden="true" />
+                </button>
+              ))}
+            </div>
+            <div className="table-scroll desktop-cost-table">
+              <table className="cost-table">
               <thead>
                 <tr>
                   <th>Cost</th>
@@ -113,8 +132,9 @@ export function CostsPage({ onChanged }: { onChanged: (message: string) => void 
                   </tr>
                 ))}
               </tbody>
-            </table>
-          </div>
+              </table>
+            </div>
+          </>
         )}
       </section>
 

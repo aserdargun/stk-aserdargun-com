@@ -70,11 +70,12 @@ export function App() {
           <a
             className="button secondary sign-out"
             href="/.auth/logout?post_logout_redirect_uri=/signed-out.html"
+            aria-label="Sign out"
           >
-            <LogOut size={17} /> Sign out
+            <LogOut size={17} /> <span className="button-label">Sign out</span>
           </a>
           <button className="button primary" onClick={() => setShowAddCost(true)}>
-            <Plus size={18} /> Add cost
+            <Plus size={18} /> <span className="button-label">Add cost</span>
           </button>
         </header>
 

@@ -112,7 +112,7 @@ export function ItemDrawer({
                 <div className="form-grid two">
                   <label className="field">
                     <span>Amount</span>
-                    <div className="money-input"><span>₺</span><input name="amount" type="number" step="0.01" required autoFocus /></div>
+                    <div className="money-input"><span>₺</span><input name="amount" type="number" step="0.01" required /></div>
                   </label>
                   <label className="field">
                     <span>Entry date</span>
