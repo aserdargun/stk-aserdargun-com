@@ -9,8 +9,8 @@ and future cost items with monthly and yearly analytics.
 - React and Vite frontend on Azure Static Web Apps
 - TypeScript Azure Functions API in `api/`
 - Azure Table Storage for durable items, ledger entries, and import metadata
-- Azure Static Web Apps GitHub authentication
-- API owner check against `STACKFOLIO_ALLOWED_GITHUB_USER`
+- Azure Static Web Apps GitHub authentication with a `stackfolio_owner` custom role
+- API owner check against both `STACKFOLIO_ALLOWED_GITHUB_USER` and `stackfolio_owner`
 
 The site, API, and storage are designed to stay inside the Azure free or
 consumption allowances for a small personal workload. The IHS-managed custom
@@ -60,10 +60,11 @@ The Static Web App requires these application settings:
 - `AZURE_STORAGE_CONNECTION_STRING`: connection string for the private storage account
 - `STACKFOLIO_ALLOWED_GITHUB_USER`: `aserdargun`
 
-`public/staticwebapp.config.json` requires GitHub authentication for every app
-and API route except the minimal `/api/healthz` probe and signed-out page. The
-API independently validates the Static Web Apps client principal before
-returning personal data.
+`public/staticwebapp.config.json` requires the `stackfolio_owner` role for every
+app and API route except the minimal `/api/healthz` probe and public access
+pages. The API independently validates the GitHub identity and owner role before
+returning personal data. Assign that role to `aserdargun` via Static Web Apps
+Role Management (or the Azure CLI invitation workflow) before enabling access.
 
 ## Privacy
 
