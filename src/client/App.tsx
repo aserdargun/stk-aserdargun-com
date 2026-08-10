@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from "react";
-import { BarChart3, Database, LayoutDashboard, Plus, WalletCards } from "lucide-react";
+import { BarChart3, Cloud, LayoutDashboard, LogOut, Plus, WalletCards } from "lucide-react";
 import { AddCostModal } from "./components/AddCostModal";
 import { CostsPage } from "./components/CostsPage";
 
@@ -46,10 +46,10 @@ export function App() {
 
         <div className="sidebar-foot">
           <div className="privacy-card">
-            <Database size={18} />
+            <Cloud size={18} />
             <div>
-              <strong>Local by design</strong>
-              <span>Data stays in your SQLite database.</span>
+              <strong>Private by design</strong>
+              <span>GitHub identity and encrypted Azure storage.</span>
             </div>
           </div>
           <span className="version">Stackfolio v1.0</span>
@@ -67,6 +67,12 @@ export function App() {
               {new Intl.DateTimeFormat("en-US", { dateStyle: "long" }).format(new Date())}
             </span>
           </div>
+          <a
+            className="button secondary sign-out"
+            href="/.auth/logout?post_logout_redirect_uri=/signed-out.html"
+          >
+            <LogOut size={17} /> Sign out
+          </a>
           <button className="button primary" onClick={() => setShowAddCost(true)}>
             <Plus size={18} /> Add cost
           </button>

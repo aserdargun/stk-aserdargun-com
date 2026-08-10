@@ -3,8 +3,8 @@ export type BillingType = "recurring" | "annual" | "one_time";
 export type ItemStatus = "active" | "closed";
 export type PeriodKind = "month" | "year" | "one_time" | "adjustment";
 
-export interface SeedItem {
-  key: string;
+export interface ItemRecord {
+  id: number;
   name: string;
   category: Category;
   billingType: BillingType;
@@ -15,20 +15,24 @@ export interface SeedItem {
   status: ItemStatus;
   closedAt: string | null;
   notes: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface SeedEntry {
-  itemKey: string;
+export interface EntryRecord {
+  id: number;
+  itemId: number;
   amount: number;
   currency: string;
   periodStart: string;
   periodKind: PeriodKind;
   note: string | null;
   sourceRef: string | null;
+  createdAt: string;
 }
 
 export interface SeedPayload {
   metadata: Record<string, unknown>;
-  items: SeedItem[];
-  entries: SeedEntry[];
+  items: Array<Omit<ItemRecord, "id" | "createdAt" | "updatedAt"> & { key: string }>;
+  entries: Array<Omit<EntryRecord, "id" | "itemId" | "createdAt"> & { itemKey: string }>;
 }
