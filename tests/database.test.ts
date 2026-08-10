@@ -48,4 +48,12 @@ describe("Stackfolio database", () => {
 
     expect(monthlyNonPlatform.count).toBe(0);
   });
+
+  it("uses English display names for translated source titles", () => {
+    const translated = db
+      .prepare("SELECT name, notes FROM items WHERE name = 'Introduction to Clean Code'")
+      .get() as { name: string; notes: string };
+    expect(translated.name).toBe("Introduction to Clean Code");
+    expect(translated.notes).toContain("Display title translated to English");
+  });
 });

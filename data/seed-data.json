@@ -497,7 +497,7 @@
     },
     {
       "key": "certificate-8",
-      "name": ".NET ile REST API Geliştirme",
+      "name": "REST API Development with .NET",
       "category": "Certificate",
       "billingType": "one_time",
       "plan": null,
@@ -506,11 +506,11 @@
       "powerWatts": null,
       "status": "closed",
       "closedAt": "2025-12-31",
-      "notes": "Imported from the Certificates worksheet. Only annual totals were available."
+      "notes": "Imported from the Certificates worksheet. Only annual totals were available. Display title translated to English."
     },
     {
       "key": "certificate-9",
-      "name": "Yapay Zeka Destekli Java ile Programlamaya Giriş",
+      "name": "Introduction to AI-Assisted Java Programming",
       "category": "Certificate",
       "billingType": "one_time",
       "plan": null,
@@ -519,11 +519,11 @@
       "powerWatts": null,
       "status": "closed",
       "closedAt": null,
-      "notes": "Imported from the Certificates worksheet. Only annual totals were available."
+      "notes": "Imported from the Certificates worksheet. Only annual totals were available. Display title translated to English."
     },
     {
       "key": "certificate-10",
-      "name": ".NET ile Mikroservis Mimarisi",
+      "name": "Microservices Architecture with .NET",
       "category": "Certificate",
       "billingType": "one_time",
       "plan": null,
@@ -532,11 +532,11 @@
       "powerWatts": null,
       "status": "closed",
       "closedAt": "2025-12-31",
-      "notes": "Imported from the Certificates worksheet. Only annual totals were available."
+      "notes": "Imported from the Certificates worksheet. Only annual totals were available. Display title translated to English."
     },
     {
       "key": "certificate-11",
-      "name": "Temiz Kod’a Giriş",
+      "name": "Introduction to Clean Code",
       "category": "Certificate",
       "billingType": "one_time",
       "plan": null,
@@ -545,7 +545,7 @@
       "powerWatts": null,
       "status": "closed",
       "closedAt": null,
-      "notes": "Imported from the Certificates worksheet. Only annual totals were available."
+      "notes": "Imported from the Certificates worksheet. Only annual totals were available. Display title translated to English."
     },
     {
       "key": "certificate-12",
@@ -653,7 +653,7 @@
     },
     {
       "key": "device-3",
-      "name": "Macbook Pro 14 M4 Pro 1Tb + Fiba Sigorta",
+      "name": "MacBook Pro 14 M4 Pro 1TB + Fiba Insurance",
       "category": "Device",
       "billingType": "one_time",
       "plan": null,
@@ -662,7 +662,7 @@
       "powerWatts": 96,
       "status": "active",
       "closedAt": null,
-      "notes": "Imported from the Devices worksheet."
+      "notes": "Imported from the Devices worksheet. Display label translated to English."
     },
     {
       "key": "device-4",

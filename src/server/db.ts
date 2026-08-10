@@ -67,7 +67,54 @@ export function openDatabase(
     }
   }
 
+  applyDataMigrations(db);
+
   return db;
+}
+
+function applyDataMigrations(db: Database.Database) {
+  const migrationKey = "migration_english_display_titles_v2";
+  const applied = db.prepare("SELECT 1 FROM app_meta WHERE key = ?").get(migrationKey);
+  if (applied) return;
+
+  const translations = [
+    [
+      ".NET ile REST API Geliştirme",
+      "REST API Development with .NET",
+      "Imported from the Certificates worksheet. Only annual totals were available. Display title translated to English.",
+    ],
+    [
+      "Yapay Zeka Destekli Java ile Programlamaya Giriş",
+      "Introduction to AI-Assisted Java Programming",
+      "Imported from the Certificates worksheet. Only annual totals were available. Display title translated to English.",
+    ],
+    [
+      ".NET ile Mikroservis Mimarisi",
+      "Microservices Architecture with .NET",
+      "Imported from the Certificates worksheet. Only annual totals were available. Display title translated to English.",
+    ],
+    [
+      "Temiz Kod’a Giriş",
+      "Introduction to Clean Code",
+      "Imported from the Certificates worksheet. Only annual totals were available. Display title translated to English.",
+    ],
+    [
+      "Macbook Pro 14 M4 Pro 1Tb + Fiba Sigorta",
+      "MacBook Pro 14 M4 Pro 1TB + Fiba Insurance",
+      "Imported from the Devices worksheet. Display label translated to English.",
+    ],
+  ] as const;
+
+  const update = db.prepare(
+    "UPDATE items SET name = ?, notes = ?, updated_at = CURRENT_TIMESTAMP WHERE name IN (?, ?)",
+  );
+  const migrate = db.transaction(() => {
+    for (const [originalName, translatedName, notes] of translations) {
+      update.run(translatedName, notes, originalName, translatedName);
+    }
+    db.prepare("INSERT INTO app_meta (key, value) VALUES (?, ?)").run(migrationKey, JSON.stringify(true));
+  });
+  migrate();
 }
 
 export function seedDatabase(db: Database.Database, seedPath?: string) {
