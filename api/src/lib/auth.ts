@@ -19,6 +19,7 @@ export function isAllowedOwner(encoded: string | null, allowedGithubUser: string
   const principal = parseClientPrincipal(encoded);
   return (
     principal?.identityProvider?.toLowerCase() === "github" &&
-    principal.userDetails?.toLowerCase() === allowedGithubUser.toLowerCase()
+    principal.userDetails?.toLowerCase() === allowedGithubUser.toLowerCase() &&
+    principal.userRoles?.some((role) => role.toLowerCase() === "stackfolio_owner") === true
   );
 }
