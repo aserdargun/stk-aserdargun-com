@@ -18,11 +18,11 @@
     },
     {
       "route": "/api/*",
-      "allowedRoles": ["stackfolio_owner"]
+      "allowedRoles": ["authenticated"]
     },
     {
       "route": "/*",
-      "allowedRoles": ["stackfolio_owner"],
+      "allowedRoles": ["authenticated"],
       "headers": {
         "Cache-Control": "private, no-store"
       }

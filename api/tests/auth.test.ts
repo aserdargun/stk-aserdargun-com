@@ -12,7 +12,7 @@ describe("Static Web Apps owner authorization", () => {
   it("accepts only the configured GitHub identity", () => {
     expect(isAllowedOwner(encoded, "aserdargun")).toBe(true);
     expect(isAllowedOwner(encoded, "someone-else")).toBe(false);
-    expect(isAllowedOwner(authenticatedOnly, "aserdargun")).toBe(false);
+    expect(isAllowedOwner(authenticatedOnly, "aserdargun")).toBe(true);
     expect(isAllowedOwner(null, "aserdargun")).toBe(false);
     expect(isAllowedOwner(encoded, undefined)).toBe(false);
   });

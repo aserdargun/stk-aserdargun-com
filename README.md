@@ -9,8 +9,8 @@ and future cost items with monthly and yearly analytics.
 - React and Vite frontend on Azure Static Web Apps
 - TypeScript Azure Functions API in `api/`
 - Azure Table Storage for durable items, ledger entries, and import metadata
-- Azure Static Web Apps GitHub authentication with a `stackfolio_owner` custom role
-- API owner check against both `STACKFOLIO_ALLOWED_GITHUB_USER` and `stackfolio_owner`
+- Azure Static Web Apps GitHub authentication for every app route
+- API owner check against the exact `STACKFOLIO_ALLOWED_GITHUB_USER`
 
 The site, API, and storage are designed to stay inside the Azure free or
 consumption allowances for a small personal workload. The IHS-managed custom
@@ -60,14 +60,13 @@ The Static Web App requires these application settings:
 - `AZURE_STORAGE_CONNECTION_STRING`: connection string for the private storage account
 - `STACKFOLIO_ALLOWED_GITHUB_USER`: `aserdargun`
 
-`public/staticwebapp.config.json` requires the `stackfolio_owner` role for every
-app and API route except the minimal `/api/healthz` probe and public access
-pages. The API independently validates the GitHub identity and owner role before
-returning personal data. Assign that role to `aserdargun` via Static Web Apps
-Role Management (or the Azure CLI invitation workflow) before enabling access.
-Unauthenticated requests go directly to GitHub sign-in. A signed-in user without
-the owner role is sent to the public access page, avoiding an automatic
-logout/login loop while keeping the platform's default 403 page out of the flow.
+`public/staticwebapp.config.json` requires a GitHub-authenticated session for
+every app and API route except the minimal `/api/healthz` probe and public access
+pages. The API independently matches the GitHub identity to the configured
+`aserdargun` owner before returning personal data. This avoids relying on a
+custom role that may not be reflected in an existing Static Web Apps session.
+Unauthenticated requests go directly to GitHub sign-in. A signed-in account that
+does not match the configured owner receives a forbidden response.
 
 ## Privacy
 
