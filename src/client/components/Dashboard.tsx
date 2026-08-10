@@ -163,7 +163,13 @@ export function Dashboard({ onOpenCosts }: { onOpenCosts: () => void }) {
                   </linearGradient>
                 </defs>
                 <CartesianGrid stroke="#dbe6e1" strokeDasharray="4 5" vertical={false} />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "#6b7c75", fontSize: 12 }} />
+                <XAxis
+                  dataKey="month"
+                  axisLine={false}
+                  tickLine={false}
+                  minTickGap={16}
+                  tick={{ fill: "#6b7c75", fontSize: 11 }}
+                />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
