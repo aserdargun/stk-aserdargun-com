@@ -71,6 +71,8 @@ selects the button, and sign-out remains on a public signed-out page. Before the
 React application mounts, `/api/session` confirms that the signed-in GitHub
 identity matches the configured owner. Other authenticated accounts are sent to
 the access-denied page, while all data endpoints retain the same owner check.
+OAuth login and logout callbacks use fully qualified
+`https://stackfolio.aserdargun.com` return URLs.
 
 ## Privacy
 

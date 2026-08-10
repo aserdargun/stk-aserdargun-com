@@ -69,7 +69,7 @@ export function App() {
           </div>
           <a
             className="button secondary sign-out"
-            href="/.auth/logout?post_logout_redirect_uri=/signed-out.html"
+            href="/.auth/logout?post_logout_redirect_uri=https%3A%2F%2Fstackfolio.aserdargun.com%2Fsigned-out.html"
             aria-label="Sign out"
           >
             <LogOut size={17} /> <span className="button-label">Sign out</span>
