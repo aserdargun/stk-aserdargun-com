@@ -8,6 +8,18 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
       ...init?.headers,
     },
   });
+  if (response.redirected && new URL(response.url).pathname === "/login") {
+    window.location.replace("/login");
+    throw new Error("Authentication required.");
+  }
+  if (response.status === 401) {
+    window.location.replace("/login");
+    throw new Error("Authentication required.");
+  }
+  if (response.status === 403) {
+    window.location.replace("/access-denied.html");
+    throw new Error("Owner access required.");
+  }
   const payload = (await response.json()) as T & { error?: string };
   if (!response.ok) throw new Error(payload.error || "The request could not be completed.");
   return payload;
