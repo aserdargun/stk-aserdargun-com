@@ -36,34 +36,8 @@ export interface CostItemSummaryRecord extends ItemRecord {
   lifetimeSpend: number;
   entryCount: number;
   latestPeriod: string | null;
-  currentMembership: string | null;
   latestEntryId: number | null;
-}
-
-export interface RecurringTablePeriod {
-  key: string;
-  label: string;
-}
-
-export interface RecurringTableCell {
-  period: string;
-  amount: number;
-  membership: string | null;
-}
-
-export interface RecurringTableRow {
-  id: number;
-  name: string;
   currentMembership: string | null;
-  cells: RecurringTableCell[];
-  total: number;
-}
-
-export interface RecurringTableViewData {
-  periods: RecurringTablePeriod[];
-  rows: RecurringTableRow[];
-  monthlyTotals: number[];
-  grandTotal: number;
 }
 
 export interface SeedPayload {

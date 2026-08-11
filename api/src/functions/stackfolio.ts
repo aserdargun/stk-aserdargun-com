@@ -8,11 +8,7 @@ import {
 import { z } from "zod";
 import { buildDashboard } from "../lib/analytics.js";
 import { isAllowedOwner } from "../lib/auth.js";
-import {
-  buildRecurringTableView,
-  summarizeItems,
-  updateEntry as mergeEntryUpdate,
-} from "../lib/costs.js";
+import { buildRecurringTableView, summarizeItems, updateEntry } from "../lib/costs.js";
 import { isValidIsoDate } from "../lib/dates.js";
 import type { EntryRecord, ItemRecord } from "../lib/models.js";
 import { TableRepository } from "../lib/storage.js";
@@ -25,12 +21,7 @@ const categorySchema = z.enum(["Platform", "Certificate", "Device", "Other"]);
 const billingTypeSchema = z.enum(["recurring", "annual", "one_time"]);
 const statusSchema = z.enum(["active", "closed"]);
 const periodKindSchema = z.enum(["month", "year", "one_time"]);
-const editablePeriodKindSchema = z.enum([
-  "month",
-  "year",
-  "one_time",
-  "adjustment",
-]);
+const editablePeriodKindSchema = z.enum(["month", "year", "one_time", "adjustment"]);
 const entrySchema = z.object({
   amount: z.coerce.number().finite(),
   currency: z.string().trim().min(3).max(3).default("TRY"),
@@ -39,14 +30,16 @@ const entrySchema = z.object({
   membership: z.string().trim().max(120).optional().nullable(),
   note: z.string().trim().max(500).optional().nullable(),
 });
-const entryUpdateSchema = z.object({
-  amount: z.coerce.number().finite(),
-  currency: z.string().trim().length(3),
-  periodStart: dateSchema,
-  periodKind: editablePeriodKindSchema,
-  membership: z.string().trim().max(120).optional().nullable(),
-  note: z.string().trim().max(500).optional().nullable(),
-});
+const updateEntrySchema = z
+  .object({
+    amount: z.coerce.number().finite(),
+    currency: z.string().trim().min(3).max(3),
+    periodStart: dateSchema,
+    periodKind: editablePeriodKindSchema,
+    membership: z.string().trim().max(120).nullable(),
+    note: z.string().trim().max(500).nullable(),
+  })
+  .partial();
 const itemSchema = z.object({
   name: z.string().trim().min(1).max(140),
   category: categorySchema,
@@ -103,8 +96,8 @@ function protectedHandler(handler: HttpHandler): HttpHandler {
   };
 }
 
-const parseId = (request: HttpRequest) => {
-  const id = Number(request.params.id);
+const parseId = (request: HttpRequest, parameter = "id") => {
+  const id = Number(request.params[parameter]);
   return Number.isInteger(id) && id > 0 ? id : null;
 };
 
@@ -169,10 +162,7 @@ app.http("tableView", {
   authLevel: "anonymous",
   handler: protectedHandler(async () => {
     const repo = await getRepository();
-    const [items, entries] = await Promise.all([
-      repo.listItems(),
-      repo.listEntries(),
-    ]);
+    const [items, entries] = await Promise.all([repo.listItems(), repo.listEntries()]);
     return json(buildRecurringTableView(items, entries));
   }),
 });
@@ -228,8 +218,7 @@ app.http("items", {
       category: request.query.get("category") || undefined,
       status: request.query.get("status") || undefined,
     });
-    const allItems = await repo.listItems();
-    const entries = await repo.listEntries();
+    const [allItems, entries] = await Promise.all([repo.listItems(), repo.listEntries()]);
     const normalizedSearch = filters.search?.toLowerCase();
     const items = summarizeItems(allItems, entries)
       .filter((item) => !filters.category || item.category === filters.category)
@@ -237,7 +226,7 @@ app.http("items", {
       .filter(
         (item) =>
           !normalizedSearch ||
-          [item.name, item.plan, item.account].some((value) =>
+          [item.name, item.currentMembership, item.account].some((value) =>
             value?.toLowerCase().includes(normalizedSearch),
           ),
       )
@@ -282,8 +271,7 @@ app.http("itemEntries", {
     const id = parseId(request);
     if (!id) return json({ error: "Invalid cost item id." }, 400);
     const repo = await getRepository();
-    const item = await repo.getItem(id);
-    if (!item) return json({ error: "Cost item not found." }, 404);
+    if (!(await repo.getItem(id))) return json({ error: "Cost item not found." }, 404);
     const payload = entrySchema.parse(await request.json());
     const entry: EntryRecord = {
       id: await repo.nextEntryId(),
@@ -292,7 +280,7 @@ app.http("itemEntries", {
       currency: payload.currency.toUpperCase(),
       periodStart: payload.periodStart,
       periodKind: payload.periodKind,
-      membership: emptyToNull(payload.membership) ?? item.plan,
+      membership: emptyToNull(payload.membership),
       note: emptyToNull(payload.note),
       sourceRef: null,
       createdAt: new Date().toISOString(),
@@ -308,19 +296,23 @@ app.http("itemEntry", {
   authLevel: "anonymous",
   handler: protectedHandler(async (request) => {
     const id = parseId(request);
-    const entryId = Number(request.params.entryId);
-    if (!id || !Number.isInteger(entryId) || entryId <= 0) {
-      return json({ error: "Invalid ledger entry id." }, 400);
-    }
-
+    const entryId = parseId(request, "entryId");
+    if (!id || !entryId) return json({ error: "Invalid ledger entry id." }, 400);
     const repo = await getRepository();
     const existing = await repo.getEntryForItem(id, entryId);
-    if (!existing) {
-      return json({ error: "Ledger entry not found for this cost item." }, 404);
-    }
-
-    const payload = entryUpdateSchema.parse(await request.json());
-    await repo.saveEntry(mergeEntryUpdate(existing, payload));
+    if (!existing) return json({ error: "Ledger entry not found." }, 404);
+    const payload = updateEntrySchema.parse(await request.json());
+    await repo.saveEntry(
+      updateEntry(existing, {
+        amount: payload.amount ?? existing.amount,
+        currency: payload.currency ?? existing.currency,
+        periodStart: payload.periodStart ?? existing.periodStart,
+        periodKind: payload.periodKind ?? existing.periodKind,
+        membership:
+          payload.membership === undefined ? existing.membership : payload.membership,
+        note: payload.note === undefined ? existing.note : payload.note,
+      }),
+    );
     return json(await itemDetail(repo, id));
   }),
 });

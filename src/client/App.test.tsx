@@ -7,6 +7,6 @@ describe("App branding", () => {
     const markup = renderToStaticMarkup(<App />);
 
     expect(markup).toContain('href="https://aserdargun.com"');
-    expect(markup).toContain('aria-label="Visit A. Serdar Gün\u2019s portfolio"');
+    expect(markup).toContain('aria-label="Visit A. Serdar Gün’s portfolio"');
   });
 });

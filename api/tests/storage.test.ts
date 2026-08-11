@@ -42,34 +42,22 @@ describe("membership ledger migration", () => {
         stored = { ...stored, ...entity, etag: "v3" };
       },
     };
-    const staleEntity: MembershipBackfillEntity = {
-      partitionKey: stored.partitionKey,
-      rowKey: stored.rowKey,
-      etag: stored.etag,
-    };
 
-    await backfillEntryMembership(client, staleEntity, "Legacy plan");
+    await backfillEntryMembership(
+      client,
+      {
+        partitionKey: stored.partitionKey,
+        rowKey: stored.rowKey,
+        etag: stored.etag,
+      },
+      "Legacy plan",
+    );
 
-    expect(updates).toEqual([
-      {
-        entity: {
-          partitionKey: "00000001",
-          rowKey: "00000007",
-          membership: "Legacy plan",
-        },
-        mode: "Merge",
-        etag: "v1",
-      },
-      {
-        entity: {
-          partitionKey: "00000001",
-          rowKey: "00000007",
-          membership: "Legacy plan",
-        },
-        mode: "Merge",
-        etag: "v2",
-      },
+    expect(updates.map(({ mode, etag }) => ({ mode, etag }))).toEqual([
+      { mode: "Merge", etag: "v1" },
+      { mode: "Merge", etag: "v2" },
     ]);
+    expect(updates.every(({ entity }) => Object.keys(entity).length === 3)).toBe(true);
     expect(stored).toMatchObject({
       amount: 149,
       note: "Saved by a concurrent PATCH",

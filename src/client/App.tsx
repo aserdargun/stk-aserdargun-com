@@ -1,21 +1,14 @@
 import { lazy, Suspense, useState } from "react";
-import {
-  BarChart3,
-  Cloud,
-  ExternalLink,
-  LayoutDashboard,
-  LogOut,
-  Plus,
-  TableProperties,
-  WalletCards,
-} from "lucide-react";
+import { BarChart3, Cloud, ExternalLink, LayoutDashboard, LogOut, Plus, TableProperties, WalletCards } from "lucide-react";
 import { AddCostModal } from "./components/AddCostModal";
 import { CostsPage } from "./components/CostsPage";
 
 const Dashboard = lazy(() =>
   import("./components/Dashboard").then((module) => ({ default: module.Dashboard })),
 );
-const TableViewPage = lazy(() => import("./components/TableViewPage"));
+const TableViewPage = lazy(() =>
+  import("./components/TableViewPage").then((module) => ({ default: module.TableViewPage })),
+);
 
 type View = "overview" | "costs" | "table";
 
@@ -34,10 +27,12 @@ export function App() {
     <div className="app-shell">
       <aside className="sidebar">
         <button className="brand" onClick={() => setView("overview")} aria-label="Go to overview">
-          <span className="brand-mark" aria-hidden="true">AS</span>
+          <span className="brand-mark" aria-hidden="true">
+            <span>AS</span>
+          </span>
           <span>
             <strong>Stackfolio</strong>
-            <small>Digital investment tracker</small>
+            <small>by A. Serdar Gün</small>
           </span>
         </button>
 
@@ -62,8 +57,8 @@ export function App() {
             aria-label="Visit A. Serdar Gün’s portfolio"
           >
             <span>
-              <strong>A. Serdar Gün</strong>
-              <small>aserdargun.com</small>
+              <small>Part of the</small>
+              <strong>aserdargun.com</strong>
             </span>
             <ExternalLink size={15} />
           </a>
@@ -106,7 +101,6 @@ export function App() {
             <Dashboard key={`dashboard-${refreshKey}`} onOpenCosts={() => setView("costs")} />
           ) : view === "costs" ? (
             <CostsPage
-              refreshKey={refreshKey}
               onChanged={(message) => {
                 setRefreshKey((value) => value + 1);
                 announce(message);

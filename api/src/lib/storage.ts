@@ -133,12 +133,12 @@ export class TableRepository {
       ) as SeedPayload;
       const timestamp = `${String(payload.metadata.importedOn || "2026-08-10")}T00:00:00.000Z`;
       const itemIds = new Map<string, number>();
-      const membershipByItemKey = new Map<string, string | null>();
+      const itemMemberships = new Map<string, string | null>();
 
       for (const [index, item] of payload.items.entries()) {
         const id = index + 1;
         itemIds.set(item.key, id);
-        membershipByItemKey.set(item.key, item.plan);
+        itemMemberships.set(item.key, item.plan);
         await this.items.upsertEntity(
           this.itemEntity({ ...item, id, createdAt: timestamp, updatedAt: timestamp }),
           "Replace",
@@ -153,8 +153,7 @@ export class TableRepository {
             ...entry,
             id: index + 1,
             itemId,
-            membership:
-              entry.membership ?? membershipByItemKey.get(entry.itemKey) ?? null,
+            membership: entry.membership ?? itemMemberships.get(entry.itemKey) ?? null,
             createdAt: timestamp,
           }),
           "Replace",
@@ -168,9 +167,7 @@ export class TableRepository {
     }
 
     if (!(await this.getMeta("membershipLedgerVersion"))) {
-      const itemById = new Map(
-        (await this.listItems()).map((item) => [item.id, item]),
-      );
+      const itemById = new Map((await this.listItems()).map((item) => [item.id, item]));
       const migrationClient: MembershipBackfillClient = {
         getEntity: async (partitionKey, rowKey) => {
           const entity = await this.entries.getEntity<EntryEntity>(partitionKey, rowKey);
@@ -272,10 +269,7 @@ export class TableRepository {
     );
   }
 
-  async getEntryForItem(
-    itemId: number,
-    entryId: number,
-  ): Promise<EntryRecord | null> {
+  async getEntryForItem(itemId: number, entryId: number): Promise<EntryRecord | null> {
     try {
       return this.entryRecord(
         await this.entries.getEntity<EntryEntity>(key(itemId), key(entryId)),

@@ -1,41 +1,32 @@
 import type { CostEntry, CostItemSummary } from "../types";
 
-const round = (value: number) =>
-  Math.round((value + Number.EPSILON) * 100) / 100;
+const round = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
-export function buildItemMonthlySeries(
-  entries: CostEntry[],
-  requestedYear?: number,
-) {
-  const monthlyEntries = entries.filter(
-    (entry) => entry.periodKind === "month",
-  );
+export function buildItemMonthlySeries(entries: CostEntry[], requestedYear?: number) {
   const availableYears = [
-    ...new Set(
-      monthlyEntries.map((entry) => Number(entry.periodStart.slice(0, 4))),
-    ),
+    ...new Set(entries.map((entry) => Number(entry.periodStart.slice(0, 4)))),
   ]
     .filter(Number.isFinite)
     .sort((a, b) => b - a);
+  const currentYear = new Date().getUTCFullYear();
   const year =
     requestedYear && availableYears.includes(requestedYear)
       ? requestedYear
-      : availableYears[0] ?? new Date().getUTCFullYear();
+      : availableYears[0] || currentYear;
 
   const series = Array.from({ length: 12 }, (_, index) => {
     const monthNumber = String(index + 1).padStart(2, "0");
     const period = `${year}-${monthNumber}-01`;
     return {
       period,
-      month: new Intl.DateTimeFormat("en-US", {
-        month: "short",
-        timeZone: "UTC",
-      }).format(new Date(`${period}T00:00:00Z`)),
+      month: new Intl.DateTimeFormat("en-US", { month: "short", timeZone: "UTC" }).format(
+        new Date(`${period}T00:00:00Z`),
+      ),
       spend: round(
-        monthlyEntries
+        entries
           .filter(
             (entry) =>
-              entry.periodStart.startsWith(`${year}-${monthNumber}-`),
+              entry.periodKind === "month" && entry.periodStart.startsWith(`${year}-${monthNumber}`),
           )
           .reduce((total, entry) => total + entry.amount, 0),
       ),
@@ -43,19 +34,6 @@ export function buildItemMonthlySeries(
   });
 
   return { year, availableYears, series };
-}
-
-export interface CostFilters {
-  search: string;
-  cost: string;
-  category: string;
-  billing: string;
-  membership: string;
-  status: string;
-  latestFrom: string;
-  latestTo: string;
-  lifetimeMin: string;
-  lifetimeMax: string;
 }
 
 export type CostSortKey =
@@ -67,113 +45,66 @@ export type CostSortKey =
   | "latestPeriod"
   | "lifetimeSpend";
 
-export interface CostSort {
-  key: CostSortKey;
-  direction: "asc" | "desc";
-}
+export type CostSort = { key: CostSortKey; direction: "asc" | "desc" };
 
-export const emptyCostFilters: CostFilters = {
-  search: "",
-  cost: "",
-  category: "",
-  billing: "",
-  membership: "",
-  status: "",
-  latestFrom: "",
-  latestTo: "",
-  lifetimeMin: "",
-  lifetimeMax: "",
+export type CostFilters = {
+  search: string;
+  name: string;
+  category: string;
+  billingType: string;
+  membership: string;
+  status: string;
+  latestFrom: string;
+  latestTo: string;
+  spendMin: string;
+  spendMax: string;
 };
 
-const normalized = (value: string | null | undefined) =>
-  value?.trim().toLowerCase() || "";
-
-function compareCostValues(
-  left: string | number | null,
-  right: string | number | null,
-) {
-  const leftMissing = left === null || left === "";
-  const rightMissing = right === null || right === "";
-  if (leftMissing && rightMissing) return 0;
-  if (leftMissing) return 1;
-  if (rightMissing) return -1;
-  if (typeof left === "number" && typeof right === "number") {
-    return left - right;
-  }
-  return String(left).localeCompare(String(right), "en", {
-    sensitivity: "base",
-  });
-}
+const normalized = (value: string | null | undefined) => value?.trim().toLowerCase() || "";
 
 export function filterAndSortCosts(
   items: CostItemSummary[],
-  filters: CostFilters,
-  sort: CostSort | null,
+  filters: Partial<CostFilters>,
+  sort: CostSort,
 ) {
   const search = normalized(filters.search);
-  const cost = normalized(filters.cost);
+  const name = normalized(filters.name);
   const membership = normalized(filters.membership);
-  const minimum = filters.lifetimeMin.trim()
-    ? Number(filters.lifetimeMin)
-    : null;
-  const maximum = filters.lifetimeMax.trim()
-    ? Number(filters.lifetimeMax)
-    : null;
+  const spendMin = filters.spendMin ? Number(filters.spendMin) : null;
+  const spendMax = filters.spendMax ? Number(filters.spendMax) : null;
 
-  const filtered = items
-    .filter(
-      (item) =>
-        !search ||
-        [
-          item.name,
-          item.currentMembership,
-          item.plan,
-          item.account,
-          item.category,
-          item.billingType,
-          item.status,
-        ].some((value) => normalized(value).includes(search)),
-    )
-    .filter((item) => !cost || normalized(item.name).includes(cost))
-    .filter(
-      (item) => !filters.category || item.category === filters.category,
-    )
-    .filter(
-      (item) => !filters.billing || item.billingType === filters.billing,
-    )
-    .filter(
-      (item) =>
-        !membership || normalized(item.currentMembership).includes(membership),
-    )
-    .filter((item) => !filters.status || item.status === filters.status)
-    .filter(
-      (item) =>
-        !filters.latestFrom ||
-        Boolean(item.latestPeriod && item.latestPeriod >= filters.latestFrom),
-    )
-    .filter(
-      (item) =>
-        !filters.latestTo ||
-        Boolean(item.latestPeriod && item.latestPeriod <= filters.latestTo),
-    )
-    .filter(
-      (item) =>
-        minimum === null || !Number.isFinite(minimum) || item.lifetimeSpend >= minimum,
-    )
-    .filter(
-      (item) =>
-        maximum === null || !Number.isFinite(maximum) || item.lifetimeSpend <= maximum,
-    );
-
-  if (!sort) return filtered;
-
-  return filtered.toSorted((left, right) => {
-    const leftValue = left[sort.key];
-    const rightValue = right[sort.key];
-    const leftMissing = leftValue === null || leftValue === "";
-    const rightMissing = rightValue === null || rightValue === "";
-    if (leftMissing !== rightMissing) return leftMissing ? 1 : -1;
-    const comparison = compareCostValues(leftValue, rightValue);
-    return (sort.direction === "asc" ? comparison : -comparison) || left.id - right.id;
-  });
+  return items
+    .filter((item) => {
+      const searchable = [
+        item.name,
+        item.currentMembership,
+        item.account,
+        item.category,
+        item.billingType,
+        item.status,
+      ]
+        .map(normalized)
+        .join(" ");
+      return (
+        (!search || searchable.includes(search)) &&
+        (!name || normalized(item.name).includes(name)) &&
+        (!filters.category || item.category === filters.category) &&
+        (!filters.billingType || item.billingType === filters.billingType) &&
+        (!membership || normalized(item.currentMembership).includes(membership)) &&
+        (!filters.status || item.status === filters.status) &&
+        (!filters.latestFrom || Boolean(item.latestPeriod && item.latestPeriod >= filters.latestFrom)) &&
+        (!filters.latestTo || Boolean(item.latestPeriod && item.latestPeriod <= filters.latestTo)) &&
+        (spendMin === null || !Number.isFinite(spendMin) || item.lifetimeSpend >= spendMin) &&
+        (spendMax === null || !Number.isFinite(spendMax) || item.lifetimeSpend <= spendMax)
+      );
+    })
+    .sort((left, right) => {
+      const leftValue = left[sort.key];
+      const rightValue = right[sort.key];
+      const compared =
+        typeof leftValue === "number" && typeof rightValue === "number"
+          ? leftValue - rightValue
+          : String(leftValue || "").localeCompare(String(rightValue || ""));
+      return (sort.direction === "asc" ? compared : -compared) || left.id - right.id;
+    });
 }

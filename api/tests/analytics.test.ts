@@ -7,16 +7,18 @@ const payload = JSON.parse(
   readFileSync(new URL("../../data/seed-data.json", import.meta.url), "utf8"),
 ) as SeedPayload;
 const itemIds = new Map<string, number>();
+const itemMemberships = new Map<string, string | null>();
 const items: ItemRecord[] = payload.items.map((item, index) => {
   const id = index + 1;
   itemIds.set(item.key, id);
+  itemMemberships.set(item.key, item.plan);
   return { ...item, id, createdAt: "2026-08-10T00:00:00.000Z", updatedAt: "2026-08-10T00:00:00.000Z" };
 });
 const entries: EntryRecord[] = payload.entries.map((entry, index) => ({
   ...entry,
   id: index + 1,
   itemId: itemIds.get(entry.itemKey)!,
-  membership: entry.membership || null,
+  membership: entry.membership ?? itemMemberships.get(entry.itemKey) ?? null,
   createdAt: "2026-08-10T00:00:00.000Z",
 }));
 

@@ -4,8 +4,9 @@ import { api } from "../lib/api";
 import { formatMoney } from "../lib/format";
 import type { TableViewData } from "../types";
 
-export default function TableViewPage() {
+export function TableViewPage() {
   const [data, setData] = useState<TableViewData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -15,89 +16,89 @@ export default function TableViewPage() {
         setData(response);
         setError(null);
       })
-      .catch((reason: Error) => setError(reason.message));
+      .catch((reason: Error) => setError(reason.message))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (error) return <div className="page-state error">{error}</div>;
-  if (!data) return <div className="page-state">Loading the recurring table…</div>;
+  if (loading) return <div className="page-state">Building your subscription table…</div>;
+  if (error || !data) {
+    return <div className="page-state error">{error || "Table View data is unavailable."}</div>;
+  }
+
+  const rangeLabel = data.periods.length
+    ? `${data.periods[0].label} – ${data.periods[data.periods.length - 1].label}`
+    : "Latest 12 months";
 
   return (
     <div className="page-stack">
-      <section className="page-heading compact-heading table-view-heading">
+      <section className="page-heading compact-heading">
         <div>
-          <span className="eyebrow">Recurring commitments</span>
-          <h1>Twelve months, service by service.</h1>
+          <span className="eyebrow">Active recurring services</span>
+          <h1>Subscriptions, month by month.</h1>
           <p>
-            Active recurring costs only. Monthly entries drive spend, while membership follows each service’s ledger history.
+            Membership and actual monthly ledger costs across the latest 12-month data window,
+            with monthly and rolling-year totals.
           </p>
         </div>
-        <div className="table-window-badge">
+        <div className="table-range-chip">
           <CalendarRange size={17} />
-          <span>Rolling window</span>
-          <strong>
-            {data.periods[0]?.label} – {data.periods.at(-1)?.label}
-          </strong>
+          <span>{rangeLabel}</span>
         </div>
       </section>
 
       <section className="panel table-view-panel">
+        <div className="table-view-heading">
+          <div>
+            <span className="panel-kicker">Active + recurring only</span>
+            <h2>{data.rows.length} active subscription{data.rows.length === 1 ? "" : "s"}</h2>
+          </div>
+          <strong>{formatMoney(data.grandTotal)} rolling total</strong>
+        </div>
+
         {data.rows.length === 0 ? (
-          <div className="empty-state table-view-empty">
-            <TableProperties size={30} />
-            <strong>No active recurring services yet.</strong>
-            <span>
-              Add or reactivate a recurring cost to populate this rolling table.
-            </span>
+          <div className="empty-state">
+            <TableProperties size={28} />
+            <strong>No active recurring services.</strong>
+            <span>Activate a recurring cost to include it in this view.</span>
           </div>
         ) : (
-          <div className="table-view-scroll" tabIndex={0} aria-label="Rolling recurring cost table">
-            <table className="recurring-table">
-              <caption className="sr-only">
-                Active recurring services across the latest twelve monthly ledger periods
-              </caption>
+          <div className="table-view-scroll">
+            <table className="subscription-table">
               <thead>
                 <tr>
-                  <th className="table-service-column">Service</th>
+                  <th className="sticky-service">Service</th>
                   <th>Current membership</th>
                   {data.periods.map((period) => (
-                    <th key={period.key}>{period.label}</th>
+                    <th className="numeric" key={period.key}>{period.label}</th>
                   ))}
-                  <th className="table-total-column">12-month total</th>
+                  <th className="numeric sticky-total">12-mo total</th>
                 </tr>
               </thead>
               <tbody>
                 {data.rows.map((row) => (
                   <tr key={row.id}>
-                    <th scope="row" className="table-service-column">
-                      {row.name}
-                    </th>
-                    <td className="table-current-membership">
-                      {row.currentMembership || "—"}
-                    </td>
+                    <th className="sticky-service" scope="row">{row.name}</th>
+                    <td className="current-membership">{row.currentMembership || "—"}</td>
                     {row.cells.map((cell) => (
-                      <td key={cell.period} className="table-month-cell">
-                        <strong>{formatMoney(cell.amount)}</strong>
+                      <td className="subscription-cell numeric" key={cell.period}>
+                        <strong>{cell.amount === 0 ? "—" : formatMoney(cell.amount)}</strong>
                         <small>{cell.membership || "—"}</small>
                       </td>
                     ))}
-                    <td className="table-total-column">
-                      <strong>{formatMoney(row.total)}</strong>
-                    </td>
+                    <td className="numeric sticky-total"><strong>{formatMoney(row.total)}</strong></td>
                   </tr>
                 ))}
               </tbody>
               <tfoot>
                 <tr>
-                  <th scope="row" className="table-service-column">Monthly total</th>
-                  <td>—</td>
-                  {data.monthlyTotals.map((amount, index) => (
-                    <td key={data.periods[index].key}>
-                      <strong>{formatMoney(amount)}</strong>
+                  <th className="sticky-service" scope="row">Monthly total</th>
+                  <td>All active services</td>
+                  {data.monthlyTotals.map((total, index) => (
+                    <td className="numeric" key={data.periods[index].key}>
+                      <strong>{formatMoney(total)}</strong>
                     </td>
                   ))}
-                  <td className="table-total-column">
-                    <strong>{formatMoney(data.grandTotal)}</strong>
-                  </td>
+                  <td className="numeric sticky-total"><strong>{formatMoney(data.grandTotal)}</strong></td>
                 </tr>
               </tfoot>
             </table>

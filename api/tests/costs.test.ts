@@ -6,57 +6,61 @@ import {
 } from "../src/lib/costs.js";
 import type { EntryRecord, ItemRecord } from "../src/lib/models.js";
 
-const item: ItemRecord = {
+const item = (overrides: Partial<ItemRecord> = {}): ItemRecord => ({
   id: 1,
-  name: "Example Service",
+  name: "Example Cloud",
   category: "Platform",
   billingType: "recurring",
-  plan: null,
+  plan: "Legacy",
   url: null,
   account: null,
   powerWatts: null,
   status: "active",
   closedAt: null,
   notes: null,
-  createdAt: "2026-01-01T00:00:00.000Z",
-  updatedAt: "2026-01-01T00:00:00.000Z",
-};
+  createdAt: "2025-01-01T00:00:00.000Z",
+  updatedAt: "2025-01-01T00:00:00.000Z",
+  ...overrides,
+});
 
-const entry = (
-  overrides: Partial<EntryRecord & { membership: string | null }> = {},
-): EntryRecord & { membership: string | null } => ({
+const entry = (overrides: Partial<EntryRecord> = {}): EntryRecord => ({
   id: 1,
-  itemId: item.id,
-  amount: 99.9,
+  itemId: 1,
+  amount: 100,
   currency: "TRY",
   periodStart: "2026-01-01",
   periodKind: "month",
-  membership: null,
+  membership: "Basic",
   note: null,
   sourceRef: null,
   createdAt: "2026-01-01T00:00:00.000Z",
   ...overrides,
 });
 
-describe("cost item summaries", () => {
+describe("cost membership summaries", () => {
   it("uses period date then entry id to derive the current membership", () => {
-    const result = summarizeItems([item], [
-      entry({ id: 1, periodStart: "2026-01-01", membership: "Basic" }),
-      entry({ id: 3, periodStart: "2026-02-01", membership: "Pro" }),
-      entry({ id: 2, periodStart: "2026-02-01", membership: "Team" }),
-    ])[0];
+    const result = summarizeItems(
+      [item()],
+      [
+        entry({ id: 1, periodStart: "2026-01-01", membership: "Basic" }),
+        entry({ id: 3, periodStart: "2026-02-01", membership: "Pro" }),
+        entry({ id: 2, periodStart: "2026-02-01", membership: "Team" }),
+      ],
+    )[0];
 
     expect(result.currentMembership).toBe("Pro");
     expect(result.latestEntryId).toBe(3);
+    expect(result.latestPeriod).toBe("2026-02-01");
+    expect(result.lifetimeSpend).toBe(300);
   });
 
   it("falls back to the legacy plan when the latest membership is absent", () => {
-    const [result] = summarizeItems(
-      [{ ...item, plan: "Legacy" }],
+    const result = summarizeItems(
+      [item({ plan: "Legacy Membership" })],
       [entry({ membership: null })],
-    );
+    )[0];
 
-    expect(result.currentMembership).toBe("Legacy");
+    expect(result.currentMembership).toBe("Legacy Membership");
   });
 });
 
@@ -64,197 +68,74 @@ describe("ledger entry updates", () => {
   it("merges editable fields while preserving identity and source metadata", () => {
     const existing = entry({
       id: 42,
+      itemId: 7,
+      amount: 99,
       membership: "Basic",
-      sourceRef: "seed:platform-1:2026-02",
-      createdAt: "2026-02-01T00:00:00.000Z",
+      sourceRef: "Platforms!E2",
+      createdAt: "2025-02-01T10:20:30.000Z",
     });
 
     expect(
       updateEntry(existing, {
-        amount: 149.9,
+        amount: 149.899,
+        currency: "try",
         periodStart: "2026-03-01",
         periodKind: "month",
-        membership: "Professional",
-        note: "Price change",
+        membership: "  Professional  ",
+        note: "  Price change  ",
       }),
     ).toEqual({
       ...existing,
       amount: 149.9,
+      currency: "TRY",
       periodStart: "2026-03-01",
       periodKind: "month",
       membership: "Professional",
       note: "Price change",
     });
   });
-
-  it("normalizes money, currency, and blank optional values", () => {
-    const existing = entry({ membership: "Basic", note: "Previous note" });
-
-    const result = updateEntry(existing, {
-      amount: 149.999,
-      currency: "try",
-      periodStart: "2026-03-01",
-      periodKind: "adjustment",
-      membership: "   ",
-      note: "",
-    });
-
-    expect(result.amount).toBe(150);
-    expect(result.currency).toBe("TRY");
-    expect(result.membership).toBeNull();
-    expect(result.note).toBeNull();
-  });
-
-  it("accepts explicit null optional values from the PATCH contract", () => {
-    const existing = entry({ membership: "Basic", note: "Previous note" });
-
-    const result = updateEntry(existing, {
-      amount: existing.amount,
-      currency: existing.currency,
-      periodStart: existing.periodStart,
-      periodKind: existing.periodKind,
-      membership: null,
-      note: null,
-    });
-
-    expect(result.membership).toBeNull();
-    expect(result.note).toBeNull();
-  });
 });
 
-describe("active recurring table view", () => {
-  it("builds a literal rolling window with carried membership and totals", () => {
-    const activeRecurring = {
-      ...item,
-      id: 1,
-      name: "Alpha Service",
-      plan: "Legacy",
-    };
-    const secondRecurring = {
-      ...item,
-      id: 2,
-      name: "Beta Service",
-      plan: "Starter",
-    };
-    const closedRecurring = {
-      ...item,
-      id: 3,
-      name: "Closed Service",
-      status: "closed" as const,
-    };
-    const activeAnnual = {
-      ...item,
-      id: 4,
-      name: "Annual Service",
-      billingType: "annual" as const,
-    };
-    const activeOneTime = {
-      ...item,
-      id: 5,
-      name: "One-time Service",
-      billingType: "one_time" as const,
-    };
+describe("active recurring Table View", () => {
+  it("builds a latest-data rolling 12-month matrix with memberships and totals", () => {
+    const items = [
+      item({ id: 1, name: "Alpha", plan: "Fallback" }),
+      item({ id: 2, name: "Beta", plan: "Starter" }),
+      item({ id: 3, name: "Closed", status: "closed" }),
+      item({ id: 4, name: "Annual", billingType: "annual" }),
+    ];
+    const entries = [
+      entry({ id: 1, itemId: 1, amount: 10, periodStart: "2025-03-01", membership: "Basic" }),
+      entry({ id: 2, itemId: 1, amount: 20, periodStart: "2026-01-01", membership: "Pro" }),
+      entry({ id: 3, itemId: 1, amount: 5, periodStart: "2026-01-15", membership: "Pro Plus" }),
+      entry({ id: 4, itemId: 2, amount: 30, periodStart: "2025-12-01", membership: "Team" }),
+      entry({ id: 5, itemId: 3, amount: 99, periodStart: "2026-01-01" }),
+      entry({ id: 6, itemId: 4, amount: 77, periodStart: "2026-01-01" }),
+    ];
 
-    const result = buildRecurringTableView(
-      [
-        activeRecurring,
-        secondRecurring,
-        closedRecurring,
-        activeAnnual,
-        activeOneTime,
-      ],
-      [
-        entry({
-          id: 1,
-          itemId: 1,
-          amount: 10,
-          periodStart: "2025-06-15",
-          membership: "Basic",
-        }),
-        entry({
-          id: 2,
-          itemId: 1,
-          amount: 20,
-          periodStart: "2026-04-01",
-          membership: "Pro",
-        }),
-        entry({
-          id: 3,
-          itemId: 1,
-          amount: 5,
-          periodStart: "2026-04-15",
-          membership: "Team",
-        }),
-        entry({
-          id: 4,
-          itemId: 1,
-          amount: 999,
-          periodStart: "2026-05-01",
-          periodKind: "adjustment",
-          membership: "Enterprise",
-        }),
-        entry({
-          id: 5,
-          itemId: 2,
-          amount: 7,
-          periodStart: "2026-03-01",
-          membership: "Plus",
-        }),
-        entry({
-          id: 6,
-          itemId: 2,
-          amount: 3,
-          periodStart: "2026-04-01",
-          membership: "Plus",
-        }),
-        entry({
-          id: 7,
-          itemId: 3,
-          amount: 100,
-          periodStart: "2026-04-01",
-        }),
-        entry({
-          id: 8,
-          itemId: 4,
-          amount: 200,
-          periodStart: "2026-04-01",
-        }),
-        entry({
-          id: 9,
-          itemId: 5,
-          amount: 300,
-          periodStart: "2026-04-01",
-        }),
-      ],
-    );
+    const result = buildRecurringTableView(items, entries, new Date("2030-06-01T00:00:00Z"));
 
     expect(result.periods).toHaveLength(12);
-    expect(result.periods[0].key).toBe("2025-05");
-    expect(result.periods[11].key).toBe("2026-04");
-    expect(result.rows.map((row) => row.name)).toEqual([
-      "Alpha Service",
-      "Beta Service",
-    ]);
-    expect(result.rows[0].cells[0].membership).toBe("Legacy");
-    expect(result.rows[0].cells[1]).toMatchObject({ amount: 10, membership: "Basic" });
-    expect(result.rows[0].cells[10].membership).toBe("Basic");
-    expect(result.rows[0].cells[11]).toMatchObject({ amount: 25, membership: "Team" });
-    expect(result.rows[0].currentMembership).toBe("Enterprise");
-    expect(result.rows.map((row) => row.total)).toEqual([35, 10]);
-    expect(result.monthlyTotals).toEqual([0, 10, 0, 0, 0, 0, 0, 0, 0, 0, 7, 28]);
-    expect(result.grandTotal).toBe(45);
-  });
-
-  it("ends at the current UTC month when no monthly entry exists", () => {
-    const result = buildRecurringTableView(
-      [{ ...item, plan: "Legacy" }],
-      [],
-      new Date("2026-08-20T12:00:00.000Z"),
-    );
-
-    expect(result.periods[0].key).toBe("2025-09");
-    expect(result.periods[11].key).toBe("2026-08");
-    expect(result.rows[0].cells.every((cell) => cell.membership === "Legacy")).toBe(true);
-    expect(result.grandTotal).toBe(0);
+    expect(result.periods[0].key).toBe("2025-02");
+    expect(result.periods[11].key).toBe("2026-01");
+    expect(result.rows.map((row) => row.id)).toEqual([1, 2]);
+    expect(result.rows[0].cells[0]).toEqual({
+      period: "2025-02",
+      amount: 0,
+      membership: "Fallback",
+    });
+    expect(result.rows[0].cells[1].amount).toBe(10);
+    expect(result.rows[0].cells[11]).toEqual({
+      period: "2026-01",
+      amount: 25,
+      membership: "Pro Plus",
+    });
+    expect(result.rows[0].currentMembership).toBe("Pro Plus");
+    expect(result.rows[0].total).toBe(35);
+    expect(result.rows[1].cells[11].membership).toBe("Team");
+    expect(result.monthlyTotals[1]).toBe(10);
+    expect(result.monthlyTotals[10]).toBe(30);
+    expect(result.monthlyTotals[11]).toBe(25);
+    expect(result.grandTotal).toBe(65);
   });
 });

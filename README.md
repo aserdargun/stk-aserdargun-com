@@ -2,8 +2,7 @@
 
 Stackfolio is a private, English-language web application for tracking digital
 investments and recurring costs. It combines platforms, certificates, devices,
-and future cost items with monthly and yearly analytics, historical membership
-tracking, and an active-recurring 12-month table.
+and future cost items with monthly and yearly analytics.
 
 ## Architecture
 
@@ -32,44 +31,27 @@ The API seeds empty Azure tables idempotently on first access. Monthly platform
 values remain monthly entries. Certificates and devices only had annual totals,
 so those values remain annual rather than receiving invented purchase months.
 
-Existing ledger rows receive the legacy item `plan` as their entry-level
-membership through the one-time, idempotent
-`membershipLedgerVersion = "2026-08-11-v1"` storage migration. Fresh seeds set
-the same membership while loading the unchanged seed JSON. Membership history
-is chronological: Stackfolio chooses the newest `periodStart`, then the highest
-entry ID when multiple entries share a date. An explicitly absent membership on
-the latest row falls back to the legacy item plan.
+## Cost and membership workflows
 
-## Cost and ledger workflows
+- Membership is stored on each ledger entry so plan changes remain historical.
+- Existing Azure ledger rows are backfilled once from the legacy item `plan`
+  through the idempotent `membershipLedgerVersion` migration.
+- Add Cost and Add Entry both accept membership. Costs always shows the
+  membership from the latest entry, ordered by entry date and then entry ID.
+- Membership can be updated directly from Costs; the update modifies the latest
+  ledger row and never creates a zero-value record.
+- Cost Detail includes a year-selectable 12-month Area Chart. Amount, entry
+  date, entry type, membership, and note are editable in Ledger History.
 
-- Add Cost records the Membership on both the compatibility `plan` field and
-  the initial ledger entry.
-- Add Entry defaults Membership from the newest ledger row, then the legacy
-  plan, and stores the value with the new entry.
-- Ledger rows can edit amount, entry date, entry type, membership, and note.
-  Identity, item ownership, source reference, and creation timestamp stay
-  unchanged. Ledger deletion is intentionally not available.
-- The Costs table fetches summaries once per reload, then applies local search,
-  column filters, and sorting without mutating API state. Cost, Category,
-  Billing, Membership, Status, Latest Entry, and Lifetime Spend are all
-  filterable and sortable on desktop, with equivalent membership information
-  and editing on mobile.
-- Inline Membership edits update the latest ledger entry. Items without a
-  ledger entry instead show “Add an entry first”; no zero-value entry is
-  synthesized.
-- Cost Detail lazily loads a monthly-only area chart with a year selector.
-  Annual, one-time, and reconciliation entries remain in totals and history but
-  do not contribute to that chart.
+## Portfolio views
 
-## Table View rules
-
-Table View is owner-only and contains only active items whose billing type is
-Recurring. It presents 12 chronological months ending at the latest monthly
-ledger month; when no monthly entry exists, the window ends at the current UTC
-month. Monthly cells sum monthly entries only. Each cell carries membership
-forward from the latest ledger entry at or before that month end, with the item
-plan as fallback. Row totals, monthly footer totals, and the 12-month grand
-total use the same matrix.
+- **Overview:** lifetime/year metrics and portfolio analytics.
+- **Costs:** all data columns are sortable and filterable, including membership,
+  latest-entry date range, and lifetime-spend range.
+- **Table View:** only active recurring services, across the 12 months ending at
+  the latest monthly ledger month. Each cell shows actual monthly spend and the
+  membership effective in that month. The footer contains monthly totals and
+  the rightmost column contains rolling 12-month totals.
 
 ## Local validation
 

@@ -47,8 +47,8 @@ export interface CostItemSummary {
   lifetimeSpend: number;
   entryCount: number;
   latestPeriod: string | null;
-  currentMembership: string | null;
   latestEntryId: number | null;
+  currentMembership: string | null;
 }
 
 export interface CostEntry {
@@ -64,18 +64,24 @@ export interface CostEntry {
 }
 
 export interface ItemDetail {
-  item: Omit<
-    CostItemSummary,
-    | "lifetimeSpend"
-    | "entryCount"
-    | "latestPeriod"
-    | "currentMembership"
-    | "latestEntryId"
-  > & {
+  item: Omit<CostItemSummary, "lifetimeSpend" | "entryCount" | "latestPeriod"> & {
     createdAt: string;
     updatedAt: string;
   };
   entries: CostEntry[];
+}
+
+export interface TableViewData {
+  periods: Array<{ key: string; label: string }>;
+  rows: Array<{
+    id: number;
+    name: string;
+    currentMembership: string | null;
+    cells: Array<{ period: string; amount: number; membership: string | null }>;
+    total: number;
+  }>;
+  monthlyTotals: number[];
+  grandTotal: number;
 }
 
 export interface NewCostPayload {
@@ -96,39 +102,4 @@ export interface NewCostPayload {
     membership?: string;
     note?: string;
   };
-}
-
-export interface EntryUpdatePayload {
-  amount: number;
-  currency: string;
-  periodStart: string;
-  periodKind: PeriodKind;
-  membership?: string | null;
-  note?: string | null;
-}
-
-export interface TableViewPeriod {
-  key: string;
-  label: string;
-}
-
-export interface TableViewCell {
-  period: string;
-  amount: number;
-  membership: string | null;
-}
-
-export interface TableViewRow {
-  id: number;
-  name: string;
-  currentMembership: string | null;
-  cells: TableViewCell[];
-  total: number;
-}
-
-export interface TableViewData {
-  periods: TableViewPeriod[];
-  rows: TableViewRow[];
-  monthlyTotals: number[];
-  grandTotal: number;
 }

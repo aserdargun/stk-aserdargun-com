@@ -1,7 +1,7 @@
 import type {
+  CostEntry,
   CostItemSummary,
   DashboardData,
-  EntryUpdatePayload,
   ItemDetail,
   NewCostPayload,
   TableViewData,
@@ -75,7 +75,13 @@ export const api = {
       body: JSON.stringify(payload),
     });
   },
-  updateEntry(itemId: number, entryId: number, payload: EntryUpdatePayload) {
+  updateEntry(
+    itemId: number,
+    entryId: number,
+    payload: Partial<
+      Pick<CostEntry, "amount" | "currency" | "periodStart" | "periodKind" | "membership" | "note">
+    >,
+  ) {
     return request<ItemDetail>(`/api/items/${itemId}/entries/${entryId}`, {
       method: "PATCH",
       body: JSON.stringify(payload),

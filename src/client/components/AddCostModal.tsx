@@ -18,7 +18,7 @@ export function AddCostModal({ onClose, onCreated }: { onClose: () => void; onCr
     setError(null);
     const form = new FormData(event.currentTarget);
     const amount = Number(form.get("amount"));
-    const membership = String(form.get("plan") || "");
+    const membership = String(form.get("membership") || "");
     try {
       await api.createItem({
         name: String(form.get("name")),
@@ -97,7 +97,7 @@ export function AddCostModal({ onClose, onCreated }: { onClose: () => void; onCr
             </label>
             <label className="field">
               <span>Membership</span>
-              <input name="plan" maxLength={120} placeholder="Professional" />
+              <input name="membership" maxLength={120} placeholder="Professional" />
             </label>
             <label className="field">
               <span>Status</span>
