@@ -12,7 +12,8 @@
     "build": "npm run build:app && npm --workspace api run build",
     "build:app": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit && npm --workspace api run typecheck",
-    "test": "npm --workspace api test"
+    "test": "npm run test:client && npm --workspace api test",
+    "test:client": "vitest run src/client"
   },
   "dependencies": {
     "lucide-react": "1.31.0",
@@ -26,7 +27,8 @@
     "@types/react-dom": "19.2.4",
     "@vitejs/plugin-react": "6.0.5",
     "typescript": "5.9.3",
-    "vite": "8.2.1"
+    "vite": "8.2.1",
+    "vitest": "4.1.10"
   },
   "engines": {
     "node": ">=22"

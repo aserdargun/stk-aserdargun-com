@@ -1,13 +1,16 @@
 import { lazy, Suspense, useState } from "react";
-import { BarChart3, Cloud, LayoutDashboard, LogOut, Plus, WalletCards } from "lucide-react";
+import { BarChart3, Cloud, LayoutDashboard, LogOut, Plus, TableProperties, WalletCards } from "lucide-react";
 import { AddCostModal } from "./components/AddCostModal";
 import { CostsPage } from "./components/CostsPage";
 
 const Dashboard = lazy(() =>
   import("./components/Dashboard").then((module) => ({ default: module.Dashboard })),
 );
+const TableViewPage = lazy(() =>
+  import("./components/TableViewPage").then((module) => ({ default: module.TableViewPage })),
+);
 
-type View = "overview" | "costs";
+type View = "overview" | "costs" | "table";
 
 export function App() {
   const [view, setView] = useState<View>("overview");
@@ -41,6 +44,9 @@ export function App() {
           </button>
           <button className={view === "costs" ? "active" : ""} onClick={() => setView("costs")}>
             <WalletCards size={19} /> Costs
+          </button>
+          <button className={view === "table" ? "active" : ""} onClick={() => setView("table")}>
+            <TableProperties size={19} /> Table View
           </button>
         </nav>
 
@@ -82,14 +88,15 @@ export function App() {
         <Suspense fallback={<div className="page-state">Loading Stackfolio…</div>}>
           {view === "overview" ? (
             <Dashboard key={`dashboard-${refreshKey}`} onOpenCosts={() => setView("costs")} />
-          ) : (
+          ) : view === "costs" ? (
             <CostsPage
-              key={`costs-${refreshKey}`}
               onChanged={(message) => {
                 setRefreshKey((value) => value + 1);
                 announce(message);
               }}
             />
+          ) : (
+            <TableViewPage key={`table-${refreshKey}`} />
           )}
         </Suspense>
       </main>

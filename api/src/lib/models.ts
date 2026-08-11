@@ -26,13 +26,27 @@ export interface EntryRecord {
   currency: string;
   periodStart: string;
   periodKind: PeriodKind;
+  membership: string | null;
   note: string | null;
   sourceRef: string | null;
   createdAt: string;
 }
 
+export interface CostItemSummaryRecord extends ItemRecord {
+  lifetimeSpend: number;
+  entryCount: number;
+  latestPeriod: string | null;
+  latestEntryId: number | null;
+  currentMembership: string | null;
+}
+
 export interface SeedPayload {
   metadata: Record<string, unknown>;
   items: Array<Omit<ItemRecord, "id" | "createdAt" | "updatedAt"> & { key: string }>;
-  entries: Array<Omit<EntryRecord, "id" | "itemId" | "createdAt"> & { itemKey: string }>;
+  entries: Array<
+    Omit<EntryRecord, "id" | "itemId" | "createdAt" | "membership"> & {
+      itemKey: string;
+      membership?: string | null;
+    }
+  >;
 }

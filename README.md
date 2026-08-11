@@ -31,6 +31,28 @@ The API seeds empty Azure tables idempotently on first access. Monthly platform
 values remain monthly entries. Certificates and devices only had annual totals,
 so those values remain annual rather than receiving invented purchase months.
 
+## Cost and membership workflows
+
+- Membership is stored on each ledger entry so plan changes remain historical.
+- Existing Azure ledger rows are backfilled once from the legacy item `plan`
+  through the idempotent `membershipLedgerVersion` migration.
+- Add Cost and Add Entry both accept membership. Costs always shows the
+  membership from the latest entry, ordered by entry date and then entry ID.
+- Membership can be updated directly from Costs; the update modifies the latest
+  ledger row and never creates a zero-value record.
+- Cost Detail includes a year-selectable 12-month Area Chart. Amount, entry
+  date, entry type, membership, and note are editable in Ledger History.
+
+## Portfolio views
+
+- **Overview:** lifetime/year metrics and portfolio analytics.
+- **Costs:** all data columns are sortable and filterable, including membership,
+  latest-entry date range, and lifetime-spend range.
+- **Table View:** only active recurring services, across the 12 months ending at
+  the latest monthly ledger month. Each cell shows actual monthly spend and the
+  membership effective in that month. The footer contains monthly totals and
+  the rightmost column contains rolling 12-month totals.
+
 ## Local validation
 
 Requirements: Node.js 22 or newer.
