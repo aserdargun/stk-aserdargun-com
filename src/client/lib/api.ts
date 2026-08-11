@@ -1,4 +1,11 @@
-import type { CostItemSummary, DashboardData, ItemDetail, NewCostPayload } from "../types";
+import type {
+  CostEntry,
+  CostItemSummary,
+  DashboardData,
+  ItemDetail,
+  NewCostPayload,
+  TableViewData,
+} from "../types";
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
@@ -29,6 +36,9 @@ export const api = {
   getDashboard(year?: number) {
     return request<DashboardData>(`/api/dashboard${year ? `?year=${year}` : ""}`);
   },
+  getTableView() {
+    return request<TableViewData>("/api/table-view");
+  },
   getItems(filters: { search?: string; category?: string; status?: string } = {}) {
     const params = new URLSearchParams();
     for (const [key, value] of Object.entries(filters)) {
@@ -56,11 +66,24 @@ export const api = {
       currency: string;
       periodStart: string;
       periodKind: string;
+      membership?: string;
       note?: string;
     },
   ) {
     return request<ItemDetail & { id: number }>(`/api/items/${id}/entries`, {
       method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+  updateEntry(
+    itemId: number,
+    entryId: number,
+    payload: Partial<
+      Pick<CostEntry, "amount" | "currency" | "periodStart" | "periodKind" | "membership" | "note">
+    >,
+  ) {
+    return request<ItemDetail>(`/api/items/${itemId}/entries/${entryId}`, {
+      method: "PATCH",
       body: JSON.stringify(payload),
     });
   },

@@ -47,6 +47,8 @@ export interface CostItemSummary {
   lifetimeSpend: number;
   entryCount: number;
   latestPeriod: string | null;
+  latestEntryId: number | null;
+  currentMembership: string | null;
 }
 
 export interface CostEntry {
@@ -55,6 +57,7 @@ export interface CostEntry {
   currency: string;
   periodStart: string;
   periodKind: PeriodKind;
+  membership: string | null;
   note: string | null;
   sourceRef: string | null;
   createdAt: string;
@@ -66,6 +69,19 @@ export interface ItemDetail {
     updatedAt: string;
   };
   entries: CostEntry[];
+}
+
+export interface TableViewData {
+  periods: Array<{ key: string; label: string }>;
+  rows: Array<{
+    id: number;
+    name: string;
+    currentMembership: string | null;
+    cells: Array<{ period: string; amount: number; membership: string | null }>;
+    total: number;
+  }>;
+  monthlyTotals: number[];
+  grandTotal: number;
 }
 
 export interface NewCostPayload {
@@ -83,6 +99,7 @@ export interface NewCostPayload {
     currency: string;
     periodStart: string;
     periodKind: Exclude<PeriodKind, "adjustment">;
+    membership?: string;
     note?: string;
   };
 }
