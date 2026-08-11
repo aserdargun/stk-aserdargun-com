@@ -28,7 +28,7 @@ import { formatDate, formatMoney } from "../lib/format";
 import type { Category, DashboardData } from "../types";
 
 const categoryColors: Record<Category, string> = {
-  Platform: "#55d6a4",
+  Platform: "#38bdf8",
   Certificate: "#f4c95d",
   Device: "#8aa8ff",
   Other: "#db91ff",
@@ -158,8 +158,8 @@ export function Dashboard({ onOpenCosts }: { onOpenCosts: () => void }) {
               <AreaChart data={data.monthlySeries} margin={{ top: 12, right: 8, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="spendGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#55d6a4" stopOpacity={0.45} />
-                    <stop offset="100%" stopColor="#55d6a4" stopOpacity={0.02} />
+                    <stop offset="0%" stopColor="#38bdf8" stopOpacity={0.42} />
+                    <stop offset="100%" stopColor="#38bdf8" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid stroke="#dbe6e1" strokeDasharray="4 5" vertical={false} />
@@ -181,7 +181,7 @@ export function Dashboard({ onOpenCosts }: { onOpenCosts: () => void }) {
                   contentStyle={{ borderRadius: 12, border: "1px solid #dbe6e1" }}
                   formatter={(value) => [formatMoney(Number(value)), "Spend"]}
                 />
-                <Area type="monotone" dataKey="spend" stroke="#159d73" strokeWidth={3} fill="url(#spendGradient)" />
+                <Area type="monotone" dataKey="spend" stroke="#0284c7" strokeWidth={3} fill="url(#spendGradient)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
