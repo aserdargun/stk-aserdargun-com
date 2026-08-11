@@ -402,7 +402,12 @@ export function CostsPage({ onChanged }: { onChanged: (message: string) => void 
             <div className="mobile-cost-list" aria-label="Costs">
               {visibleItems.map((item) => (
                 <article className="mobile-cost-card" key={item.id}>
-                  <button className="mobile-cost-open" onClick={() => setSelectedId(item.id)}>
+                  <button
+                    type="button"
+                    className="mobile-cost-open"
+                    onClick={() => setSelectedId(item.id)}
+                    aria-label={`Open ${item.name} details`}
+                  >
                     <span className="mobile-cost-main">
                       <strong>{item.name}</strong>
                       <small>{item.currentMembership || `${item.entryCount} ledger entries`}</small>
@@ -449,17 +454,12 @@ export function CostsPage({ onChanged }: { onChanged: (message: string) => void 
                       onSort={toggleSort}
                       numeric
                     />
-                    <th aria-label="Open" />
+                    <th aria-label="Open cost details" />
                   </tr>
                 </thead>
                 <tbody>
                   {visibleItems.map((item) => (
-                    <tr
-                      key={item.id}
-                      onClick={() => setSelectedId(item.id)}
-                      tabIndex={0}
-                      onKeyDown={(event) => event.key === "Enter" && setSelectedId(item.id)}
-                    >
+                    <tr key={item.id}>
                       <td>
                         <strong>{item.name}</strong>
                         <span>{item.entryCount} ledger {item.entryCount === 1 ? "entry" : "entries"}</span>
@@ -474,7 +474,16 @@ export function CostsPage({ onChanged }: { onChanged: (message: string) => void 
                       <td><span className={`status-pill ${item.status}`}>{item.status}</span></td>
                       <td>{formatDate(item.latestPeriod, { month: "short", year: "numeric" })}</td>
                       <td className="numeric"><strong>{formatMoney(item.lifetimeSpend)}</strong></td>
-                      <td><ChevronRight size={17} /></td>
+                      <td className="table-detail-cell">
+                        <button
+                          type="button"
+                          className="table-detail-button"
+                          onClick={() => setSelectedId(item.id)}
+                          aria-label={`Open ${item.name} details`}
+                        >
+                          <ChevronRight size={17} aria-hidden="true" />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -497,4 +506,3 @@ export function CostsPage({ onChanged }: { onChanged: (message: string) => void 
     </div>
   );
 }
-

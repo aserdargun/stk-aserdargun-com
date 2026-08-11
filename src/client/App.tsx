@@ -49,7 +49,13 @@ export function App() {
         </nav>
 
         <div className="sidebar-foot">
-          <a className="portfolio-link" href="https://aserdargun.com" target="_blank" rel="noreferrer">
+          <a
+            className="portfolio-link"
+            href="https://aserdargun.com"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Visit A. Serdar Gün’s portfolio"
+          >
             <span>
               <small>Part of the</small>
               <strong>aserdargun.com</strong>

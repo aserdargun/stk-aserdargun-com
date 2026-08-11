@@ -43,6 +43,57 @@ const statusCode = (error: unknown) =>
     ? Number((error as { statusCode?: unknown }).statusCode)
     : undefined;
 
+export interface MembershipBackfillEntity {
+  partitionKey: string;
+  rowKey: string;
+  etag: string;
+  membership?: string;
+}
+
+export interface MembershipBackfillClient {
+  getEntity(partitionKey: string, rowKey: string): Promise<MembershipBackfillEntity>;
+  updateEntity(
+    entity: TableEntity<{ membership: string }>,
+    mode: "Merge",
+    options: { etag: string },
+  ): Promise<unknown>;
+}
+
+export async function backfillEntryMembership(
+  client: MembershipBackfillClient,
+  initialEntity: MembershipBackfillEntity,
+  membership: string | null | undefined,
+) {
+  if (!membership || initialEntity.membership) return;
+
+  let current = initialEntity;
+  let lastConflict: unknown;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      await client.updateEntity(
+        {
+          partitionKey: current.partitionKey,
+          rowKey: current.rowKey,
+          membership,
+        },
+        "Merge",
+        { etag: current.etag },
+      );
+      return;
+    } catch (error) {
+      if (statusCode(error) !== 412) throw error;
+      lastConflict = error;
+      current = await client.getEntity(current.partitionKey, current.rowKey);
+      if (current.membership) return;
+    }
+  }
+
+  throw new Error("Membership migration could not acquire a current ledger entry ETag.", {
+    cause: lastConflict,
+  });
+}
+
 function optional(value: string | null | undefined) {
   return value || undefined;
 }
@@ -117,13 +168,36 @@ export class TableRepository {
 
     if (!(await this.getMeta("membershipLedgerVersion"))) {
       const itemById = new Map((await this.listItems()).map((item) => [item.id, item]));
-      for (const entry of await this.listEntries()) {
-        if (!entry.membership) {
-          await this.saveEntry({
-            ...entry,
-            membership: itemById.get(entry.itemId)?.plan || null,
-          });
+      const migrationClient: MembershipBackfillClient = {
+        getEntity: async (partitionKey, rowKey) => {
+          const entity = await this.entries.getEntity<EntryEntity>(partitionKey, rowKey);
+          return {
+            partitionKey,
+            rowKey,
+            etag: entity.etag,
+            membership: entity.membership,
+          };
+        },
+        updateEntity: (entity, mode, options) =>
+          this.entries.updateEntity(entity, mode, options),
+      };
+
+      for await (const entity of this.entries.listEntities<EntryEntity>()) {
+        const membership = itemById.get(Number(entity.itemId))?.plan;
+        if (!membership || entity.membership) continue;
+        if (!entity.partitionKey || !entity.rowKey) {
+          throw new Error("Ledger migration encountered an entry without storage keys.");
         }
+        await backfillEntryMembership(
+          migrationClient,
+          {
+            partitionKey: entity.partitionKey,
+            rowKey: entity.rowKey,
+            etag: entity.etag,
+            membership: entity.membership,
+          },
+          membership,
+        );
       }
       await this.setMeta("membershipLedgerVersion", "2026-08-11-v1");
     }

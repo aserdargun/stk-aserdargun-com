@@ -9,10 +9,14 @@ import { z } from "zod";
 import { buildDashboard } from "../lib/analytics.js";
 import { isAllowedOwner } from "../lib/auth.js";
 import { buildRecurringTableView, summarizeItems, updateEntry } from "../lib/costs.js";
+import { isValidIsoDate } from "../lib/dates.js";
 import type { EntryRecord, ItemRecord } from "../lib/models.js";
 import { TableRepository } from "../lib/storage.js";
 
-const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a YYYY-MM-DD date.");
+const dateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Use a YYYY-MM-DD date.")
+  .refine(isValidIsoDate, "Use a valid calendar date.");
 const categorySchema = z.enum(["Platform", "Certificate", "Device", "Other"]);
 const billingTypeSchema = z.enum(["recurring", "annual", "one_time"]);
 const statusSchema = z.enum(["active", "closed"]);
