@@ -18,12 +18,13 @@ export function AddCostModal({ onClose, onCreated }: { onClose: () => void; onCr
     setError(null);
     const form = new FormData(event.currentTarget);
     const amount = Number(form.get("amount"));
+    const membership = String(form.get("plan") || "");
     try {
       await api.createItem({
         name: String(form.get("name")),
         category,
         billingType,
-        plan: String(form.get("plan") || ""),
+        plan: membership,
         url: String(form.get("url") || ""),
         account: String(form.get("account") || ""),
         powerWatts: form.get("powerWatts") ? Number(form.get("powerWatts")) : null,
@@ -34,6 +35,7 @@ export function AddCostModal({ onClose, onCreated }: { onClose: () => void; onCr
           currency: "TRY",
           periodStart: String(form.get("periodStart")),
           periodKind: String(form.get("periodKind")) as "month" | "year" | "one_time",
+          membership,
           note: String(form.get("entryNote") || ""),
         },
       });
@@ -94,7 +96,7 @@ export function AddCostModal({ onClose, onCreated }: { onClose: () => void; onCr
               </select>
             </label>
             <label className="field">
-              <span>Plan or tier</span>
+              <span>Membership</span>
               <input name="plan" maxLength={120} placeholder="Professional" />
             </label>
             <label className="field">

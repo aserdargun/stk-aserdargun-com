@@ -28,10 +28,10 @@ import { formatDate, formatMoney } from "../lib/format";
 import type { Category, DashboardData } from "../types";
 
 const categoryColors: Record<Category, string> = {
-  Platform: "#55d6a4",
-  Certificate: "#f4c95d",
-  Device: "#8aa8ff",
-  Other: "#db91ff",
+  Platform: "#38bdf8",
+  Certificate: "#f59e0b",
+  Device: "#4f7cff",
+  Other: "#818cf8",
 };
 
 function StatCard({
@@ -158,30 +158,31 @@ export function Dashboard({ onOpenCosts }: { onOpenCosts: () => void }) {
               <AreaChart data={data.monthlySeries} margin={{ top: 12, right: 8, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="spendGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#55d6a4" stopOpacity={0.45} />
-                    <stop offset="100%" stopColor="#55d6a4" stopOpacity={0.02} />
+                    <stop offset="0%" stopColor="#38bdf8" stopOpacity={0.46} />
+                    <stop offset="58%" stopColor="#4f7cff" stopOpacity={0.14} />
+                    <stop offset="100%" stopColor="#4f46e5" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid stroke="#dbe6e1" strokeDasharray="4 5" vertical={false} />
+                <CartesianGrid stroke="#dce5f2" strokeDasharray="4 5" vertical={false} />
                 <XAxis
                   dataKey="month"
                   axisLine={false}
                   tickLine={false}
                   minTickGap={16}
-                  tick={{ fill: "#6b7c75", fontSize: 11 }}
+                  tick={{ fill: "#64748b", fontSize: 11 }}
                 />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
                   width={62}
-                  tick={{ fill: "#6b7c75", fontSize: 11 }}
+                  tick={{ fill: "#64748b", fontSize: 11 }}
                   tickFormatter={(value) => formatMoney(Number(value), true)}
                 />
                 <Tooltip
-                  contentStyle={{ borderRadius: 12, border: "1px solid #dbe6e1" }}
+                  contentStyle={{ borderRadius: 12, border: "1px solid #dce5f2" }}
                   formatter={(value) => [formatMoney(Number(value)), "Spend"]}
                 />
-                <Area type="monotone" dataKey="spend" stroke="#159d73" strokeWidth={3} fill="url(#spendGradient)" />
+                <Area type="monotone" dataKey="spend" stroke="#2563eb" strokeWidth={3} fill="url(#spendGradient)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -246,17 +247,17 @@ export function Dashboard({ onOpenCosts }: { onOpenCosts: () => void }) {
           <div className="chart-wrap compact">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.yearlySeries} margin={{ top: 10, right: 5, left: 0, bottom: 0 }}>
-                <CartesianGrid stroke="#dbe6e1" strokeDasharray="4 5" vertical={false} />
-                <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{ fill: "#6b7c75" }} />
+                <CartesianGrid stroke="#dce5f2" strokeDasharray="4 5" vertical={false} />
+                <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{ fill: "#64748b" }} />
                 <YAxis
                   axisLine={false}
                   tickLine={false}
                   width={62}
-                  tick={{ fill: "#6b7c75", fontSize: 11 }}
+                  tick={{ fill: "#64748b", fontSize: 11 }}
                   tickFormatter={(value) => formatMoney(Number(value), true)}
                 />
                 <Tooltip formatter={(value) => [formatMoney(Number(value)), "Spend"]} />
-                <Bar dataKey="spend" fill="#8aa8ff" radius={[8, 8, 2, 2]} maxBarSize={72} />
+                <Bar dataKey="spend" fill="#4f7cff" radius={[8, 8, 2, 2]} maxBarSize={72} />
               </BarChart>
             </ResponsiveContainer>
           </div>

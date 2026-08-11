@@ -12,7 +12,8 @@
     "build": "npm run build:app && npm --workspace api run build",
     "build:app": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit && npm --workspace api run typecheck",
-    "test": "npm --workspace api test"
+    "test": "npm run test:client && npm --workspace api test",
+    "test:client": "vitest run src/client"
   },
   "dependencies": {
     "lucide-react": "1.31.0",

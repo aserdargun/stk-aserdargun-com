@@ -8,19 +8,43 @@ import {
 import { z } from "zod";
 import { buildDashboard } from "../lib/analytics.js";
 import { isAllowedOwner } from "../lib/auth.js";
+import {
+  buildRecurringTableView,
+  summarizeItems,
+  updateEntry as mergeEntryUpdate,
+} from "../lib/costs.js";
+import { isValidIsoDate } from "../lib/dates.js";
 import type { EntryRecord, ItemRecord } from "../lib/models.js";
 import { TableRepository } from "../lib/storage.js";
 
-const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Use a YYYY-MM-DD date.");
+const dateSchema = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, "Use a YYYY-MM-DD date.")
+  .refine(isValidIsoDate, "Use a valid calendar date.");
 const categorySchema = z.enum(["Platform", "Certificate", "Device", "Other"]);
 const billingTypeSchema = z.enum(["recurring", "annual", "one_time"]);
 const statusSchema = z.enum(["active", "closed"]);
 const periodKindSchema = z.enum(["month", "year", "one_time"]);
+const editablePeriodKindSchema = z.enum([
+  "month",
+  "year",
+  "one_time",
+  "adjustment",
+]);
 const entrySchema = z.object({
   amount: z.coerce.number().finite(),
   currency: z.string().trim().min(3).max(3).default("TRY"),
   periodStart: dateSchema,
   periodKind: periodKindSchema,
+  membership: z.string().trim().max(120).optional().nullable(),
+  note: z.string().trim().max(500).optional().nullable(),
+});
+const entryUpdateSchema = z.object({
+  amount: z.coerce.number().finite(),
+  currency: z.string().trim().length(3),
+  periodStart: dateSchema,
+  periodKind: editablePeriodKindSchema,
+  membership: z.string().trim().max(120).optional().nullable(),
   note: z.string().trim().max(500).optional().nullable(),
 });
 const itemSchema = z.object({
@@ -139,6 +163,20 @@ app.http("dashboard", {
   }),
 });
 
+app.http("tableView", {
+  route: "table-view",
+  methods: ["GET"],
+  authLevel: "anonymous",
+  handler: protectedHandler(async () => {
+    const repo = await getRepository();
+    const [items, entries] = await Promise.all([
+      repo.listItems(),
+      repo.listEntries(),
+    ]);
+    return json(buildRecurringTableView(items, entries));
+  }),
+});
+
 app.http("items", {
   route: "items",
   methods: ["GET", "POST"],
@@ -176,6 +214,7 @@ app.http("items", {
           currency: payload.initialEntry.currency.toUpperCase(),
           periodStart: payload.initialEntry.periodStart,
           periodKind: payload.initialEntry.periodKind,
+          membership: emptyToNull(payload.initialEntry.membership),
           note: emptyToNull(payload.initialEntry.note),
           sourceRef: null,
           createdAt: now,
@@ -192,7 +231,7 @@ app.http("items", {
     const allItems = await repo.listItems();
     const entries = await repo.listEntries();
     const normalizedSearch = filters.search?.toLowerCase();
-    const items = allItems
+    const items = summarizeItems(allItems, entries)
       .filter((item) => !filters.category || item.category === filters.category)
       .filter((item) => !filters.status || item.status === filters.status)
       .filter(
@@ -202,16 +241,6 @@ app.http("items", {
             value?.toLowerCase().includes(normalizedSearch),
           ),
       )
-      .map((item) => {
-        const itemEntries = entries.filter((entry) => entry.itemId === item.id);
-        return {
-          ...item,
-          lifetimeSpend: round(itemEntries.reduce((total, entry) => total + entry.amount, 0)),
-          entryCount: itemEntries.length,
-          latestPeriod:
-            itemEntries.map((entry) => entry.periodStart).sort().at(-1) || null,
-        };
-      })
       .sort((a, b) => Number(a.status === "closed") - Number(b.status === "closed") || a.name.localeCompare(b.name));
     return json({ items });
   }),
@@ -253,7 +282,8 @@ app.http("itemEntries", {
     const id = parseId(request);
     if (!id) return json({ error: "Invalid cost item id." }, 400);
     const repo = await getRepository();
-    if (!(await repo.getItem(id))) return json({ error: "Cost item not found." }, 404);
+    const item = await repo.getItem(id);
+    if (!item) return json({ error: "Cost item not found." }, 404);
     const payload = entrySchema.parse(await request.json());
     const entry: EntryRecord = {
       id: await repo.nextEntryId(),
@@ -262,11 +292,35 @@ app.http("itemEntries", {
       currency: payload.currency.toUpperCase(),
       periodStart: payload.periodStart,
       periodKind: payload.periodKind,
+      membership: emptyToNull(payload.membership) ?? item.plan,
       note: emptyToNull(payload.note),
       sourceRef: null,
       createdAt: new Date().toISOString(),
     };
     await repo.saveEntry(entry);
     return json({ id: entry.id, ...(await itemDetail(repo, id)) }, 201);
+  }),
+});
+
+app.http("itemEntry", {
+  route: "items/{id}/entries/{entryId}",
+  methods: ["PATCH"],
+  authLevel: "anonymous",
+  handler: protectedHandler(async (request) => {
+    const id = parseId(request);
+    const entryId = Number(request.params.entryId);
+    if (!id || !Number.isInteger(entryId) || entryId <= 0) {
+      return json({ error: "Invalid ledger entry id." }, 400);
+    }
+
+    const repo = await getRepository();
+    const existing = await repo.getEntryForItem(id, entryId);
+    if (!existing) {
+      return json({ error: "Ledger entry not found for this cost item." }, 404);
+    }
+
+    const payload = entryUpdateSchema.parse(await request.json());
+    await repo.saveEntry(mergeEntryUpdate(existing, payload));
+    return json(await itemDetail(repo, id));
   }),
 });

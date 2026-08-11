@@ -16,6 +16,7 @@ const entries: EntryRecord[] = payload.entries.map((entry, index) => ({
   ...entry,
   id: index + 1,
   itemId: itemIds.get(entry.itemKey)!,
+  membership: entry.membership || null,
   createdAt: "2026-08-10T00:00:00.000Z",
 }));
 

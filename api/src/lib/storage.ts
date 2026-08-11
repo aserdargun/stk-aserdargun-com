@@ -25,6 +25,7 @@ interface EntryEntity {
   currency: string;
   periodStart: string;
   periodKind: string;
+  membership?: string;
   note?: string;
   sourceRef?: string;
   createdAt: string;
@@ -41,6 +42,57 @@ const statusCode = (error: unknown) =>
   typeof error === "object" && error !== null && "statusCode" in error
     ? Number((error as { statusCode?: unknown }).statusCode)
     : undefined;
+
+export interface MembershipBackfillEntity {
+  partitionKey: string;
+  rowKey: string;
+  etag: string;
+  membership?: string;
+}
+
+export interface MembershipBackfillClient {
+  getEntity(partitionKey: string, rowKey: string): Promise<MembershipBackfillEntity>;
+  updateEntity(
+    entity: TableEntity<{ membership: string }>,
+    mode: "Merge",
+    options: { etag: string },
+  ): Promise<unknown>;
+}
+
+export async function backfillEntryMembership(
+  client: MembershipBackfillClient,
+  initialEntity: MembershipBackfillEntity,
+  membership: string | null | undefined,
+) {
+  if (!membership || initialEntity.membership) return;
+
+  let current = initialEntity;
+  let lastConflict: unknown;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      await client.updateEntity(
+        {
+          partitionKey: current.partitionKey,
+          rowKey: current.rowKey,
+          membership,
+        },
+        "Merge",
+        { etag: current.etag },
+      );
+      return;
+    } catch (error) {
+      if (statusCode(error) !== 412) throw error;
+      lastConflict = error;
+      current = await client.getEntity(current.partitionKey, current.rowKey);
+      if (current.membership) return;
+    }
+  }
+
+  throw new Error("Membership migration could not acquire a current ledger entry ETag.", {
+    cause: lastConflict,
+  });
+}
 
 function optional(value: string | null | undefined) {
   return value || undefined;
@@ -75,35 +127,83 @@ export class TableRepository {
       }
     }
 
-    if (await this.getMeta("seedVersion")) return;
-    const payload = JSON.parse(
-      await readFile(new URL("../data/seed-data.json", import.meta.url), "utf8"),
-    ) as SeedPayload;
-    const timestamp = `${String(payload.metadata.importedOn || "2026-08-10")}T00:00:00.000Z`;
-    const itemIds = new Map<string, number>();
+    if (!(await this.getMeta("seedVersion"))) {
+      const payload = JSON.parse(
+        await readFile(new URL("../data/seed-data.json", import.meta.url), "utf8"),
+      ) as SeedPayload;
+      const timestamp = `${String(payload.metadata.importedOn || "2026-08-10")}T00:00:00.000Z`;
+      const itemIds = new Map<string, number>();
+      const membershipByItemKey = new Map<string, string | null>();
 
-    for (const [index, item] of payload.items.entries()) {
-      const id = index + 1;
-      itemIds.set(item.key, id);
-      await this.items.upsertEntity(
-        this.itemEntity({ ...item, id, createdAt: timestamp, updatedAt: timestamp }),
-        "Replace",
+      for (const [index, item] of payload.items.entries()) {
+        const id = index + 1;
+        itemIds.set(item.key, id);
+        membershipByItemKey.set(item.key, item.plan);
+        await this.items.upsertEntity(
+          this.itemEntity({ ...item, id, createdAt: timestamp, updatedAt: timestamp }),
+          "Replace",
+        );
+      }
+
+      for (const [index, entry] of payload.entries.entries()) {
+        const itemId = itemIds.get(entry.itemKey);
+        if (!itemId) throw new Error(`Missing seed item for ${entry.itemKey}.`);
+        await this.entries.upsertEntity(
+          this.entryEntity({
+            ...entry,
+            id: index + 1,
+            itemId,
+            membership:
+              entry.membership ?? membershipByItemKey.get(entry.itemKey) ?? null,
+            createdAt: timestamp,
+          }),
+          "Replace",
+        );
+      }
+
+      for (const [metaKey, value] of Object.entries(payload.metadata)) {
+        await this.setMeta(metaKey, value);
+      }
+      await this.setMeta("seedVersion", "2026-08-10-v1");
+    }
+
+    if (!(await this.getMeta("membershipLedgerVersion"))) {
+      const itemById = new Map(
+        (await this.listItems()).map((item) => [item.id, item]),
       );
-    }
+      const migrationClient: MembershipBackfillClient = {
+        getEntity: async (partitionKey, rowKey) => {
+          const entity = await this.entries.getEntity<EntryEntity>(partitionKey, rowKey);
+          return {
+            partitionKey,
+            rowKey,
+            etag: entity.etag,
+            membership: entity.membership,
+          };
+        },
+        updateEntity: (entity, mode, options) =>
+          this.entries.updateEntity(entity, mode, options),
+      };
 
-    for (const [index, entry] of payload.entries.entries()) {
-      const itemId = itemIds.get(entry.itemKey);
-      if (!itemId) throw new Error(`Missing seed item for ${entry.itemKey}.`);
-      await this.entries.upsertEntity(
-        this.entryEntity({ ...entry, id: index + 1, itemId, createdAt: timestamp }),
-        "Replace",
-      );
+      for await (const entity of this.entries.listEntities<EntryEntity>()) {
+        const membership = itemById.get(Number(entity.itemId))?.plan;
+        if (!membership || entity.membership) continue;
+        if (!entity.partitionKey || !entity.rowKey) {
+          throw new Error("Ledger migration encountered an entry without storage keys.");
+        }
+        await backfillEntryMembership(
+          migrationClient,
+          {
+            partitionKey: entity.partitionKey,
+            rowKey: entity.rowKey,
+            etag: entity.etag,
+            membership: entity.membership,
+          },
+          membership,
+        );
+      }
+      await this.setMeta("membershipLedgerVersion", "2026-08-11-v1");
     }
-
-    for (const [metaKey, value] of Object.entries(payload.metadata)) {
-      await this.setMeta(metaKey, value);
-    }
-    await this.setMeta("seedVersion", "2026-08-10-v1");
   }
 
   async getMeta(metaKey: string): Promise<unknown | null> {
@@ -172,6 +272,20 @@ export class TableRepository {
     );
   }
 
+  async getEntryForItem(
+    itemId: number,
+    entryId: number,
+  ): Promise<EntryRecord | null> {
+    try {
+      return this.entryRecord(
+        await this.entries.getEntity<EntryEntity>(key(itemId), key(entryId)),
+      );
+    } catch (error) {
+      if (statusCode(error) === 404) return null;
+      throw error;
+    }
+  }
+
   async saveEntry(entry: EntryRecord) {
     await this.entries.upsertEntity(this.entryEntity(entry), "Replace");
     return entry;
@@ -212,6 +326,7 @@ export class TableRepository {
       currency: entry.currency,
       periodStart: entry.periodStart,
       periodKind: entry.periodKind,
+      membership: optional(entry.membership),
       note: optional(entry.note),
       sourceRef: optional(entry.sourceRef),
       createdAt: entry.createdAt,
@@ -244,6 +359,7 @@ export class TableRepository {
       currency: entity.currency,
       periodStart: entity.periodStart,
       periodKind: entity.periodKind as EntryRecord["periodKind"],
+      membership: entity.membership || null,
       note: entity.note || null,
       sourceRef: entity.sourceRef || null,
       createdAt: entity.createdAt,
