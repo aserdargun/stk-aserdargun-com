@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Stackfolio">
-  <rect width="64" height="64" rx="16" fill="#071a14"/>
-  <path d="M14 17h36v9H14z" fill="#b7ef6a"/>
-  <path d="M19 29h31v9H19z" fill="#55d6a4"/>
-  <path d="M14 41h36v9H14z" fill="#f4c95d"/>
+  <rect width="64" height="64" rx="16" fill="#08101f"/>
+  <path d="M14 17h36v9H14z" fill="#38bdf8"/>
+  <path d="M19 29h31v9H19z" fill="#818cf8"/>
+  <path d="M14 41h36v9H14z" fill="#f59e0b"/>
 </svg>

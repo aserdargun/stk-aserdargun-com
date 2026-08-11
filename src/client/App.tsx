@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from "react";
-import { BarChart3, Cloud, LayoutDashboard, LogOut, Plus, TableProperties, WalletCards } from "lucide-react";
+import { BarChart3, Cloud, ExternalLink, LayoutDashboard, LogOut, Plus, TableProperties, WalletCards } from "lucide-react";
 import { AddCostModal } from "./components/AddCostModal";
 import { CostsPage } from "./components/CostsPage";
 
@@ -28,13 +28,11 @@ export function App() {
       <aside className="sidebar">
         <button className="brand" onClick={() => setView("overview")} aria-label="Go to overview">
           <span className="brand-mark" aria-hidden="true">
-            <i />
-            <i />
-            <i />
+            <span>AS</span>
           </span>
           <span>
             <strong>Stackfolio</strong>
-            <small>Digital investment tracker</small>
+            <small>by A. Serdar Gün</small>
           </span>
         </button>
 
@@ -51,6 +49,13 @@ export function App() {
         </nav>
 
         <div className="sidebar-foot">
+          <a className="portfolio-link" href="https://aserdargun.com" target="_blank" rel="noreferrer">
+            <span>
+              <small>Part of the</small>
+              <strong>aserdargun.com</strong>
+            </span>
+            <ExternalLink size={15} />
+          </a>
           <div className="privacy-card">
             <Cloud size={18} />
             <div>
