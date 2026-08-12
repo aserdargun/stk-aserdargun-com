@@ -7,7 +7,7 @@ import {
 } from "@azure/functions";
 import { z } from "zod";
 import { buildDashboard } from "../lib/analytics.js";
-import { isAllowedOwner } from "../lib/auth.js";
+import { isAuthorizedRequest } from "../lib/auth.js";
 import { buildRecurringTableView, summarizeItems, updateEntry } from "../lib/costs.js";
 import { isValidIsoDate } from "../lib/dates.js";
 import type { EntryRecord, ItemRecord } from "../lib/models.js";
@@ -73,15 +73,18 @@ const json = (jsonBody: unknown, status = 200): HttpResponseInit => ({
   jsonBody,
   headers: { "Cache-Control": "private, no-store" },
 });
+const isAuthorized = (request: HttpRequest) =>
+  isAuthorizedRequest({
+    encodedPrincipal: request.headers.get("x-ms-client-principal"),
+    allowedGithubUser: process.env.STACKFOLIO_ALLOWED_GITHUB_USER,
+    requestUrl: request.url,
+    localAuthBypass: process.env.STACKFOLIO_LOCAL_AUTH_BYPASS,
+    azureSiteName: process.env.WEBSITE_SITE_NAME,
+  });
 
 function protectedHandler(handler: HttpHandler): HttpHandler {
   return async (request, context) => {
-    if (
-      !isAllowedOwner(
-        request.headers.get("x-ms-client-principal"),
-        process.env.STACKFOLIO_ALLOWED_GITHUB_USER,
-      )
-    ) {
+    if (!isAuthorized(request)) {
       return json({ error: "This Stackfolio account is private." }, 403);
     }
     try {
@@ -118,13 +121,7 @@ app.http("session", {
   route: "session",
   methods: ["GET"],
   authLevel: "anonymous",
-  handler: async (request) =>
-    json({
-      owner: isAllowedOwner(
-        request.headers.get("x-ms-client-principal"),
-        process.env.STACKFOLIO_ALLOWED_GITHUB_USER,
-      ),
-    }),
+  handler: async (request) => json({ owner: isAuthorized(request) }),
 });
 
 app.http("health", {

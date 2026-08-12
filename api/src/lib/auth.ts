@@ -22,3 +22,29 @@ export function isAllowedOwner(encoded: string | null, allowedGithubUser: string
     principal.userDetails?.toLowerCase() === allowedGithubUser.toLowerCase()
   );
 }
+
+export interface AuthorizationInput {
+  encodedPrincipal: string | null;
+  allowedGithubUser: string | undefined;
+  requestUrl: string;
+  localAuthBypass: string | undefined;
+  azureSiteName: string | undefined;
+}
+
+const loopbackHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
+function isLocalAuthBypassAllowed(input: AuthorizationInput) {
+  if (input.localAuthBypass !== "true" || input.azureSiteName !== undefined) return false;
+  try {
+    return loopbackHosts.has(new URL(input.requestUrl).hostname);
+  } catch {
+    return false;
+  }
+}
+
+export function isAuthorizedRequest(input: AuthorizationInput) {
+  return (
+    isLocalAuthBypassAllowed(input) ||
+    isAllowedOwner(input.encodedPrincipal, input.allowedGithubUser)
+  );
+}
