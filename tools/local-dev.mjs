@@ -5,6 +5,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const moduleDirectory = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(moduleDirectory, "..");
+const processGroupPlatforms = new Set(["aix", "darwin", "freebsd", "linux", "openbsd", "sunos"]);
 
 export function createServiceDefinitions(rootDir, baseEnv = process.env) {
   const azureDirectory = resolve(rootDir, ".azure");
@@ -53,7 +54,6 @@ export function createServiceDefinitions(rootDir, baseEnv = process.env) {
 
 function isProcessGroupAlive(processGroupId) {
   if (!processGroupId) return false;
-  if (process.platform === "win32") return true;
 
   try {
     process.kill(-processGroupId, 0);
@@ -68,17 +68,22 @@ function signalProcessTree(processGroupId, signal) {
   if (!processGroupId) return;
 
   try {
-    if (process.platform === "win32") {
-      spawnSync("taskkill", ["/pid", String(processGroupId), "/t", "/f"], { stdio: "ignore" });
-      return;
-    }
     process.kill(-processGroupId, signal);
   } catch (error) {
     if (!(error && typeof error === "object" && error.code === "ESRCH")) throw error;
   }
 }
 
-export function startServiceSupervisor(services, { gracePeriodMs = 3_000 } = {}) {
+export function startServiceSupervisor(
+  services,
+  { gracePeriodMs = 3_000, platform = process.platform, spawnService = spawn } = {},
+) {
+  if (!processGroupPlatforms.has(platform)) {
+    throw new Error(
+      `The supervised local stack requires a POSIX platform with process groups; ${platform} is unsupported.`,
+    );
+  }
+
   const processes = new Set();
   let stopping = false;
   let settled = false;
@@ -98,9 +103,6 @@ export function startServiceSupervisor(services, { gracePeriodMs = 3_000 } = {})
   };
 
   const allProcessGroupsStopped = () => {
-    if (process.platform === "win32") {
-      return [...processes].every(({ child }) => child.exitCode !== null || child.signalCode !== null);
-    }
     return [...processes].every(({ processGroupId }) => !isProcessGroupAlive(processGroupId));
   };
 
@@ -124,11 +126,11 @@ export function startServiceSupervisor(services, { gracePeriodMs = 3_000 } = {})
   for (const service of services) {
     let child;
     try {
-      child = spawn(service.command, service.args, {
+      child = spawnService(service.command, service.args, {
         cwd: service.cwd,
         env: service.env,
         stdio: "inherit",
-        detached: process.platform !== "win32",
+        detached: true,
       });
     } catch (error) {
       stop(1);

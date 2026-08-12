@@ -76,6 +76,29 @@ test("keeps the local bypass exclusive to Functions", () => {
   assert.equal(functions.env.WEBSITE_SITE_NAME, "stackfolio-production");
 });
 
+test("rejects Windows before any child launch", () => {
+  let spawnCalls = 0;
+
+  assert.throws(
+    () => localDev.startServiceSupervisor([{
+      name: "must not start",
+      command: "unused",
+      args: [],
+      cwd: "/repo",
+      env: {},
+    }], {
+      platform: "win32",
+      spawnService: () => {
+        spawnCalls += 1;
+        throw new Error("A Windows child must never start");
+      },
+    }),
+    /requires a POSIX platform with process groups/,
+  );
+
+  assert.equal(spawnCalls, 0);
+});
+
 test("force-stops a descendant after its wrapper exits", async (t) => {
   const temporaryDirectory = mkdtempSync(resolve(tmpdir(), "stackfolio-local-dev-"));
   const pidFile = resolve(temporaryDirectory, "descendant.pid");
