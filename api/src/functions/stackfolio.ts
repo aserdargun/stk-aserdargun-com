@@ -80,6 +80,9 @@ const isAuthorized = (request: HttpRequest) =>
     requestUrl: request.url,
     localAuthBypass: process.env.STACKFOLIO_LOCAL_AUTH_BYPASS,
     azureSiteName: process.env.WEBSITE_SITE_NAME,
+    localProxyMode: process.env.STACKFOLIO_LOCAL_PROXY_MODE,
+    expectedLocalProxyToken: process.env.STACKFOLIO_LOCAL_PROXY_TOKEN,
+    presentedLocalProxyToken: request.headers.get("x-stackfolio-local-proxy-token"),
   });
 
 function protectedHandler(handler: HttpHandler): HttpHandler {

@@ -1,3 +1,5 @@
+import { timingSafeEqual } from "node:crypto";
+
 export interface ClientPrincipal {
   identityProvider?: string;
   userDetails?: string;
@@ -29,6 +31,9 @@ export interface AuthorizationInput {
   requestUrl: string;
   localAuthBypass: string | undefined;
   azureSiteName: string | undefined;
+  localProxyMode: string | undefined;
+  expectedLocalProxyToken: string | undefined;
+  presentedLocalProxyToken: string | null;
 }
 
 const loopbackHosts = new Set(["localhost", "127.0.0.1", "[::1]"]);
@@ -42,9 +47,24 @@ function isLocalAuthBypassAllowed(input: AuthorizationInput) {
   }
 }
 
+function hasMatchingLocalProxyToken(input: AuthorizationInput) {
+  if (!input.expectedLocalProxyToken || !input.presentedLocalProxyToken) return false;
+  const expected = Buffer.from(input.expectedLocalProxyToken, "utf8");
+  const presented = Buffer.from(input.presentedLocalProxyToken, "utf8");
+  return expected.length === presented.length && timingSafeEqual(expected, presented);
+}
+
 export function isAuthorizedRequest(input: AuthorizationInput) {
-  return (
-    isLocalAuthBypassAllowed(input) ||
-    isAllowedOwner(input.encodedPrincipal, input.allowedGithubUser)
-  );
+  const hasLocalProxyConfiguration =
+    input.localProxyMode !== undefined || input.expectedLocalProxyToken !== undefined;
+
+  if (!hasLocalProxyConfiguration) {
+    return isAllowedOwner(input.encodedPrincipal, input.allowedGithubUser);
+  }
+  if (!hasMatchingLocalProxyToken(input)) return false;
+  if (input.localProxyMode === "bypass") return isLocalAuthBypassAllowed(input);
+  if (input.localProxyMode === "swa") {
+    return isAllowedOwner(input.encodedPrincipal, input.allowedGithubUser);
+  }
+  return false;
 }

@@ -71,13 +71,18 @@ npm run dev
 ```
 
 This command starts Azurite, compiles and watches the API, runs Azure Functions
-on `127.0.0.1:3001`, and serves Vite at `http://127.0.0.1:5173`. The API bypass
-is injected only into the local Functions child process and is accepted only
-for loopback requests outside Azure.
+on port `3001`, and serves Vite at the strict endpoint
+`http://127.0.0.1:5173`. A fresh private capability is shared only by Vite and
+the Functions child for that run. Vite overwrites the capability header while
+proxying `/api`; direct requests to the raw Functions listener remain
+unauthorized even if they spoof localhost or a Static Web Apps principal.
 
 To exercise production-like Static Web Apps routing and authentication instead,
-run the Codex `Full App` action. It builds the app and serves the SWA emulator at
+run the Codex `Full App` action. It builds the app, puts a capability-gated API
+proxy on `127.0.0.1:7071`, and serves the SWA emulator at
 `http://localhost:4280`; unauthenticated users are redirected to `/login`.
+The raw Functions listener uses a separate internal port and does not trust an
+inherited development-bypass flag.
 
 ## Azure settings
 

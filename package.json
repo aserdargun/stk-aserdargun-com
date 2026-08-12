@@ -9,13 +9,13 @@
   ],
   "scripts": {
     "dev": "node tools/local-dev.mjs",
-    "dev:frontend": "vite --host 127.0.0.1",
+    "dev:frontend": "vite --host 127.0.0.1 --port 5173 --strictPort",
     "build": "npm run build:app && npm --workspace api run build",
     "build:app": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit && npm --workspace api run typecheck",
     "test": "npm run test:client && npm run test:local-dev && npm --workspace api test",
-    "test:client": "vitest run src/client",
-    "test:local-dev": "node --test tools/local-dev.test.mjs"
+    "test:client": "vitest run src/client tools/vite-config.test.ts",
+    "test:local-dev": "node --test tools/*.test.mjs"
   },
   "dependencies": {
     "lucide-react": "1.31.0",

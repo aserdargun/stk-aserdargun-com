@@ -29,7 +29,11 @@ function isProcessAlive(pid) {
 
 test("defines the complete loopback development stack", () => {
   const rootDir = resolve("/tmp/stackfolio-plan-test");
-  const services = localDev.createServiceDefinitions(rootDir, { PATH: "/usr/bin" });
+  const services = localDev.createServiceDefinitions(
+    rootDir,
+    { PATH: "/usr/bin" },
+    "per-run-local-token",
+  );
 
   assert.deepEqual(
     services.map(({ name }) => name),
@@ -44,12 +48,26 @@ test("defines the complete loopback development stack", () => {
   assert.equal(functions.cwd, resolve(rootDir, "api"));
   assert.deepEqual(functions.args, ["start", "--port", "3001"]);
   assert.equal(functions.env.STACKFOLIO_LOCAL_AUTH_BYPASS, "true");
+  assert.equal(functions.env.STACKFOLIO_LOCAL_PROXY_MODE, "bypass");
+  assert.equal(functions.env.STACKFOLIO_LOCAL_PROXY_TOKEN, "per-run-local-token");
   assert.equal(functions.env.PATH, "/usr/bin");
   assert.equal(functions.env.WEBSITE_SITE_NAME, undefined);
 
   const vite = services.find(({ name }) => name === "Vite");
   assert.equal(vite.cwd, rootDir);
-  assert.deepEqual(vite.args, ["run", "dev:frontend"]);
+  assert.deepEqual(vite.args, [
+    "exec",
+    "--",
+    "vite",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "5173",
+    "--strictPort",
+  ]);
+  assert.equal(vite.env.STACKFOLIO_LOCAL_PROXY_TOKEN, "per-run-local-token");
+  assert.equal(vite.env.STACKFOLIO_LOCAL_PROXY_MODE, undefined);
+  assert.equal(vite.env.STACKFOLIO_LOCAL_AUTH_BYPASS, undefined);
 });
 
 test("does not erase an inherited Azure marker", () => {
@@ -60,20 +78,73 @@ test("does not erase an inherited Azure marker", () => {
   assert.equal(functions.env.WEBSITE_SITE_NAME, "stackfolio-production");
 });
 
-test("keeps the local bypass exclusive to Functions", () => {
+test("isolates the capability and exact modes to only the services that require them", () => {
   const services = localDev.createServiceDefinitions("/repo", {
     STACKFOLIO_LOCAL_AUTH_BYPASS: "inherited",
+    STACKFOLIO_LOCAL_PROXY_MODE: "inherited",
+    STACKFOLIO_LOCAL_PROXY_TOKEN: "inherited-token",
     WEBSITE_SITE_NAME: "stackfolio-production",
-  });
+  }, "per-run-local-token");
 
-  for (const service of services.filter(({ name }) => name !== "Functions")) {
+  for (const service of services.filter(({ name }) => ["Azurite", "API compiler"].includes(name))) {
     assert.equal(service.env.STACKFOLIO_LOCAL_AUTH_BYPASS, undefined, service.name);
+    assert.equal(service.env.STACKFOLIO_LOCAL_PROXY_MODE, undefined, service.name);
+    assert.equal(service.env.STACKFOLIO_LOCAL_PROXY_TOKEN, undefined, service.name);
     assert.equal(service.env.WEBSITE_SITE_NAME, "stackfolio-production", service.name);
   }
 
   const functions = services.find(({ name }) => name === "Functions");
   assert.equal(functions.env.STACKFOLIO_LOCAL_AUTH_BYPASS, "true");
+  assert.equal(functions.env.STACKFOLIO_LOCAL_PROXY_MODE, "bypass");
+  assert.equal(functions.env.STACKFOLIO_LOCAL_PROXY_TOKEN, "per-run-local-token");
   assert.equal(functions.env.WEBSITE_SITE_NAME, "stackfolio-production");
+
+  const vite = services.find(({ name }) => name === "Vite");
+  assert.equal(vite.env.STACKFOLIO_LOCAL_AUTH_BYPASS, undefined);
+  assert.equal(vite.env.STACKFOLIO_LOCAL_PROXY_MODE, undefined);
+  assert.equal(vite.env.STACKFOLIO_LOCAL_PROXY_TOKEN, "per-run-local-token");
+});
+
+test("generates a distinct cryptographic-looking capability for each stack run", () => {
+  const first = localDev.generateLocalProxyToken();
+  const second = localDev.generateLocalProxyToken();
+
+  assert.match(first, /^[A-Za-z0-9_-]{43}$/);
+  assert.match(second, /^[A-Za-z0-9_-]{43}$/);
+  assert.notEqual(first, second);
+});
+
+test("registers shutdown handlers before launch and cancels a signalled startup", () => {
+  const originalExitCode = process.exitCode;
+  const events = [];
+  let launched = false;
+
+  try {
+    const supervisor = localDev.startLocalDevelopment("/repo", {
+      platform: process.platform,
+      prepareLocalDevelopment: () => events.push("prepare"),
+      generateLocalProxyToken: () => "per-run-local-token",
+      createServiceDefinitions: () => {
+        events.push("define");
+        return [];
+      },
+      startServiceSupervisor: () => {
+        launched = true;
+        events.push("launch");
+        return { stop() {}, finished: Promise.resolve() };
+      },
+      registerSignalHandler: (signal, handler) => {
+        events.push(`register:${signal}`);
+        if (signal === "SIGTERM") handler();
+      },
+    });
+
+    assert.equal(launched, false);
+    assert.deepEqual(events, ["register:SIGINT", "register:SIGTERM"]);
+    assert.equal(typeof supervisor.stop, "function");
+  } finally {
+    process.exitCode = originalExitCode;
+  }
 });
 
 test("rejects Windows before any child launch", () => {

@@ -1,4 +1,5 @@
 import { spawn, spawnSync } from "node:child_process";
+import { randomBytes } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -7,10 +8,20 @@ const moduleDirectory = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(moduleDirectory, "..");
 const processGroupPlatforms = new Set(["aix", "darwin", "freebsd", "linux", "openbsd", "sunos"]);
 
-export function createServiceDefinitions(rootDir, baseEnv = process.env) {
+export function generateLocalProxyToken() {
+  return randomBytes(32).toString("base64url");
+}
+
+export function createServiceDefinitions(
+  rootDir,
+  baseEnv = process.env,
+  localProxyToken = generateLocalProxyToken(),
+) {
   const azureDirectory = resolve(rootDir, ".azure");
   const sharedEnv = { ...baseEnv };
   delete sharedEnv.STACKFOLIO_LOCAL_AUTH_BYPASS;
+  delete sharedEnv.STACKFOLIO_LOCAL_PROXY_MODE;
+  delete sharedEnv.STACKFOLIO_LOCAL_PROXY_TOKEN;
 
   return [
     {
@@ -40,14 +51,28 @@ export function createServiceDefinitions(rootDir, baseEnv = process.env) {
       command: "func",
       args: ["start", "--port", "3001"],
       cwd: resolve(rootDir, "api"),
-      env: { ...sharedEnv, STACKFOLIO_LOCAL_AUTH_BYPASS: "true" },
+      env: {
+        ...sharedEnv,
+        STACKFOLIO_LOCAL_AUTH_BYPASS: "true",
+        STACKFOLIO_LOCAL_PROXY_MODE: "bypass",
+        STACKFOLIO_LOCAL_PROXY_TOKEN: localProxyToken,
+      },
     },
     {
       name: "Vite",
       command: "npm",
-      args: ["run", "dev:frontend"],
+      args: [
+        "exec",
+        "--",
+        "vite",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "5173",
+        "--strictPort",
+      ],
       cwd: rootDir,
-      env: { ...sharedEnv },
+      env: { ...sharedEnv, STACKFOLIO_LOCAL_PROXY_TOKEN: localProxyToken },
     },
   ];
 }
@@ -192,15 +217,34 @@ export function startLocalDevelopment(
     prepareLocalDevelopment: prepare = prepareLocalDevelopment,
     createServiceDefinitions: createServices = createServiceDefinitions,
     startServiceSupervisor: supervise = startServiceSupervisor,
+    baseEnv = process.env,
+    generateLocalProxyToken: generateToken = generateLocalProxyToken,
     registerSignalHandler = process.on.bind(process),
   } = {},
 ) {
   assertProcessGroupPlatform(platform);
-  prepare(rootDir);
-  const supervisor = supervise(createServices(rootDir), { platform });
+  let supervisor;
+  let startupSignalReceived = false;
+  const stopForSignal = () => {
+    startupSignalReceived = true;
+    process.exitCode = 0;
+    supervisor?.stop(0);
+  };
 
-  registerSignalHandler("SIGINT", () => supervisor.stop(0));
-  registerSignalHandler("SIGTERM", () => supervisor.stop(0));
+  registerSignalHandler("SIGINT", stopForSignal);
+  registerSignalHandler("SIGTERM", stopForSignal);
+  if (startupSignalReceived) {
+    return { stop: stopForSignal, finished: Promise.resolve() };
+  }
+
+  prepare(rootDir);
+  const localProxyToken = generateToken();
+  const services = createServices(rootDir, baseEnv, localProxyToken);
+  if (startupSignalReceived) {
+    return { stop: stopForSignal, finished: Promise.resolve() };
+  }
+  supervisor = supervise(services, { platform });
+  if (startupSignalReceived) supervisor.stop(0);
 
   return supervisor;
 }

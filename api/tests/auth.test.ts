@@ -27,6 +27,9 @@ const localRequest = (overrides: Partial<AuthorizationInput> = {}): Authorizatio
   requestUrl: "http://127.0.0.1:3001/api/session",
   localAuthBypass: "true",
   azureSiteName: undefined,
+  localProxyMode: "bypass",
+  expectedLocalProxyToken: "expected-local-token",
+  presentedLocalProxyToken: "expected-local-token",
   ...overrides,
 });
 
@@ -54,7 +57,7 @@ const rejectedLocalBypassCases: Array<[string, Partial<AuthorizationInput>]> = [
   ["Azure host marker", { azureSiteName: "stackfolio-production" }],
 ];
 
-describe("local authorization bypass", () => {
+describe("capability-protected local authorization bypass", () => {
   it.each([
     "http://localhost:3001/api/session",
     "http://127.0.0.1:3001/api/session",
@@ -64,18 +67,106 @@ describe("local authorization bypass", () => {
   });
 
   it.each(rejectedLocalBypassCases)("rejects %s", (_label, overrides) => {
-    expect(isAuthorizedRequest(localRequest(overrides))).toBe(false);
+    expect(isAuthorizedRequest(localRequest({ encodedPrincipal: encoded, ...overrides }))).toBe(false);
   });
 
-  it("keeps GitHub owner authorization when the bypass does not qualify", () => {
+  it("rejects a forged owner principal when the capability is absent", () => {
+    expect(
+      isAuthorizedRequest(
+        localRequest({
+          encodedPrincipal: encoded,
+          presentedLocalProxyToken: null,
+        }),
+      ),
+    ).toBe(false);
+  });
+});
+
+describe("fail-closed local proxy configuration", () => {
+  it.each([
+    ["missing mode", { localProxyMode: undefined }],
+    ["missing expected capability", { expectedLocalProxyToken: undefined }],
+    ["missing presented capability", { presentedLocalProxyToken: null }],
+    ["unknown mode", { localProxyMode: "owner" }],
+    ["empty mode", { localProxyMode: "" }],
+    ["empty expected capability", { expectedLocalProxyToken: "", presentedLocalProxyToken: "" }],
+    ["same-length mismatch", { presentedLocalProxyToken: "unexpected-local-tok" }],
+    ["different-length mismatch", { presentedLocalProxyToken: "short" }],
+  ] satisfies Array<[string, Partial<AuthorizationInput>]>)(
+    "rejects %s without falling back to a forged owner principal",
+    (_label, overrides) => {
+      expect(isAuthorizedRequest(localRequest({ encodedPrincipal: encoded, ...overrides }))).toBe(false);
+    },
+  );
+});
+
+describe("SWA local proxy authorization", () => {
+  const swaRequest = (overrides: Partial<AuthorizationInput> = {}) =>
+    localRequest({
+      encodedPrincipal: encoded,
+      localAuthBypass: "false",
+      localProxyMode: "swa",
+      ...overrides,
+    });
+
+  it("accepts the configured owner only through the matching local proxy capability", () => {
+    expect(isAuthorizedRequest(swaRequest())).toBe(true);
+    expect(isAuthorizedRequest(swaRequest({ presentedLocalProxyToken: null }))).toBe(false);
+  });
+
+  it("does not activate bypass under a hostile inherited bypass flag", () => {
+    expect(
+      isAuthorizedRequest(
+        swaRequest({
+          encodedPrincipal: null,
+          localAuthBypass: "true",
+          requestUrl: "http://127.0.0.1:7072/api/session",
+        }),
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects an unconfigured GitHub identity even with a matching capability", () => {
+    expect(
+      isAuthorizedRequest(
+        swaRequest({
+          encodedPrincipal: Buffer.from(
+            JSON.stringify({ identityProvider: "github", userDetails: "someone-else" }),
+          ).toString("base64"),
+        }),
+      ),
+    ).toBe(false);
+  });
+});
+
+describe("production authorization", () => {
+  it("retains owner-principal fallback when no local proxy configuration exists", () => {
     expect(
       isAuthorizedRequest(
         localRequest({
           encodedPrincipal: encoded,
           requestUrl: "https://stackfolio.aserdargun.com/api/session",
+          localAuthBypass: undefined,
           azureSiteName: "stackfolio-production",
+          localProxyMode: undefined,
+          expectedLocalProxyToken: undefined,
+          presentedLocalProxyToken: "attacker-supplied-token",
         }),
       ),
     ).toBe(true);
+  });
+
+  it("still rejects a non-owner principal", () => {
+    expect(
+      isAuthorizedRequest(
+        localRequest({
+          encodedPrincipal: null,
+          localAuthBypass: undefined,
+          localProxyMode: undefined,
+          expectedLocalProxyToken: undefined,
+          presentedLocalProxyToken: "attacker-supplied-token",
+        }),
+      ),
+    ).toBe(false);
   });
 });
