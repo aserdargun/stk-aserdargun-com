@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 import test from "node:test";
@@ -97,6 +97,30 @@ test("rejects Windows before any child launch", () => {
   );
 
   assert.equal(spawnCalls, 0);
+});
+
+test("rejects Windows before the real development entrypoint runs preflight", (t) => {
+  const rootDir = mkdtempSync(resolve(tmpdir(), "stackfolio-local-dev-entrypoint-"));
+  let preflightCalls = 0;
+  let serviceLaunchCalls = 0;
+  t.after(() => rmSync(rootDir, { recursive: true, force: true }));
+
+  assert.throws(
+    () => localDev.startLocalDevelopment(rootDir, {
+      platform: "win32",
+      prepareLocalDevelopment: () => {
+        preflightCalls += 1;
+      },
+      startServiceSupervisor: () => {
+        serviceLaunchCalls += 1;
+      },
+    }),
+    /requires a POSIX platform with process groups/,
+  );
+
+  assert.equal(preflightCalls, 0);
+  assert.equal(serviceLaunchCalls, 0);
+  assert.deepEqual(readdirSync(rootDir), []);
 });
 
 test("force-stops a descendant after its wrapper exits", async (t) => {

@@ -74,15 +74,19 @@ function signalProcessTree(processGroupId, signal) {
   }
 }
 
-export function startServiceSupervisor(
-  services,
-  { gracePeriodMs = 3_000, platform = process.platform, spawnService = spawn } = {},
-) {
+function assertProcessGroupPlatform(platform) {
   if (!processGroupPlatforms.has(platform)) {
     throw new Error(
       `The supervised local stack requires a POSIX platform with process groups; ${platform} is unsupported.`,
     );
   }
+}
+
+export function startServiceSupervisor(
+  services,
+  { gracePeriodMs = 3_000, platform = process.platform, spawnService = spawn } = {},
+) {
+  assertProcessGroupPlatform(platform);
 
   const processes = new Set();
   let stopping = false;
@@ -181,12 +185,24 @@ function prepareLocalDevelopment(rootDir) {
   runPreflight("npm", ["--workspace", "api", "run", "build"], { cwd: rootDir });
 }
 
-function startLocalDevelopment(rootDir) {
-  prepareLocalDevelopment(rootDir);
-  const supervisor = startServiceSupervisor(createServiceDefinitions(rootDir));
+export function startLocalDevelopment(
+  rootDir,
+  {
+    platform = process.platform,
+    prepareLocalDevelopment: prepare = prepareLocalDevelopment,
+    createServiceDefinitions: createServices = createServiceDefinitions,
+    startServiceSupervisor: supervise = startServiceSupervisor,
+    registerSignalHandler = process.on.bind(process),
+  } = {},
+) {
+  assertProcessGroupPlatform(platform);
+  prepare(rootDir);
+  const supervisor = supervise(createServices(rootDir), { platform });
 
-  process.on("SIGINT", () => supervisor.stop(0));
-  process.on("SIGTERM", () => supervisor.stop(0));
+  registerSignalHandler("SIGINT", () => supervisor.stop(0));
+  registerSignalHandler("SIGTERM", () => supervisor.stop(0));
+
+  return supervisor;
 }
 
 const invokedPath = process.argv[1] ? pathToFileURL(resolve(process.argv[1])).href : "";
