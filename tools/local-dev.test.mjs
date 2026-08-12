@@ -1,11 +1,35 @@
 import assert from "node:assert/strict";
-import { resolve } from "node:path";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { dirname, resolve } from "node:path";
 import test from "node:test";
-import { createServiceDefinitions } from "./local-dev.mjs";
+import { fileURLToPath } from "node:url";
+import * as localDev from "./local-dev.mjs";
+
+const fixtureDirectory = resolve(dirname(fileURLToPath(import.meta.url)), "fixtures");
+
+async function waitFor(condition, description) {
+  const timeout = Date.now() + 5_000;
+  while (Date.now() < timeout) {
+    if (condition()) return;
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 25));
+  }
+  throw new Error(`Timed out waiting for ${description}`);
+}
+
+function isProcessAlive(pid) {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    if (error.code === "ESRCH") return false;
+    throw error;
+  }
+}
 
 test("defines the complete loopback development stack", () => {
   const rootDir = resolve("/tmp/stackfolio-plan-test");
-  const services = createServiceDefinitions(rootDir, { PATH: "/usr/bin" });
+  const services = localDev.createServiceDefinitions(rootDir, { PATH: "/usr/bin" });
 
   assert.deepEqual(
     services.map(({ name }) => name),
@@ -29,9 +53,66 @@ test("defines the complete loopback development stack", () => {
 });
 
 test("does not erase an inherited Azure marker", () => {
-  const [,, functions] = createServiceDefinitions("/repo", {
+  const [,, functions] = localDev.createServiceDefinitions("/repo", {
     WEBSITE_SITE_NAME: "stackfolio-production",
   });
 
   assert.equal(functions.env.WEBSITE_SITE_NAME, "stackfolio-production");
+});
+
+test("keeps the local bypass exclusive to Functions", () => {
+  const services = localDev.createServiceDefinitions("/repo", {
+    STACKFOLIO_LOCAL_AUTH_BYPASS: "inherited",
+    WEBSITE_SITE_NAME: "stackfolio-production",
+  });
+
+  for (const service of services.filter(({ name }) => name !== "Functions")) {
+    assert.equal(service.env.STACKFOLIO_LOCAL_AUTH_BYPASS, undefined, service.name);
+    assert.equal(service.env.WEBSITE_SITE_NAME, "stackfolio-production", service.name);
+  }
+
+  const functions = services.find(({ name }) => name === "Functions");
+  assert.equal(functions.env.STACKFOLIO_LOCAL_AUTH_BYPASS, "true");
+  assert.equal(functions.env.WEBSITE_SITE_NAME, "stackfolio-production");
+});
+
+test("force-stops a descendant after its wrapper exits", async (t) => {
+  const temporaryDirectory = mkdtempSync(resolve(tmpdir(), "stackfolio-local-dev-"));
+  const pidFile = resolve(temporaryDirectory, "descendant.pid");
+  const readyFile = `${pidFile}.ready`;
+  t.after(() => rmSync(temporaryDirectory, { recursive: true, force: true }));
+
+  const supervisor = localDev.startServiceSupervisor([
+    {
+      name: "fixture wrapper",
+      command: process.execPath,
+      args: [resolve(fixtureDirectory, "local-dev-spawn-descendant.mjs"), pidFile],
+      cwd: temporaryDirectory,
+      env: process.env,
+    },
+  ], { gracePeriodMs: 300 });
+
+  await waitFor(() => {
+    try {
+      return isProcessAlive(Number(readFileSync(pidFile, "utf8")));
+    } catch (error) {
+      if (error.code === "ENOENT") return false;
+      throw error;
+    }
+  }, "the fixture descendant to start");
+  await waitFor(() => {
+    try {
+      return readFileSync(readyFile, "utf8") === "ready";
+    } catch (error) {
+      if (error.code === "ENOENT") return false;
+      throw error;
+    }
+  }, "the fixture descendant to install its signal handler");
+
+  const descendantPid = Number(readFileSync(pidFile, "utf8"));
+  supervisor.stop(0);
+  await new Promise((resolveDelay) => setTimeout(resolveDelay, 75));
+  assert.equal(isProcessAlive(descendantPid), true, "the descendant must outlive SIGTERM");
+  await supervisor.finished;
+  await waitFor(() => !isProcessAlive(descendantPid), "the fixture descendant to stop");
 });

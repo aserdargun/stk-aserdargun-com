@@ -8,6 +8,9 @@ const repositoryRoot = resolve(moduleDirectory, "..");
 
 export function createServiceDefinitions(rootDir, baseEnv = process.env) {
   const azureDirectory = resolve(rootDir, ".azure");
+  const sharedEnv = { ...baseEnv };
+  delete sharedEnv.STACKFOLIO_LOCAL_AUTH_BYPASS;
+
   return [
     {
       name: "Azurite",
@@ -22,30 +25,133 @@ export function createServiceDefinitions(rootDir, baseEnv = process.env) {
         resolve(azureDirectory, "azurite-debug.log"),
       ],
       cwd: rootDir,
-      env: { ...baseEnv },
+      env: { ...sharedEnv },
     },
     {
       name: "API compiler",
       command: "npm",
       args: ["--workspace", "api", "exec", "--", "tsc", "--watch", "--preserveWatchOutput"],
       cwd: rootDir,
-      env: { ...baseEnv },
+      env: { ...sharedEnv },
     },
     {
       name: "Functions",
       command: "func",
       args: ["start", "--port", "3001"],
       cwd: resolve(rootDir, "api"),
-      env: { ...baseEnv, STACKFOLIO_LOCAL_AUTH_BYPASS: "true" },
+      env: { ...sharedEnv, STACKFOLIO_LOCAL_AUTH_BYPASS: "true" },
     },
     {
       name: "Vite",
       command: "npm",
       args: ["run", "dev:frontend"],
       cwd: rootDir,
-      env: { ...baseEnv },
+      env: { ...sharedEnv },
     },
   ];
+}
+
+function isProcessGroupAlive(processGroupId) {
+  if (!processGroupId) return false;
+  if (process.platform === "win32") return true;
+
+  try {
+    process.kill(-processGroupId, 0);
+    return true;
+  } catch (error) {
+    if (error && typeof error === "object" && error.code === "ESRCH") return false;
+    return true;
+  }
+}
+
+function signalProcessTree(processGroupId, signal) {
+  if (!processGroupId) return;
+
+  try {
+    if (process.platform === "win32") {
+      spawnSync("taskkill", ["/pid", String(processGroupId), "/t", "/f"], { stdio: "ignore" });
+      return;
+    }
+    process.kill(-processGroupId, signal);
+  } catch (error) {
+    if (!(error && typeof error === "object" && error.code === "ESRCH")) throw error;
+  }
+}
+
+export function startServiceSupervisor(services, { gracePeriodMs = 3_000 } = {}) {
+  const processes = new Set();
+  let stopping = false;
+  let settled = false;
+  let forceStop;
+  let livenessCheck;
+  let resolveFinished;
+  const finished = new Promise((resolveFinishedPromise) => {
+    resolveFinished = resolveFinishedPromise;
+  });
+
+  const settle = () => {
+    if (settled) return;
+    settled = true;
+    if (forceStop) clearTimeout(forceStop);
+    if (livenessCheck) clearInterval(livenessCheck);
+    resolveFinished();
+  };
+
+  const allProcessGroupsStopped = () => {
+    if (process.platform === "win32") {
+      return [...processes].every(({ child }) => child.exitCode !== null || child.signalCode !== null);
+    }
+    return [...processes].every(({ processGroupId }) => !isProcessGroupAlive(processGroupId));
+  };
+
+  const stop = (exitCode) => {
+    if (stopping) return;
+    stopping = true;
+    process.exitCode = exitCode;
+    for (const { processGroupId } of processes) signalProcessTree(processGroupId, "SIGTERM");
+
+    livenessCheck = setInterval(() => {
+      if (allProcessGroupsStopped()) settle();
+    }, 25);
+    forceStop = setTimeout(() => {
+      for (const { processGroupId } of processes) signalProcessTree(processGroupId, "SIGKILL");
+      if (allProcessGroupsStopped()) settle();
+    }, gracePeriodMs);
+
+    if (allProcessGroupsStopped()) settle();
+  };
+
+  for (const service of services) {
+    let child;
+    try {
+      child = spawn(service.command, service.args, {
+        cwd: service.cwd,
+        env: service.env,
+        stdio: "inherit",
+        detached: process.platform !== "win32",
+      });
+    } catch (error) {
+      stop(1);
+      throw error;
+    }
+
+    const processRecord = { child, processGroupId: child.pid };
+    processes.add(processRecord);
+    child.on("error", (error) => {
+      console.error(`[local-dev] ${service.name} failed to start: ${error.message}`);
+      stop(1);
+    });
+    child.on("exit", (code, signal) => {
+      if (!stopping) {
+        console.error(
+          `[local-dev] ${service.name} exited (${signal ?? `code ${code ?? 1}`}); stopping local stack.`,
+        );
+        stop(code === 0 ? 1 : (code ?? 1));
+      }
+    });
+  }
+
+  return { stop, finished };
 }
 
 function runPreflight(command, args, options = {}) {
@@ -75,48 +181,10 @@ function prepareLocalDevelopment(rootDir) {
 
 function startLocalDevelopment(rootDir) {
   prepareLocalDevelopment(rootDir);
-  const children = new Set();
-  let stopping = false;
+  const supervisor = startServiceSupervisor(createServiceDefinitions(rootDir));
 
-  const stop = (exitCode) => {
-    if (stopping) return;
-    stopping = true;
-    process.exitCode = exitCode;
-    for (const child of children) {
-      if (child.exitCode === null && child.signalCode === null) child.kill("SIGTERM");
-    }
-    const forceStop = setTimeout(() => {
-      for (const child of children) {
-        if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
-      }
-    }, 3_000);
-    forceStop.unref();
-  };
-
-  for (const service of createServiceDefinitions(rootDir)) {
-    const child = spawn(service.command, service.args, {
-      cwd: service.cwd,
-      env: service.env,
-      stdio: "inherit",
-    });
-    children.add(child);
-    child.on("error", (error) => {
-      console.error(`[local-dev] ${service.name} failed to start: ${error.message}`);
-      stop(1);
-    });
-    child.on("exit", (code, signal) => {
-      children.delete(child);
-      if (!stopping) {
-        console.error(
-          `[local-dev] ${service.name} exited (${signal ?? `code ${code ?? 1}`}); stopping local stack.`,
-        );
-        stop(code === 0 ? 1 : (code ?? 1));
-      }
-    });
-  }
-
-  process.on("SIGINT", () => stop(0));
-  process.on("SIGTERM", () => stop(0));
+  process.on("SIGINT", () => supervisor.stop(0));
+  process.on("SIGTERM", () => supervisor.stop(0));
 }
 
 const invokedPath = process.argv[1] ? pathToFileURL(resolve(process.argv[1])).href : "";
