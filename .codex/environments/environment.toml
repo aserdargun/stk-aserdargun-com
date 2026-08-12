@@ -27,7 +27,7 @@ npx --yes azurite@3.36.0 --silent --location .azure/azurite --debug .azure/azuri
 azurite_pid=$!
 trap 'kill "$azurite_pid" 2>/dev/null || true' EXIT INT TERM
 npm run build
-npx --yes @azure/static-web-apps-cli@2.0.10 start dist --api-location api
+npx --yes @azure/static-web-apps-cli@2.0.10 start dist --api-devserver-url http://127.0.0.1:7071 --run 'cd api && func start --cors "*" --port 7071' --swa-config-location public
 """
 
 [[actions]]
