@@ -28,8 +28,16 @@ test("uses the current stk project identity and accurate Codex action names", ()
     "Stop All Ports",
     "Validate",
   ]);
-  assert.match(environment, /command = "npm run dev"/);
+  assert.match(environment, /command = "npm run stop:local && npm run dev"/);
   assert.match(environment, /command = "npm run stop:local"/);
+});
+
+test("cleans stale project services before and after the Full App action", () => {
+  const fullAppAction = environment.split("[[actions]]")[1];
+
+  assert.match(fullAppAction, /command = """\nset -e\nnpm run stop:local\n/);
+  assert.match(fullAppAction, /cleanup\(\) \{\n  npm run stop:local/);
+  assert.doesNotMatch(fullAppAction, /kill "\$azurite_pid"/);
 });
 
 test("uses SWA CLI-compatible workflow job keys without changing check labels", () => {
