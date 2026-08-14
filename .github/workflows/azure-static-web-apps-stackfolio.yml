@@ -13,7 +13,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  build_and_deploy:
+  build_and_deploy_job:
+    name: build_and_deploy
     if: github.event_name != 'pull_request' || github.event.action != 'closed'
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -32,7 +33,8 @@ jobs:
           output_location: dist
           app_build_command: npm run build:app
 
-  close_pull_request:
+  close_pull_request_job:
+    name: close_pull_request
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
     steps:
