@@ -14,7 +14,7 @@ and future cost items with monthly and yearly analytics.
 
 The site, API, and storage are designed to stay inside the Azure free or
 consumption allowances for a small personal workload. The IHS-managed custom
-domain is `stackfolio.aserdargun.com`.
+domain is `stk.aserdargun.com`.
 
 ## Imported data
 
@@ -86,6 +86,13 @@ inherited development-bypass flag.
 
 ## Azure settings
 
+The production naming map is:
+
+- Resource group: `rg-stk-aserdargun-com`
+- Static Web App: `swa-stk-aserdargun-com`
+- Storage account: `ststkaserdarguncom`
+- GitHub deployment secret: `AZURE_STATIC_WEB_APPS_API_TOKEN_STK`
+
 The Static Web App requires these application settings:
 
 - `AZURE_STORAGE_CONNECTION_STRING`: connection string for the private storage account
@@ -102,8 +109,10 @@ selects the button, and sign-out remains on a public signed-out page. Before the
 React application mounts, `/api/session` confirms that the signed-in GitHub
 identity matches the configured owner. Other authenticated accounts are sent to
 the access-denied page, while all data endpoints retain the same owner check.
-OAuth login and logout callbacks use fully qualified
-`https://stackfolio.aserdargun.com` return URLs.
+OAuth login and logout callbacks are generated from the current deployment
+origin. This keeps the Azure-provided hostname usable before
+`https://stk.aserdargun.com` is attached and keeps the user on that custom
+domain after it is enabled.
 
 ## Privacy
 

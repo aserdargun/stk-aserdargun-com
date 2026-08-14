@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "node tools/local-dev.mjs",
     "dev:frontend": "vite --host 127.0.0.1 --port 5173 --strictPort",
+    "stop:local": "node tools/stop-local.mjs",
     "build": "npm run build:app && npm --workspace api run build",
     "build:app": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit && npm --workspace api run typecheck",

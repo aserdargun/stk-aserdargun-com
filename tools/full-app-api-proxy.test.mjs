@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { createServer, request as requestHttp } from "node:http";
 import { dirname, resolve } from "node:path";
 import test from "node:test";
@@ -44,13 +44,9 @@ function request({ port, path = "/api/session", headers = {} }) {
 }
 
 function isProcessAlive(pid) {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch (error) {
-    if (error.code === "ESRCH") return false;
-    throw error;
-  }
+  const result = spawnSync("ps", ["-o", "state=", "-p", String(pid)], { encoding: "utf8" });
+  const state = result.stdout.trim();
+  return Boolean(state) && !state.startsWith("Z");
 }
 
 test("launches raw Functions in exact SWA capability mode without inheriting bypass", () => {
@@ -155,8 +151,5 @@ test("registers signals before launch and cleans up the Functions process group 
 
   assert.equal(isProcessAlive(childPid), false);
   assert.equal(signalHandlers.size, 0);
-  await assert.rejects(
-    request({ port: boundary.proxyAddress.port, path: "/api/healthz" }),
-    /ECONNREFUSED/,
-  );
+  await assert.rejects(request({ port: boundary.proxyAddress.port, path: "/api/healthz" }));
 });

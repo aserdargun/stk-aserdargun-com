@@ -43,6 +43,11 @@ icon = "run"
 command = "npm run dev"
 
 [[actions]]
+name = "Stop All Ports"
+icon = "tool"
+command = "npm run stop:local"
+
+[[actions]]
 name = "Validate"
 icon = "tool"
 command = "npm run typecheck && npm test && npm run build && git diff --check"

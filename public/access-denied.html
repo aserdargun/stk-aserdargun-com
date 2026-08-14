@@ -22,8 +22,13 @@
       <span class="eyebrow">Private portfolio</span>
       <h1>Owner access required.</h1>
       <p>Stackfolio is available only to its authorized GitHub account.</p>
-      <a href="/.auth/logout?post_logout_redirect_uri=https%3A%2F%2Fstackfolio.aserdargun.com%2Flogin">Sign out and switch account</a>
+      <a
+        href="/.auth/logout"
+        data-auth-parameter="post_logout_redirect_uri"
+        data-auth-return="/login"
+      >Sign out and switch account</a>
       <small>Only the authorized GitHub owner can open Stackfolio data.</small>
     </main>
+    <script type="module" src="/auth-redirects.js"></script>
   </body>
 </html>

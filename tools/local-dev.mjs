@@ -77,25 +77,25 @@ export function createServiceDefinitions(
   ];
 }
 
-function isProcessGroupAlive(processGroupId) {
+export function isProcessGroupAlive(processGroupId, kill = process.kill) {
   if (!processGroupId) return false;
 
   try {
-    process.kill(-processGroupId, 0);
+    kill(-processGroupId, 0);
     return true;
   } catch (error) {
-    if (error && typeof error === "object" && error.code === "ESRCH") return false;
+    if (error && typeof error === "object" && ["ESRCH", "EPERM"].includes(error.code)) return false;
     return true;
   }
 }
 
-function signalProcessTree(processGroupId, signal) {
+export function signalProcessTree(processGroupId, signal, kill = process.kill) {
   if (!processGroupId) return;
 
   try {
-    process.kill(-processGroupId, signal);
+    kill(-processGroupId, signal);
   } catch (error) {
-    if (!(error && typeof error === "object" && error.code === "ESRCH")) throw error;
+    if (!(error && typeof error === "object" && ["ESRCH", "EPERM"].includes(error.code))) throw error;
   }
 }
 
