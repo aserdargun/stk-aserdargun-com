@@ -17,6 +17,8 @@ export function App() {
   const [showAddCost, setShowAddCost] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
+  const deploymentOrigin = typeof window === "undefined" ? "https://stk.aserdargun.com" : window.location.origin;
+  const signedOutUrl = encodeURIComponent(`${deploymentOrigin}/signed-out.html`);
 
   const announce = (message: string) => {
     setToast(message);
@@ -86,7 +88,7 @@ export function App() {
           </div>
           <a
             className="button secondary sign-out"
-            href="/.auth/logout?post_logout_redirect_uri=https%3A%2F%2Fstackfolio.aserdargun.com%2Fsigned-out.html"
+            href={`/.auth/logout?post_logout_redirect_uri=${signedOutUrl}`}
             aria-label="Sign out"
           >
             <LogOut size={17} /> <span className="button-label">Sign out</span>

@@ -50,11 +50,11 @@ describe("Static Web Apps owner authorization", () => {
 const rejectedLocalBypassCases: Array<[string, Partial<AuthorizationInput>]> = [
   ["missing flag", { localAuthBypass: undefined }],
   ["case-variant flag", { localAuthBypass: "TRUE" }],
-  ["public host", { requestUrl: "https://stackfolio.aserdargun.com/api/session" }],
+  ["public host", { requestUrl: "https://stk.aserdargun.com/api/session" }],
   ["private LAN host", { requestUrl: "http://192.168.1.10:3001/api/session" }],
   ["malformed URL", { requestUrl: "not-a-url" }],
   ["empty Azure host marker", { azureSiteName: "" }],
-  ["Azure host marker", { azureSiteName: "stackfolio-production" }],
+  ["Azure host marker", { azureSiteName: "swa-stk-aserdargun-com" }],
 ];
 
 describe("capability-protected local authorization bypass", () => {
@@ -145,9 +145,9 @@ describe("production authorization", () => {
       isAuthorizedRequest(
         localRequest({
           encodedPrincipal: encoded,
-          requestUrl: "https://stackfolio.aserdargun.com/api/session",
+          requestUrl: "https://stk.aserdargun.com/api/session",
           localAuthBypass: undefined,
-          azureSiteName: "stackfolio-production",
+          azureSiteName: "swa-stk-aserdargun-com",
           localProxyMode: undefined,
           expectedLocalProxyToken: undefined,
           presentedLocalProxyToken: "attacker-supplied-token",

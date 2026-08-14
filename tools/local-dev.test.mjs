@@ -72,10 +72,10 @@ test("defines the complete loopback development stack", () => {
 
 test("does not erase an inherited Azure marker", () => {
   const [,, functions] = localDev.createServiceDefinitions("/repo", {
-    WEBSITE_SITE_NAME: "stackfolio-production",
+    WEBSITE_SITE_NAME: "swa-stk-aserdargun-com",
   });
 
-  assert.equal(functions.env.WEBSITE_SITE_NAME, "stackfolio-production");
+  assert.equal(functions.env.WEBSITE_SITE_NAME, "swa-stk-aserdargun-com");
 });
 
 test("isolates the capability and exact modes to only the services that require them", () => {
@@ -83,21 +83,21 @@ test("isolates the capability and exact modes to only the services that require 
     STACKFOLIO_LOCAL_AUTH_BYPASS: "inherited",
     STACKFOLIO_LOCAL_PROXY_MODE: "inherited",
     STACKFOLIO_LOCAL_PROXY_TOKEN: "inherited-token",
-    WEBSITE_SITE_NAME: "stackfolio-production",
+    WEBSITE_SITE_NAME: "swa-stk-aserdargun-com",
   }, "per-run-local-token");
 
   for (const service of services.filter(({ name }) => ["Azurite", "API compiler"].includes(name))) {
     assert.equal(service.env.STACKFOLIO_LOCAL_AUTH_BYPASS, undefined, service.name);
     assert.equal(service.env.STACKFOLIO_LOCAL_PROXY_MODE, undefined, service.name);
     assert.equal(service.env.STACKFOLIO_LOCAL_PROXY_TOKEN, undefined, service.name);
-    assert.equal(service.env.WEBSITE_SITE_NAME, "stackfolio-production", service.name);
+    assert.equal(service.env.WEBSITE_SITE_NAME, "swa-stk-aserdargun-com", service.name);
   }
 
   const functions = services.find(({ name }) => name === "Functions");
   assert.equal(functions.env.STACKFOLIO_LOCAL_AUTH_BYPASS, "true");
   assert.equal(functions.env.STACKFOLIO_LOCAL_PROXY_MODE, "bypass");
   assert.equal(functions.env.STACKFOLIO_LOCAL_PROXY_TOKEN, "per-run-local-token");
-  assert.equal(functions.env.WEBSITE_SITE_NAME, "stackfolio-production");
+  assert.equal(functions.env.WEBSITE_SITE_NAME, "swa-stk-aserdargun-com");
 
   const vite = services.find(({ name }) => name === "Vite");
   assert.equal(vite.env.STACKFOLIO_LOCAL_AUTH_BYPASS, undefined);
@@ -168,6 +168,16 @@ test("rejects Windows before any child launch", () => {
   );
 
   assert.equal(spawnCalls, 0);
+});
+
+test("treats an externally stopped macOS process group as already gone", () => {
+  const permissionError = Object.assign(new Error("kill EPERM"), { code: "EPERM" });
+  const deniedKill = () => {
+    throw permissionError;
+  };
+
+  assert.equal(localDev.isProcessGroupAlive(12345, deniedKill), false);
+  assert.doesNotThrow(() => localDev.signalProcessTree(12345, "SIGTERM", deniedKill));
 });
 
 test("rejects Windows before the real development entrypoint runs preflight", (t) => {

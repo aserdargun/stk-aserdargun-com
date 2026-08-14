@@ -22,8 +22,13 @@
       <span class="eyebrow">Private portfolio</span>
       <h1>Sign in to Stackfolio.</h1>
       <p>Continue with the authorized GitHub owner account.</p>
-      <a href="/.auth/login/github?post_login_redirect_uri=https%3A%2F%2Fstackfolio.aserdargun.com%2F">Continue with GitHub</a>
+      <a
+        href="/.auth/login/github"
+        data-auth-parameter="post_login_redirect_uri"
+        data-auth-return="/"
+      >Continue with GitHub</a>
       <small>Opening Stackfolio does not start sign-in automatically.</small>
     </main>
+    <script type="module" src="/auth-redirects.js"></script>
   </body>
 </html>
