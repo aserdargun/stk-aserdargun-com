@@ -64,16 +64,25 @@ npm test
 npm run build
 ```
 
-For full local frontend/API development, copy
-`api/local.settings.example.json` to `api/local.settings.json`, run Azurite, and
-then run the combined application with:
+For full local frontend/API development without GitHub authentication, run:
 
 ```bash
-npx @azure/static-web-apps-cli start dist --api-location api
+npm run dev
 ```
 
-The Static Web Apps CLI serves it at `http://localhost:4280`. `npm run dev`
-starts the Vite frontend only.
+This command starts Azurite, compiles and watches the API, runs Azure Functions
+on port `3001`, and serves Vite at the strict endpoint
+`http://127.0.0.1:5173`. A fresh private capability is shared only by Vite and
+the Functions child for that run. Vite overwrites the capability header while
+proxying `/api`; direct requests to the raw Functions listener remain
+unauthorized even if they spoof localhost or a Static Web Apps principal.
+
+To exercise production-like Static Web Apps routing and authentication instead,
+run the Codex `Full App` action. It builds the app, puts a capability-gated API
+proxy on `127.0.0.1:7071`, and serves the SWA emulator at
+`http://localhost:4280`; unauthenticated users are redirected to `/login`.
+The raw Functions listener uses a separate internal port and does not trust an
+inherited development-bypass flag.
 
 ## Azure settings
 

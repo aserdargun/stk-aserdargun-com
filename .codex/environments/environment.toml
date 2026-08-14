@@ -23,11 +23,18 @@ icon = "run"
 command = """
 set -e
 mkdir -p .azure/azurite
+azurite_pid=""
+cleanup() {
+  if [ -n "${azurite_pid:-}" ]; then
+    kill "$azurite_pid" 2>/dev/null || true
+    wait "$azurite_pid" 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT INT TERM
 npx --yes azurite@3.36.0 --silent --location .azure/azurite --debug .azure/azurite-debug.log &
 azurite_pid=$!
-trap 'kill "$azurite_pid" 2>/dev/null || true' EXIT INT TERM
 npm run build
-npx --yes @azure/static-web-apps-cli@2.0.10 start dist --api-location api
+npx --yes @azure/static-web-apps-cli@2.0.10 start dist --api-devserver-url http://127.0.0.1:7071 --run 'node tools/full-app-api-proxy.mjs' --swa-config-location public
 """
 
 [[actions]]
