@@ -9,6 +9,10 @@
       "allowedRoles": ["anonymous"]
     },
     {
+      "route": "/auth-redirects.js",
+      "allowedRoles": ["anonymous"]
+    },
+    {
       "route": "/login",
       "rewrite": "/login.html",
       "allowedRoles": ["anonymous"]
