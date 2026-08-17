@@ -18,18 +18,36 @@ domain is `stk.aserdargun.com`.
 
 ## Imported data
 
-The source workbook was imported into `data/seed-data.json` with these controls:
+The source workbook was imported into `data/seed-data.json`, then reconciled
+against Yapı Kredi credit-card statements with `tools/import-card-statements.mjs`:
 
-- 51 cost items
-- 156 ledger entries
-- ₺426,621.77 reconciled lifetime total
+- 54 cost items
+- 181 ledger entries
+- ₺447,805.50 reconciled lifetime total
 - ₺250,539.09 in devices
-- ₺71,422.03 in certificates
-- ₺104,660.65 in platforms
+- ₺90,322.03 in certificates
+- ₺106,944.38 in platforms
 
 The API seeds empty Azure tables idempotently on first access. Monthly platform
 values remain monthly entries. Certificates and devices only had annual totals,
 so those values remain annual rather than receiving invented purchase months.
+
+## Statement import
+
+Digital-service spending is detected from monthly credit-card statements and
+reconciled into the cost ledger. See `docs/statement-import.md` for the full
+workflow. In short:
+
+```bash
+npm run import:statements:dry   # parse PDFs in data/statements/ and preview
+npm run import:statements       # apply to data/seed-data.json (with backup)
+AZURE_STORAGE_CONNECTION_STRING=... node tools/import-card-statements.mjs \
+  --dir data/statements --apply-azure
+```
+
+Merchants are classified by the curated catalog in
+`data/card-digital-services.json`; add a new merchant there when a new digital
+service first appears.
 
 ## Cost and membership workflows
 

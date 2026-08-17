@@ -1,0 +1,292 @@
+{
+  "description": "Curated mapping from Yapı Kredi credit-card statement merchant descriptions (the 'İşlemler' column) to Stackfolio digital-service items. `patterns` are case-insensitive regular expressions matched against the merchant description. `itemKey: null` means the service is not tracked yet and a new item will be created on import.",
+  "currency": "TRY",
+  "services": [
+    {
+      "key": "turknet",
+      "name": "Turknet",
+      "itemKey": "platform-1",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "1Gbit",
+      "url": "https://www.turk.net/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["TURK\\.NET"]
+    },
+    {
+      "key": "amazon-prime",
+      "name": "Amazon",
+      "itemKey": "platform-2",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Prime",
+      "url": "https://www.amazon.com.tr",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["AMZNPRIMETR"]
+    },
+    {
+      "key": "youtube",
+      "name": "Youtube",
+      "itemKey": "platform-3",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Premium",
+      "url": "https://www.youtube.com",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["YOUTUBEPREMIUM"]
+    },
+    {
+      "key": "netflix",
+      "name": "Netflix",
+      "itemKey": "platform-4",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Premium",
+      "url": "https://www.netflix.com/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["NETFLIX"]
+    },
+    {
+      "key": "ihs",
+      "name": "IHS",
+      "itemKey": "platform-5",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "-",
+      "url": "https://www.ihs.com.tr/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["IHS\\.COM\\.TR"]
+    },
+    {
+      "key": "google-one",
+      "name": "Google One",
+      "itemKey": "platform-6",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Premium(2TB)",
+      "url": "https://one.google.com",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["GOOGLE ONE"]
+    },
+    {
+      "key": "openai",
+      "name": "OpenAI",
+      "itemKey": "platform-10",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Cancelled",
+      "url": "https://platform.openai.com/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["OPENAI"]
+    },
+    {
+      "key": "supabase",
+      "name": "Supabase",
+      "itemKey": "platform-11",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Free",
+      "url": "https://supabase.com/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["SUPABASE"]
+    },
+    {
+      "key": "github",
+      "name": "Github",
+      "itemKey": "platform-12",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Github Pro",
+      "url": "https://github.com/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["GITHUB"]
+    },
+    {
+      "key": "claude",
+      "name": "Claude",
+      "itemKey": "platform-13",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Pro",
+      "url": "https://claude.ai",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["CLAUDE", "ANTHROPIC"]
+    },
+    {
+      "key": "lovable",
+      "name": "Lovable",
+      "itemKey": "platform-14",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Free",
+      "url": "https://lovable.dev/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["LOVABLE"]
+    },
+    {
+      "key": "cursor",
+      "name": "Cursor",
+      "itemKey": "platform-15",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Free",
+      "url": "https://cursor.com/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["CURSOR"]
+    },
+    {
+      "key": "docker",
+      "name": "Docker",
+      "itemKey": "platform-16",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Personal",
+      "url": "https://app.docker.com",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["DOCKER"]
+    },
+    {
+      "key": "azure",
+      "name": "Azure",
+      "itemKey": "platform-17",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "-",
+      "url": "https://portal.azure.com/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["MICROSOFT"]
+    },
+    {
+      "key": "hetzner",
+      "name": "Hetzner",
+      "itemKey": "platform-18",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "-",
+      "url": "https://console.hetzner.com",
+      "account": "K1159648225",
+      "patterns": ["HETZNER"]
+    },
+    {
+      "key": "huggingface",
+      "name": "Huggingface",
+      "itemKey": "platform-19",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Free",
+      "url": "https://huggingface.co",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["HUGGINGFACE"]
+    },
+    {
+      "key": "disney-plus",
+      "name": "Disney+",
+      "itemKey": "platform-20",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "With Ads",
+      "url": "https://www.disneyplus.com",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["DISNEY"]
+    },
+    {
+      "key": "railway",
+      "name": "Railway",
+      "itemKey": "platform-21",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Hobby",
+      "url": "https://railway.com/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["RAILWAY"]
+    },
+    {
+      "key": "google-cloud",
+      "name": "Google Cloud",
+      "itemKey": "platform-22",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "-",
+      "url": "https://console.cloud.google.com/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["GOOGLE\\s*\\*?\\s*CLOUD"]
+    },
+    {
+      "key": "elevenlabs",
+      "name": "Elevenlabs",
+      "itemKey": "platform-23",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Starter",
+      "url": "https://elevenlabs.io/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["ELEVENLABS"]
+    },
+    {
+      "key": "capcut",
+      "name": "capcut",
+      "itemKey": "platform-24",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Starter",
+      "url": "https://www.capcut.com/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["CAPCUT"]
+    },
+    {
+      "key": "higgsfield",
+      "name": "Higgsfield",
+      "itemKey": "platform-25",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "Basic",
+      "url": "https://higgsfield.ai/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["HIGGSFIELD"]
+    },
+    {
+      "key": "openrouter",
+      "name": "OpenRouter",
+      "itemKey": "platform-27",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "API",
+      "url": "https://openrouter.ai/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["OPENROUTER"]
+    },
+    {
+      "key": "apple",
+      "name": "Apple",
+      "itemKey": null,
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "iCloud / App Store",
+      "url": "https://www.apple.com/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["APPLE\\.COM/BILL"]
+    },
+    {
+      "key": "kommunity",
+      "name": "Kommunity",
+      "itemKey": null,
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "-",
+      "url": "https://kommunity.com/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["KOMMUNITY"]
+    },
+    {
+      "key": "backendguru",
+      "name": "BackendGuru",
+      "itemKey": null,
+      "category": "Certificate",
+      "billingType": "one_time",
+      "plan": "None",
+      "url": "https://www.backend.guru/",
+      "account": "aserdargun@gmail.com",
+      "patterns": ["BACKENDGURU"]
+    }
+  ]
+}

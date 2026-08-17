@@ -2,16 +2,24 @@
   "metadata": {
     "application": "Stackfolio",
     "sourceFile": "Digital Investment Cost.xlsx",
-    "importedOn": "2026-08-10",
+    "importedOn": "2026-08-17",
     "currency": "TRY",
     "sourceCategoryTotals": {
+      "Certificates": 90322.03,
       "Devices": 250539.09,
-      "Certificates": 71422.03,
-      "Platforms": 104660.65
+      "Platforms": 106944.38
     },
-    "sourceGrandTotal": 426621.77,
-    "importedGrandTotal": 426621.77,
-    "importPolicy": "Monthly platform data is preserved as monthly entries. Annual-only certificate and device totals remain annual entries. Reconciliation entries preserve source yearly totals without distorting monthly charts."
+    "sourceGrandTotal": 447805.5,
+    "importedGrandTotal": 447805.5,
+    "importPolicy": "Digital-service ledger entries are sourced from credit-card statements for the statement-covered window. Non-digital categories and pre-statement history are preserved.",
+    "statementImport": {
+      "runDate": "2026-08-17",
+      "windowStart": "2025-08",
+      "windowEnd": "2026-07",
+      "addedEntryCount": 128,
+      "droppedEntryCount": 103,
+      "newItemCount": 3
+    }
   },
   "items": [
     {
@@ -676,9 +684,259 @@
       "status": "active",
       "closedAt": null,
       "notes": "Imported from the Devices worksheet."
+    },
+    {
+      "key": "platform-31",
+      "name": "Apple",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": "iCloud / App Store",
+      "url": "https://www.apple.com/",
+      "account": "aserdargun@gmail.com",
+      "powerWatts": null,
+      "status": "active",
+      "closedAt": null,
+      "notes": "Imported from credit-card statements."
+    },
+    {
+      "key": "certificate-18",
+      "name": "BackendGuru",
+      "category": "Certificate",
+      "billingType": "one_time",
+      "plan": "None",
+      "url": "https://www.backend.guru/",
+      "account": "aserdargun@gmail.com",
+      "powerWatts": null,
+      "status": "active",
+      "closedAt": null,
+      "notes": "Imported from credit-card statements."
+    },
+    {
+      "key": "platform-32",
+      "name": "Kommunity",
+      "category": "Platform",
+      "billingType": "recurring",
+      "plan": null,
+      "url": "https://kommunity.com/",
+      "account": "aserdargun@gmail.com",
+      "powerWatts": null,
+      "status": "active",
+      "closedAt": null,
+      "notes": "Imported from credit-card statements."
     }
   ],
   "entries": [
+    {
+      "currency": "TRY",
+      "itemKey": "certificate-1",
+      "amount": 4166.93,
+      "periodStart": "2024-01-01",
+      "periodKind": "year",
+      "note": "Annual total; no month-level purchase date was available in Excel.",
+      "sourceRef": "Certificates!B2"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "certificate-10",
+      "amount": 9600,
+      "periodStart": "2025-01-01",
+      "periodKind": "year",
+      "note": "Annual total; no month-level purchase date was available in Excel.",
+      "sourceRef": "Certificates!C11"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "certificate-12",
+      "amount": 7500,
+      "periodStart": "2025-01-01",
+      "periodKind": "year",
+      "note": "Annual total; no month-level purchase date was available in Excel.",
+      "sourceRef": "Certificates!C13"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "certificate-13",
+      "amount": 6000,
+      "periodStart": "2025-01-01",
+      "periodKind": "year",
+      "note": "Annual total; no month-level purchase date was available in Excel.",
+      "sourceRef": "Certificates!C14"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "certificate-14",
+      "amount": 6000,
+      "periodStart": "2025-01-01",
+      "periodKind": "year",
+      "note": "Annual total; no month-level purchase date was available in Excel.",
+      "sourceRef": "Certificates!C15"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "certificate-15",
+      "amount": 6000,
+      "periodStart": "2025-01-01",
+      "periodKind": "year",
+      "note": "Annual total; no month-level purchase date was available in Excel.",
+      "sourceRef": "Certificates!C16"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "certificate-16",
+      "amount": 6000,
+      "periodStart": "2025-01-01",
+      "periodKind": "year",
+      "note": "Annual total; no month-level purchase date was available in Excel.",
+      "sourceRef": "Certificates!C17"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "certificate-17",
+      "amount": 6000,
+      "periodStart": "2025-01-01",
+      "periodKind": "year",
+      "note": "Annual total; no month-level purchase date was available in Excel.",
+      "sourceRef": "Certificates!C18"
+    },
+    {
+      "itemKey": "certificate-18",
+      "amount": 6400,
+      "currency": "TRY",
+      "periodStart": "2025-07-03",
+      "periodKind": "one_time",
+      "membership": null,
+      "note": "Card: İYZİCO/BACKENDGURU.C İSTANBUL TR 6.400,00",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092047747.PDF"
+    },
+    {
+      "itemKey": "certificate-18",
+      "amount": 2500,
+      "currency": "TRY",
+      "periodStart": "2025-08-28",
+      "periodKind": "one_time",
+      "membership": null,
+      "note": "Card: İYZİCO/BACKENDGURU.C İSTANBUL TR 2.500,00",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
+    },
+    {
+      "itemKey": "certificate-18",
+      "amount": 6000,
+      "currency": "TRY",
+      "periodStart": "2025-09-04",
+      "periodKind": "one_time",
+      "membership": null,
+      "note": "Card: İYZİCO/BACKENDGURU.C İSTANBUL TR 6.000,00",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
+    },
+    {
+      "itemKey": "certificate-18",
+      "amount": 4000,
+      "currency": "TRY",
+      "periodStart": "2025-09-25",
+      "periodKind": "one_time",
+      "membership": null,
+      "note": "Card: İYZİCO/BACKENDGURU.C İSTANBUL TR 4.000,00",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "certificate-2",
+      "amount": 1261.79,
+      "periodStart": "2024-01-01",
+      "periodKind": "year",
+      "note": "Annual total; no month-level purchase date was available in Excel.",
+      "sourceRef": "Certificates!B3"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "certificate-3",
+      "amount": 3462.36,
+      "periodStart": "2024-01-01",
+      "periodKind": "year",
+      "note": "Annual total; no month-level purchase date was available in Excel.",
+      "sourceRef": "Certificates!B4"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "certificate-4",
+      "amount": 1086.74,
+      "periodStart": "2024-01-01",
+      "periodKind": "year",
+      "note": "Annual total; no month-level purchase date was available in Excel.",
+      "sourceRef": "Certificates!B5"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "certificate-5",
+      "amount": 1086.74,
+      "periodStart": "2024-01-01",
+      "periodKind": "year",
+      "note": "Annual total; no month-level purchase date was available in Excel.",
+      "sourceRef": "Certificates!B6"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "certificate-6",
+      "amount": 2173.49,
+      "periodStart": "2024-01-01",
+      "periodKind": "year",
+      "note": "Annual total; no month-level purchase date was available in Excel.",
+      "sourceRef": "Certificates!B7"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "certificate-7",
+      "amount": 1483.98,
+      "periodStart": "2024-01-01",
+      "periodKind": "year",
+      "note": "Annual total; no month-level purchase date was available in Excel.",
+      "sourceRef": "Certificates!B8"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "certificate-8",
+      "amount": 9600,
+      "periodStart": "2025-01-01",
+      "periodKind": "year",
+      "note": "Annual total; no month-level purchase date was available in Excel.",
+      "sourceRef": "Certificates!C9"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "device-1",
+      "amount": 57899.02,
+      "periodStart": "2025-01-01",
+      "periodKind": "year",
+      "note": "2025 total; no exact purchase date was available in Excel.",
+      "sourceRef": "Devices!B2"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "device-2",
+      "amount": 19618,
+      "periodStart": "2025-01-01",
+      "periodKind": "year",
+      "note": "2025 total; no exact purchase date was available in Excel.",
+      "sourceRef": "Devices!B3"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "device-3",
+      "amount": 132824.07,
+      "periodStart": "2025-01-01",
+      "periodKind": "year",
+      "note": "2025 total; no exact purchase date was available in Excel.",
+      "sourceRef": "Devices!B4"
+    },
+    {
+      "currency": "TRY",
+      "itemKey": "device-4",
+      "amount": 40198,
+      "periodStart": "2025-01-01",
+      "periodKind": "year",
+      "note": "2025 total; no exact purchase date was available in Excel.",
+      "sourceRef": "Devices!B5"
+    },
     {
       "currency": "TRY",
       "itemKey": "platform-1",
@@ -689,13 +947,354 @@
       "sourceRef": "Platforms!E2"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-1",
       "amount": 7198.8,
+      "currency": "TRY",
       "periodStart": "2026-01-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!R2"
+      "membership": "1Gbit",
+      "note": "Card: TURK.NET ISTANBUL TR 7.198,80",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091943251.PDF"
+    },
+    {
+      "itemKey": "platform-10",
+      "amount": 518.66,
+      "currency": "TRY",
+      "periodStart": "2025-10-01",
+      "periodKind": "month",
+      "membership": "Cancelled",
+      "note": "Card: OPENAI OPENAI.COM CAUS 518,66",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
+    },
+    {
+      "itemKey": "platform-10",
+      "amount": 522.11,
+      "currency": "TRY",
+      "periodStart": "2025-11-01",
+      "periodKind": "month",
+      "membership": "Cancelled",
+      "note": "Card: OPENAI OPENAI.COM CAUS 522,11",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
+    },
+    {
+      "itemKey": "platform-11",
+      "amount": 1080.98,
+      "currency": "TRY",
+      "periodStart": "2025-10-01",
+      "periodKind": "month",
+      "membership": "Free",
+      "note": "Card: SUPABASE SINGAPORE SG 1.080,98",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
+    },
+    {
+      "itemKey": "platform-11",
+      "amount": 1090.72,
+      "currency": "TRY",
+      "periodStart": "2025-11-01",
+      "periodKind": "month",
+      "membership": "Free",
+      "note": "Card: SUPABASE SINGAPORE SG 1.090,72",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
+    },
+    {
+      "itemKey": "platform-11",
+      "amount": 1102.63,
+      "currency": "TRY",
+      "periodStart": "2025-12-01",
+      "periodKind": "month",
+      "membership": "Free",
+      "note": "Card: SUPABASE SINGAPORE SG 1.102,63",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092002413.PDF"
+    },
+    {
+      "itemKey": "platform-12",
+      "amount": 2035.7,
+      "currency": "TRY",
+      "periodStart": "2025-10-01",
+      "periodKind": "month",
+      "membership": "Github Pro",
+      "note": "Card: GITHUB, INC. GITHUB.COM CAUS 2.035,70",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
+    },
+    {
+      "itemKey": "platform-13",
+      "amount": 8647.82,
+      "currency": "TRY",
+      "periodStart": "2025-10-01",
+      "periodKind": "month",
+      "membership": "Pro",
+      "note": "Card: CLAUDE.AI SUBSCRIPTION ANTHROPIC.COMCAUS 8.647,82",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
+    },
+    {
+      "itemKey": "platform-13",
+      "amount": 432.04,
+      "currency": "TRY",
+      "periodStart": "2025-10-01",
+      "periodKind": "month",
+      "membership": "Pro",
+      "note": "Card: ANTHROPIC ANTHROPIC.COMCAUS 432,04",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
+    },
+    {
+      "itemKey": "platform-13",
+      "amount": 99.66,
+      "currency": "TRY",
+      "periodStart": "2025-11-01",
+      "periodKind": "month",
+      "membership": "Pro",
+      "note": "Card: CLAUDE.AI SUBSCRIPTION ANTHROPIC.COMCAUS 99,66",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
+    },
+    {
+      "itemKey": "platform-13",
+      "amount": 4412.79,
+      "currency": "TRY",
+      "periodStart": "2025-12-01",
+      "periodKind": "month",
+      "membership": "Pro",
+      "note": "Card: CLAUDE.AI SUBSCRIPTION ANTHROPIC.COMCAUS 4.412,79",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092002413.PDF"
+    },
+    {
+      "itemKey": "platform-13",
+      "amount": 4469.57,
+      "currency": "TRY",
+      "periodStart": "2026-01-01",
+      "periodKind": "month",
+      "membership": "Pro",
+      "note": "Card: CLAUDE.AI SUBSCRIPTION SAN FRANCISCOCAUS 4.469,57",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091943251.PDF"
+    },
+    {
+      "itemKey": "platform-13",
+      "amount": 24.6,
+      "currency": "TRY",
+      "periodStart": "2026-02-01",
+      "periodKind": "month",
+      "membership": "Pro",
+      "note": "Card: ANTHROPIC SAN FRANCISCOCAUS 24,60",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
+    },
+    {
+      "itemKey": "platform-13",
+      "amount": 903.91,
+      "currency": "TRY",
+      "periodStart": "2026-02-01",
+      "periodKind": "month",
+      "membership": "Pro",
+      "note": "Card: CLAUDE.AI SUBSCRIPTION SAN FRANCISCOCAUS 903,91",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
+    },
+    {
+      "itemKey": "platform-13",
+      "amount": 5253.31,
+      "currency": "TRY",
+      "periodStart": "2026-03-01",
+      "periodKind": "month",
+      "membership": "Pro",
+      "note": "Card: CLAUDE.AI SUBSCRIPTION SAN FRANCISCOCAUS 5.253,31",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091915928.PDF"
+    },
+    {
+      "itemKey": "platform-13",
+      "amount": 1109.78,
+      "currency": "TRY",
+      "periodStart": "2026-04-01",
+      "periodKind": "month",
+      "membership": "Pro",
+      "note": "Card: CLAUDE.AI SUBSCRIPTION SAN FRANCISCOCAUS 1.109,78",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091901554.PDF"
+    },
+    {
+      "itemKey": "platform-13",
+      "amount": 1128.11,
+      "currency": "TRY",
+      "periodStart": "2026-05-01",
+      "periodKind": "month",
+      "membership": "Pro",
+      "note": "Card: CLAUDE.AI SUBSCRIPTION SAN FRANCISCOCAUS 1.128,11",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091843030.PDF"
+    },
+    {
+      "itemKey": "platform-14",
+      "amount": 10779.15,
+      "currency": "TRY",
+      "periodStart": "2025-10-01",
+      "periodKind": "month",
+      "membership": "Free",
+      "note": "Card: LOVABLE LOVABLE.DEV DEUS 10.779,15",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
+    },
+    {
+      "itemKey": "platform-14",
+      "amount": 10805.38,
+      "currency": "TRY",
+      "periodStart": "2025-10-01",
+      "periodKind": "month",
+      "membership": "Free",
+      "note": "Card: LOVABLE LOVABLE.DEV DEUS 10.805,38",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
+    },
+    {
+      "itemKey": "platform-14",
+      "amount": -10843.83,
+      "currency": "TRY",
+      "periodStart": "2025-11-01",
+      "periodKind": "month",
+      "membership": "Free",
+      "note": "Card: LOVABLE DOVER DEUS +10.843,83",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
+    },
+    {
+      "itemKey": "platform-14",
+      "amount": -10843.83,
+      "currency": "TRY",
+      "periodStart": "2025-11-01",
+      "periodKind": "month",
+      "membership": "Free",
+      "note": "Card: LOVABLE DOVER DEUS +10.843,83",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
+    },
+    {
+      "itemKey": "platform-15",
+      "amount": -864.7,
+      "currency": "TRY",
+      "periodStart": "2025-10-01",
+      "periodKind": "month",
+      "membership": "Free",
+      "note": "Card: CURSOR, AI POWERED IDE NEW YORK NYUS +864,70",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
+    },
+    {
+      "itemKey": "platform-15",
+      "amount": 864.07,
+      "currency": "TRY",
+      "periodStart": "2025-10-01",
+      "periodKind": "month",
+      "membership": "Free",
+      "note": "Card: CURSOR, AI POWERED IDE CURSOR.COM NYUS 864,07",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
+    },
+    {
+      "itemKey": "platform-15",
+      "amount": 8295.11,
+      "currency": "TRY",
+      "periodStart": "2025-10-01",
+      "periodKind": "month",
+      "membership": "Free",
+      "note": "Card: CURSOR, AI POWERED IDE CURSOR.COM NYUS 8.295,11",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
+    },
+    {
+      "itemKey": "platform-15",
+      "amount": -7634.05,
+      "currency": "TRY",
+      "periodStart": "2025-11-01",
+      "periodKind": "month",
+      "membership": "Free",
+      "note": "Card: CURSOR, AI POWERED IDE NEW YORK NYUS +7.634,05",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
+    },
+    {
+      "itemKey": "platform-16",
+      "amount": 4669.36,
+      "currency": "TRY",
+      "periodStart": "2025-10-01",
+      "periodKind": "month",
+      "membership": "Personal",
+      "note": "Card: DOCKER, INC. DOCKER.COM CAUS 4.669,36",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
+    },
+    {
+      "itemKey": "platform-16",
+      "amount": -4668.48,
+      "currency": "TRY",
+      "periodStart": "2025-10-01",
+      "periodKind": "month",
+      "membership": "Personal",
+      "note": "Card: DOCKER, INC. PALO ALTO CAUS +4.668,48",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
+    },
+    {
+      "itemKey": "platform-17",
+      "amount": 1226.34,
+      "currency": "TRY",
+      "periodStart": "2026-02-01",
+      "periodKind": "month",
+      "membership": null,
+      "note": "Card: MICROSOFT#G140150091 MSBILL.INFO IRIR 1.226,34",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
+    },
+    {
+      "itemKey": "platform-17",
+      "amount": 2006.79,
+      "currency": "TRY",
+      "periodStart": "2026-03-01",
+      "periodKind": "month",
+      "membership": null,
+      "note": "Card: MICROSOFT#G145633149 MSBILL.INFO IRIR 2.006,79",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091915928.PDF"
+    },
+    {
+      "itemKey": "platform-17",
+      "amount": 2278.03,
+      "currency": "TRY",
+      "periodStart": "2026-04-01",
+      "periodKind": "month",
+      "membership": null,
+      "note": "Card: MICROSOFT#G151805685 MSBILL.INFO IRIR 2.278,03",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091901554.PDF"
+    },
+    {
+      "itemKey": "platform-17",
+      "amount": 2819.85,
+      "currency": "TRY",
+      "periodStart": "2026-06-01",
+      "periodKind": "month",
+      "membership": null,
+      "note": "Card: MICROSOFT G163121378 DUBLIN IR 2.819,85",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091824027.PDF"
+    },
+    {
+      "itemKey": "platform-17",
+      "amount": 3715.48,
+      "currency": "TRY",
+      "periodStart": "2026-07-01",
+      "periodKind": "month",
+      "membership": null,
+      "note": "Card: MICROSOFT G169867452 DUBLIN IR 3.715,48",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091803501.PDF"
+    },
+    {
+      "itemKey": "platform-18",
+      "amount": 34.09,
+      "currency": "TRY",
+      "periodStart": "2025-12-01",
+      "periodKind": "month",
+      "membership": null,
+      "note": "Card: HETZNER ONLINE WWW.HETZNER.C DE 34,09",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092002413.PDF"
+    },
+    {
+      "itemKey": "platform-18",
+      "amount": 902.63,
+      "currency": "TRY",
+      "periodStart": "2026-01-01",
+      "periodKind": "month",
+      "membership": null,
+      "note": "Card: HETZNER ONLINE WWW.HETZNER.C DE 902,63",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091943251.PDF"
+    },
+    {
+      "itemKey": "platform-19",
+      "amount": 399.11,
+      "currency": "TRY",
+      "periodStart": "2026-01-01",
+      "periodKind": "month",
+      "membership": "Free",
+      "note": "Card: HUGGINGFACE HUGGINGFACE.CNYUS 399,11",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091943251.PDF"
     },
     {
       "currency": "TRY",
@@ -761,112 +1360,370 @@
       "sourceRef": "Platforms!K3"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-2",
       "amount": 49.9,
+      "currency": "TRY",
       "periodStart": "2025-08-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!L3"
+      "membership": "Prime",
+      "note": "Card: IYZICO *AMZNPRIMETR ISTANBUL TR 49,90 5",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092102074.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-2",
       "amount": 49.9,
+      "currency": "TRY",
       "periodStart": "2025-09-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!M3"
+      "membership": "Prime",
+      "note": "Card: IYZICO *AMZNPRIMETR ISTANBUL TR 49,90 5",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092047747.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-2",
       "amount": 49.9,
+      "currency": "TRY",
       "periodStart": "2025-10-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!N3"
+      "membership": "Prime",
+      "note": "Card: IYZICO *AMZNPRIMETR ISTANBUL TR 49,90 5",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-2",
       "amount": 49.9,
+      "currency": "TRY",
       "periodStart": "2025-11-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!O3"
+      "membership": "Prime",
+      "note": "Card: IYZICO *AMZNPRIMETR ISTANBUL TR 49,90 5",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-2",
       "amount": 69.9,
+      "currency": "TRY",
       "periodStart": "2025-12-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!P3"
+      "membership": "Prime",
+      "note": "Card: IYZICO *AMZNPRIMETR ISTANBUL TR 69,90 7",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092002413.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-2",
       "amount": 69.9,
+      "currency": "TRY",
       "periodStart": "2026-01-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!R3"
+      "membership": "Prime",
+      "note": "Card: IYZICO *AMZNPRIMETR ISTANBUL TR 69,90 7",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091943251.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-2",
       "amount": 69.9,
+      "currency": "TRY",
       "periodStart": "2026-02-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!S3"
+      "membership": "Prime",
+      "note": "Card: IYZICO *AMZNPRIMETR ISTANBUL TR 69,90 7",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
+    },
+    {
+      "itemKey": "platform-2",
+      "amount": 69.9,
+      "currency": "TRY",
+      "periodStart": "2026-03-01",
+      "periodKind": "month",
+      "membership": "Prime",
+      "note": "Card: IYZICO *AMZNPRIMETR ISTANBUL TR 69,90 7",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091915928.PDF"
+    },
+    {
+      "itemKey": "platform-2",
+      "amount": 69.9,
+      "currency": "TRY",
+      "periodStart": "2026-04-01",
+      "periodKind": "month",
+      "membership": "Prime",
+      "note": "Card: IYZICO *AMZNPRIMETR ISTANBUL TR 69,90 7",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091901554.PDF"
+    },
+    {
+      "itemKey": "platform-2",
+      "amount": 69.9,
+      "currency": "TRY",
+      "periodStart": "2026-05-01",
+      "periodKind": "month",
+      "membership": "Prime",
+      "note": "Card: IYZICO *AMZNPRIMETR ISTANBUL TR 69,90 7",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091843030.PDF"
+    },
+    {
+      "itemKey": "platform-2",
+      "amount": 69.9,
+      "currency": "TRY",
+      "periodStart": "2026-06-01",
+      "periodKind": "month",
+      "membership": "Prime",
+      "note": "Card: IYZICO *AMZNPRIMETR ISTANBUL TR 69,90 7",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091824027.PDF"
+    },
+    {
+      "itemKey": "platform-2",
+      "amount": 69.9,
+      "currency": "TRY",
+      "periodStart": "2026-07-01",
+      "periodKind": "month",
+      "membership": "Prime",
+      "note": "Card: IYZICO *AMZNPRIMETR ISTANBUL TR 69,90 7",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091803501.PDF"
+    },
+    {
+      "itemKey": "platform-20",
+      "amount": 249.9,
+      "currency": "TRY",
+      "periodStart": "2026-01-01",
+      "periodKind": "month",
+      "membership": "With Ads",
+      "note": "Card: DISNEY PLUS WWW.DISNEYPLU GB 249,90",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091943251.PDF"
+    },
+    {
+      "itemKey": "platform-20",
+      "amount": 249.9,
+      "currency": "TRY",
+      "periodStart": "2026-02-01",
+      "periodKind": "month",
+      "membership": "With Ads",
+      "note": "Card: DISNEY PLUS LONDON GB 249,90",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
+    },
+    {
+      "itemKey": "platform-20",
+      "amount": 249.9,
+      "currency": "TRY",
+      "periodStart": "2026-03-01",
+      "periodKind": "month",
+      "membership": "With Ads",
+      "note": "Card: DISNEY PLUS LONDON GB 249,90",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091915928.PDF"
+    },
+    {
+      "itemKey": "platform-20",
+      "amount": 249.9,
+      "currency": "TRY",
+      "periodStart": "2026-04-01",
+      "periodKind": "month",
+      "membership": "With Ads",
+      "note": "Card: DISNEY PLUS LONDON GB 249,90",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091901554.PDF"
+    },
+    {
+      "itemKey": "platform-20",
+      "amount": 249.9,
+      "currency": "TRY",
+      "periodStart": "2026-05-01",
+      "periodKind": "month",
+      "membership": "With Ads",
+      "note": "Card: DISNEY PLUS LONDON GBGB 249,90",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091843030.PDF"
+    },
+    {
+      "itemKey": "platform-21",
+      "amount": 221.05,
+      "currency": "TRY",
+      "periodStart": "2026-01-01",
+      "periodKind": "month",
+      "membership": "Hobby",
+      "note": "Card: RAILWAY RAILWAY.COM CAUS 221,05",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091943251.PDF"
+    },
+    {
+      "itemKey": "platform-21",
+      "amount": 25.94,
+      "currency": "TRY",
+      "periodStart": "2026-02-01",
+      "periodKind": "month",
+      "membership": "Hobby",
+      "note": "Card: RAILWAY SAN FRANCISCOCAUS 25,94",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
+    },
+    {
+      "itemKey": "platform-21",
+      "amount": 226.43,
+      "currency": "TRY",
+      "periodStart": "2026-03-01",
+      "periodKind": "month",
+      "membership": "Hobby",
+      "note": "Card: RAILWAY SAN FRANCISCOCAUS 226,43",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
+    },
+    {
+      "itemKey": "platform-21",
+      "amount": 261.58,
+      "currency": "TRY",
+      "periodStart": "2026-04-01",
+      "periodKind": "month",
+      "membership": "Hobby",
+      "note": "Card: RAILWAY SAN FRANCISCOCAUS 261,58",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091901554.PDF"
+    },
+    {
+      "itemKey": "platform-21",
+      "amount": 260.78,
+      "currency": "TRY",
+      "periodStart": "2026-05-01",
+      "periodKind": "month",
+      "membership": "Hobby",
+      "note": "Card: RAILWAY SAN FRANCISCOCAUS 260,78",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091843030.PDF"
+    },
+    {
+      "itemKey": "platform-21",
+      "amount": 265.56,
+      "currency": "TRY",
+      "periodStart": "2026-06-01",
+      "periodKind": "month",
+      "membership": "Hobby",
+      "note": "Card: RAILWAY SAN FRANCISCOCAUS 265,56",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091824027.PDF"
+    },
+    {
+      "itemKey": "platform-21",
+      "amount": 243.18,
+      "currency": "TRY",
+      "periodStart": "2026-07-01",
+      "periodKind": "month",
+      "membership": "Hobby",
+      "note": "Card: RAILWAY SAN FRANCISCOCAUS 243,18",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091803501.PDF"
+    },
+    {
+      "itemKey": "platform-22",
+      "amount": 200,
+      "currency": "TRY",
+      "periodStart": "2026-04-01",
+      "periodKind": "month",
+      "membership": null,
+      "note": "Card: GOOGLE CLOUD 6HLN45 DUBLIN IRIR 200,00",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091901554.PDF"
+    },
+    {
+      "itemKey": "platform-22",
+      "amount": 500,
+      "currency": "TRY",
+      "periodStart": "2026-04-01",
+      "periodKind": "month",
+      "membership": null,
+      "note": "Card: GOOGLE*CLOUD CVVG44 CC GOOGLE.COM IR 500,00",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091901554.PDF"
+    },
+    {
+      "itemKey": "platform-22",
+      "amount": 151.23,
+      "currency": "TRY",
+      "periodStart": "2026-04-01",
+      "periodKind": "month",
+      "membership": null,
+      "note": "Card: GOOGLE*CLOUD 8ZX5Q8 CC GOOGLE.COM IR 151,23",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091901554.PDF"
+    },
+    {
+      "itemKey": "platform-22",
+      "amount": 2.23,
+      "currency": "TRY",
+      "periodStart": "2026-05-01",
+      "periodKind": "month",
+      "membership": null,
+      "note": "Card: GOOGLE*CLOUD LGR79V CC GOOGLE.COM IR 2,23",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091843030.PDF"
+    },
+    {
+      "itemKey": "platform-23",
+      "amount": 269.75,
+      "currency": "TRY",
+      "periodStart": "2026-02-01",
+      "periodKind": "month",
+      "membership": "Starter",
+      "note": "Card: ELEVENLABS.IO NEW YORK NYUS 269,75",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
+    },
+    {
+      "itemKey": "platform-24",
+      "amount": 72.79,
+      "currency": "TRY",
+      "periodStart": "2026-02-01",
+      "periodKind": "month",
+      "membership": "Starter",
+      "note": "Card: CAPCUT SINGAPORE SG 72,79",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091720257.PDF"
+    },
+    {
+      "itemKey": "platform-25",
+      "amount": 423.94,
+      "currency": "TRY",
+      "periodStart": "2026-02-01",
+      "periodKind": "month",
+      "membership": "Basic",
+      "note": "Card: HIGGSFIELD INC. SAN FRANCISCOCAUS 423,94",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
     },
     {
       "currency": "TRY",
-      "itemKey": "platform-2",
-      "amount": 69.9,
+      "itemKey": "platform-26",
+      "amount": 1456.58,
       "periodStart": "2026-03-01",
       "periodKind": "month",
       "note": null,
-      "sourceRef": "Platforms!T3"
+      "sourceRef": "Platforms!T27"
     },
     {
       "currency": "TRY",
-      "itemKey": "platform-2",
-      "amount": 69.9,
+      "itemKey": "platform-26",
+      "amount": 976.42,
       "periodStart": "2026-04-01",
       "periodKind": "month",
       "note": null,
-      "sourceRef": "Platforms!U3"
+      "sourceRef": "Platforms!U27"
+    },
+    {
+      "itemKey": "platform-27",
+      "amount": 494.73,
+      "currency": "TRY",
+      "periodStart": "2026-04-01",
+      "periodKind": "month",
+      "membership": "API",
+      "note": "Card: OPENROUTER, INC NEW YORK NYUS 494,73",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091901554.PDF"
+    },
+    {
+      "itemKey": "platform-27",
+      "amount": 504.77,
+      "currency": "TRY",
+      "periodStart": "2026-05-01",
+      "periodKind": "month",
+      "membership": "API",
+      "note": "Card: OPENROUTER, INC NEW YORK NYUS 504,77",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091843030.PDF"
     },
     {
       "currency": "TRY",
-      "itemKey": "platform-2",
-      "amount": 69.9,
+      "itemKey": "platform-28",
+      "amount": 10524.31,
       "periodStart": "2026-05-01",
       "periodKind": "month",
       "note": null,
-      "sourceRef": "Platforms!V3"
+      "sourceRef": "Platforms!V29"
     },
     {
       "currency": "TRY",
-      "itemKey": "platform-2",
-      "amount": 69.9,
-      "periodStart": "2026-06-01",
+      "itemKey": "platform-29",
+      "amount": 599,
+      "periodStart": "2026-05-01",
       "periodKind": "month",
       "note": null,
-      "sourceRef": "Platforms!W3"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-2",
-      "amount": 69.9,
-      "periodStart": "2026-07-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!X3"
+      "sourceRef": "Platforms!V30"
     },
     {
       "currency": "TRY",
@@ -914,112 +1771,233 @@
       "sourceRef": "Platforms!K4"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-3",
       "amount": 159.99,
+      "currency": "TRY",
       "periodStart": "2025-08-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!L4"
+      "membership": "Premium",
+      "note": "Card: GOOGLE *YOUTUBEPREMIUM G.CO/HELPPAY# GB 159,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092102074.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-3",
       "amount": 159.99,
+      "currency": "TRY",
       "periodStart": "2025-09-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!M4"
+      "membership": "Premium",
+      "note": "Card: GOOGLE *YOUTUBEPREMIUM G.CO/HELPPAY# GB 159,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092047747.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-3",
       "amount": 159.99,
+      "currency": "TRY",
       "periodStart": "2025-10-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!N4"
+      "membership": "Premium",
+      "note": "Card: GOOGLE *YOUTUBEPREMIUM G.CO/HELPPAY# GB 159,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-3",
       "amount": 159.99,
+      "currency": "TRY",
       "periodStart": "2025-11-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!O4"
+      "membership": "Premium",
+      "note": "Card: GOOGLE *YOUTUBEPREMIUM G.CO/HELPPAY# GB 159,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-3",
       "amount": 159.99,
+      "currency": "TRY",
       "periodStart": "2025-12-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!P4"
+      "membership": "Premium",
+      "note": "Card: GOOGLE *YOUTUBEPREMIUM G.CO/HELPPAY# GB 159,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092002413.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-3",
       "amount": 159.99,
+      "currency": "TRY",
       "periodStart": "2026-01-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!R4"
+      "membership": "Premium",
+      "note": "Card: GOOGLE *YOUTUBEPREMIUM G.CO/HELPPAY# GB 159,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091943251.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-3",
       "amount": 159.99,
+      "currency": "TRY",
       "periodStart": "2026-02-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!S4"
+      "membership": "Premium",
+      "note": "Card: GOOGLE *YOUTUBEPREMIUM LONDON GBGB 159,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-3",
       "amount": 159.99,
+      "currency": "TRY",
       "periodStart": "2026-03-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!T4"
+      "membership": "Premium",
+      "note": "Card: GOOGLE *YOUTUBEPREMIUM LONDON GBGB 159,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091915928.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-3",
       "amount": 159.99,
+      "currency": "TRY",
       "periodStart": "2026-04-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!U4"
+      "membership": "Premium",
+      "note": "Card: GOOGLE *YOUTUBEPREMIUM LONDON GBGB 159,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091901554.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-3",
       "amount": 159.99,
+      "currency": "TRY",
       "periodStart": "2026-05-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!V4"
+      "membership": "Premium",
+      "note": "Card: GOOGLE *YOUTUBEPREMIUM LONDON GBGB 159,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091843030.PDF"
+    },
+    {
+      "itemKey": "platform-3",
+      "amount": 159.99,
+      "currency": "TRY",
+      "periodStart": "2026-06-01",
+      "periodKind": "month",
+      "membership": "Premium",
+      "note": "Card: GOOGLE *YOUTUBEPREMIUM LONDON GBGB 159,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091824027.PDF"
+    },
+    {
+      "itemKey": "platform-3",
+      "amount": 159.99,
+      "currency": "TRY",
+      "periodStart": "2026-07-01",
+      "periodKind": "month",
+      "membership": "Premium",
+      "note": "Card: GOOGLE *YOUTUBEPREMIUM LONDON GBGB 159,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091803501.PDF"
     },
     {
       "currency": "TRY",
-      "itemKey": "platform-3",
-      "amount": 159.99,
+      "itemKey": "platform-30",
+      "amount": 1116.24,
       "periodStart": "2026-06-01",
       "periodKind": "month",
       "note": null,
-      "sourceRef": "Platforms!W4"
+      "sourceRef": "Platforms!W31"
     },
     {
+      "itemKey": "platform-31",
+      "amount": 249.99,
       "currency": "TRY",
-      "itemKey": "platform-3",
-      "amount": 159.99,
+      "periodStart": "2026-02-01",
+      "periodKind": "month",
+      "membership": "iCloud / App Store",
+      "note": "Card: APPLE.COM/BILL CORK IRIR 249,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
+    },
+    {
+      "itemKey": "platform-31",
+      "amount": 249.99,
+      "currency": "TRY",
+      "periodStart": "2026-03-01",
+      "periodKind": "month",
+      "membership": "iCloud / App Store",
+      "note": "Card: APPLE.COM/BILL CORK IRIR 249,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091915928.PDF"
+    },
+    {
+      "itemKey": "platform-31",
+      "amount": 249.99,
+      "currency": "TRY",
+      "periodStart": "2026-04-01",
+      "periodKind": "month",
+      "membership": "iCloud / App Store",
+      "note": "Card: APPLE.COM/BILL CORK IRIR 249,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091901554.PDF"
+    },
+    {
+      "itemKey": "platform-31",
+      "amount": 249.99,
+      "currency": "TRY",
+      "periodStart": "2026-05-01",
+      "periodKind": "month",
+      "membership": "iCloud / App Store",
+      "note": "Card: APPLE.COM/BILL CORK IRIR 249,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091843030.PDF"
+    },
+    {
+      "itemKey": "platform-31",
+      "amount": 599,
+      "currency": "TRY",
+      "periodStart": "2026-05-01",
+      "periodKind": "month",
+      "membership": "iCloud / App Store",
+      "note": "Card: APPLE.COM/BILL CORK IRIR 599,00",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091843030.PDF"
+    },
+    {
+      "itemKey": "platform-31",
+      "amount": 249.99,
+      "currency": "TRY",
+      "periodStart": "2026-06-01",
+      "periodKind": "month",
+      "membership": "iCloud / App Store",
+      "note": "Card: APPLE.COM/BILL CORK IRIR 249,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091824027.PDF"
+    },
+    {
+      "itemKey": "platform-31",
+      "amount": 249.99,
+      "currency": "TRY",
       "periodStart": "2026-07-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!X4"
+      "membership": "iCloud / App Store",
+      "note": "Card: APPLE.COM/BILL CORK IRIR 249,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091803501.PDF"
+    },
+    {
+      "itemKey": "platform-31",
+      "amount": -217.73,
+      "currency": "TRY",
+      "periodStart": "2026-07-01",
+      "periodKind": "month",
+      "membership": "iCloud / App Store",
+      "note": "Card: APPLE.COM/BILL CORK IRIR +217,73",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091803501.PDF"
+    },
+    {
+      "itemKey": "platform-31",
+      "amount": 999.99,
+      "currency": "TRY",
+      "periodStart": "2026-07-01",
+      "periodKind": "month",
+      "membership": "iCloud / App Store",
+      "note": "Card: APPLE.COM/BILL CORK IRIR 999,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091803501.PDF"
+    },
+    {
+      "itemKey": "platform-32",
+      "amount": 521.3,
+      "currency": "TRY",
+      "periodStart": "2025-09-01",
+      "periodKind": "month",
+      "membership": null,
+      "note": "Card: KOMMUNITY.COM KOMMUNITY.COMDEUS 521,30",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092047747.PDF"
     },
     {
       "currency": "TRY",
@@ -1049,274 +2027,344 @@
       "sourceRef": "Platforms!K5"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-4",
       "amount": 379.99,
+      "currency": "TRY",
       "periodStart": "2025-08-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!L5"
+      "membership": "Premium",
+      "note": "Card: NETFLIX.COM LOS GATOS NL 379,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092102074.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-4",
       "amount": 379.99,
+      "currency": "TRY",
       "periodStart": "2025-09-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!M5"
+      "membership": "Premium",
+      "note": "Card: NETFLIX.COM AMSTERDAM NL 379,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092047747.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-4",
       "amount": 379.99,
+      "currency": "TRY",
       "periodStart": "2025-10-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!N5"
+      "membership": "Premium",
+      "note": "Card: NETFLIX.COM AMSTERDAM NL 379,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-4",
       "amount": 379.99,
+      "currency": "TRY",
       "periodStart": "2025-11-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!O5"
+      "membership": "Premium",
+      "note": "Card: NETFLIX.COM NETFLIX.COM NL 379,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-4",
       "amount": 379.99,
+      "currency": "TRY",
       "periodStart": "2025-12-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!P5"
+      "membership": "Premium",
+      "note": "Card: NETFLIX.COM LOS GATOS NL 379,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092002413.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-4",
       "amount": 379.99,
+      "currency": "TRY",
       "periodStart": "2026-01-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!R5"
+      "membership": "Premium",
+      "note": "Card: NETFLIX.COM AMSTERDAM NLNL 379,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091943251.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-4",
       "amount": 379.99,
+      "currency": "TRY",
       "periodStart": "2026-02-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!S5"
+      "membership": "Premium",
+      "note": "Card: NETFLIX.COM AMSTERDAM NLNL 379,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-4",
       "amount": 379.99,
+      "currency": "TRY",
       "periodStart": "2026-03-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!T5"
+      "membership": "Premium",
+      "note": "Card: IYZICO/NETFLIX.COM ISTANBUL TR 379,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091915928.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-4",
       "amount": 379.99,
+      "currency": "TRY",
       "periodStart": "2026-04-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!U5"
+      "membership": "Premium",
+      "note": "Card: NETFLIX.COM LOS GATOS NL 379,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091901554.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-4",
       "amount": 379.99,
+      "currency": "TRY",
       "periodStart": "2026-05-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!V5"
+      "membership": "Premium",
+      "note": "Card: NETFLIX.COM AMSTERDAM NLNL 379,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091843030.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-4",
       "amount": 379.99,
+      "currency": "TRY",
       "periodStart": "2026-06-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!W5"
+      "membership": "Premium",
+      "note": "Card: NETFLIX.COM AMSTERDAM NLNL 379,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091824027.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-4",
       "amount": 379.99,
+      "currency": "TRY",
       "periodStart": "2026-07-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!X5"
+      "membership": "Premium",
+      "note": "Card: NETFLIX.COM AMSTERDAM NLNL 379,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091803501.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-5",
-      "amount": 1118.79,
+      "amount": 1118.17,
+      "currency": "TRY",
       "periodStart": "2025-08-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!L6"
+      "membership": null,
+      "note": "Card: WWW.IHS.COM.TR GAZIMAGUSA TR 1.118,17",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092102074.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-5",
       "amount": 1151.82,
+      "currency": "TRY",
       "periodStart": "2025-10-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!N6"
+      "membership": null,
+      "note": "Card: WWW.IHS.COM.TR GAZIMAGUSA TR 1.151,82",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-5",
-      "amount": 1340.93,
+      "amount": 1292.15,
+      "currency": "TRY",
       "periodStart": "2025-12-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!P6"
+      "membership": null,
+      "note": "Card: WWW.IHS.COM.TR GAZIMAGUSA TR 1.292,15",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092002413.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-5",
-      "amount": 2710.11,
-      "periodStart": "2026-01-01",
+      "amount": 48.78,
+      "currency": "TRY",
+      "periodStart": "2025-12-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!R6"
+      "membership": null,
+      "note": "Card: WWW.IHS.COM.TR GAZIMAGUSA TR 48,78",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092002413.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-5",
-      "amount": 1398.4,
-      "periodStart": "2026-05-01",
+      "amount": 2091.8,
+      "currency": "TRY",
+      "periodStart": "2025-12-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!V6"
+      "membership": null,
+      "note": "Card: WWW.IHS.COM.TR GAZIMAGUSA TR 2.091,80",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091943251.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-5",
-      "amount": 1265.18,
-      "periodStart": "2026-07-01",
+      "amount": 309.19,
+      "currency": "TRY",
+      "periodStart": "2025-12-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!X6"
+      "membership": null,
+      "note": "Card: WWW.IHS.COM.TR GAZIMAGUSA TR 309,19",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091943251.PDF"
     },
     {
+      "itemKey": "platform-5",
+      "amount": 309.12,
       "currency": "TRY",
+      "periodStart": "2025-12-01",
+      "periodKind": "month",
+      "membership": null,
+      "note": "Card: WWW.IHS.COM.TR GAZIMAGUSA TR 309,12",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091943251.PDF"
+    },
+    {
       "itemKey": "platform-6",
       "amount": 11.99,
+      "currency": "TRY",
+      "periodStart": "2025-07-01",
+      "periodKind": "month",
+      "membership": "Premium(2TB)",
+      "note": "Card: GOOGLE *GOOGLE ONE G.CO/HELPPAY# GB 11,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092102074.PDF"
+    },
+    {
+      "itemKey": "platform-6",
+      "amount": 11.99,
+      "currency": "TRY",
       "periodStart": "2025-08-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!L7"
+      "membership": "Premium(2TB)",
+      "note": "Card: GOOGLE *GOOGLE ONE G.CO/HELPPAY# GB 11,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092047747.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-6",
       "amount": 11.99,
+      "currency": "TRY",
       "periodStart": "2025-09-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!M7"
+      "membership": "Premium(2TB)",
+      "note": "Card: GOOGLE *GOOGLE ONE G.CO/HELPPAY# GB 11,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
     },
     {
-      "currency": "TRY",
-      "itemKey": "platform-6",
-      "amount": 109.58,
-      "periodStart": "2025-10-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!N7"
-    },
-    {
-      "currency": "TRY",
       "itemKey": "platform-6",
       "amount": -16.13,
-      "periodStart": "2025-11-01",
+      "currency": "TRY",
+      "periodStart": "2025-10-01",
       "periodKind": "month",
-      "note": "Refund or credit imported from Excel.",
-      "sourceRef": "Platforms!O7"
+      "membership": "Premium(2TB)",
+      "note": "Card: GOOGLE ONE LONDON GB +16,13",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
     },
     {
+      "itemKey": "platform-6",
+      "amount": -2.4,
       "currency": "TRY",
+      "periodStart": "2025-10-01",
+      "periodKind": "month",
+      "membership": "Premium(2TB)",
+      "note": "Card: GOOGLE *GOOGLE ONE G.CO/HELPPAY# GB +2,40",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
+    },
+    {
+      "itemKey": "platform-6",
+      "amount": 99.99,
+      "currency": "TRY",
+      "periodStart": "2025-10-01",
+      "periodKind": "month",
+      "membership": "Premium(2TB)",
+      "note": "Card: GOOGLE ONE LONDON GB 99,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
+    },
+    {
       "itemKey": "platform-6",
       "amount": 719.99,
+      "currency": "TRY",
       "periodStart": "2025-12-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!P7"
+      "membership": "Premium(2TB)",
+      "note": "Card: GOOGLE *GOOGLE ONE G.CO/HELPPAY# GB 719,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092002413.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-6",
       "amount": 204.99,
+      "currency": "TRY",
       "periodStart": "2026-01-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!R7"
+      "membership": "Premium(2TB)",
+      "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB 204,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091943251.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-6",
-      "amount": 326.93,
+      "amount": -33.06,
+      "currency": "TRY",
       "periodStart": "2026-02-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!S7"
+      "membership": "Premium(2TB)",
+      "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB +33,06",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-6",
       "amount": 359.99,
+      "currency": "TRY",
+      "periodStart": "2026-02-01",
+      "periodKind": "month",
+      "membership": "Premium(2TB)",
+      "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB 359,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
+    },
+    {
+      "itemKey": "platform-6",
+      "amount": 359.99,
+      "currency": "TRY",
       "periodStart": "2026-03-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!T7"
+      "membership": "Premium(2TB)",
+      "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB 359,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091915928.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-6",
       "amount": 719.99,
+      "currency": "TRY",
       "periodStart": "2026-04-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!U7"
+      "membership": "Premium(2TB)",
+      "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB 719,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091901554.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-6",
       "amount": 204.99,
+      "currency": "TRY",
       "periodStart": "2026-05-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!V7"
+      "membership": "Premium(2TB)",
+      "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB 204,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091843030.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-6",
       "amount": 204.99,
+      "currency": "TRY",
       "periodStart": "2026-06-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!W7"
+      "membership": "Premium(2TB)",
+      "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB 204,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091824027.PDF"
     },
     {
-      "currency": "TRY",
       "itemKey": "platform-6",
       "amount": 204.99,
+      "currency": "TRY",
       "periodStart": "2026-07-01",
       "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!X7"
+      "membership": "Premium(2TB)",
+      "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB 204,99",
+      "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091803501.PDF"
     },
     {
       "currency": "TRY",
@@ -1434,654 +2482,6 @@
       "periodKind": "month",
       "note": null,
       "sourceRef": "Platforms!X10"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-10",
-      "amount": 518.66,
-      "periodStart": "2025-10-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!N11"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-10",
-      "amount": 522.11,
-      "periodStart": "2025-11-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!O11"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-10",
-      "amount": 506.28,
-      "periodStart": "2026-04-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!U11"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-11",
-      "amount": 1080.98,
-      "periodStart": "2025-10-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!N12"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-11",
-      "amount": 1090.72,
-      "periodStart": "2025-11-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!O12"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-11",
-      "amount": 1102.63,
-      "periodStart": "2025-12-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!P12"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-12",
-      "amount": 2035.7,
-      "periodStart": "2025-10-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!N13"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-13",
-      "amount": 8647.82,
-      "periodStart": "2025-10-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!N14"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-13",
-      "amount": 531.7,
-      "periodStart": "2025-11-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!O14"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-13",
-      "amount": 4412.79,
-      "periodStart": "2025-12-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!P14"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-13",
-      "amount": 928.51,
-      "periodStart": "2026-02-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!S14"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-13",
-      "amount": 5253.31,
-      "periodStart": "2026-03-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!T14"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-13",
-      "amount": 1109.78,
-      "periodStart": "2026-04-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!U14"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-13",
-      "amount": 1128.11,
-      "periodStart": "2026-05-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!V14"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-14",
-      "amount": 21584.53,
-      "periodStart": "2025-10-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!N15"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-14",
-      "amount": -21687.66,
-      "periodStart": "2025-11-01",
-      "periodKind": "month",
-      "note": "Refund or credit imported from Excel.",
-      "sourceRef": "Platforms!O15"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-15",
-      "amount": 661.06,
-      "periodStart": "2025-11-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!O16"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-16",
-      "amount": 0.88,
-      "periodStart": "2025-11-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!O17"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-17",
-      "amount": 0.45,
-      "periodStart": "2025-11-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!O18"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-17",
-      "amount": 148.58,
-      "periodStart": "2026-01-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!R18"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-17",
-      "amount": 1226.34,
-      "periodStart": "2026-02-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!S18"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-17",
-      "amount": 2006.79,
-      "periodStart": "2026-03-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!T18"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-17",
-      "amount": 2278.03,
-      "periodStart": "2026-04-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!U18"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-17",
-      "amount": 2268.2,
-      "periodStart": "2026-05-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!V18"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-17",
-      "amount": 2819.85,
-      "periodStart": "2026-06-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!W18"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-17",
-      "amount": 3715.48,
-      "periodStart": "2026-07-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!X18"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-18",
-      "amount": 34.09,
-      "periodStart": "2025-12-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!P19"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-18",
-      "amount": 902.63,
-      "periodStart": "2026-01-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!R19"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-19",
-      "amount": 399.11,
-      "periodStart": "2026-01-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!R20"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-20",
-      "amount": 249.9,
-      "periodStart": "2026-01-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!R21"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-20",
-      "amount": 249.9,
-      "periodStart": "2026-02-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!S21"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-20",
-      "amount": 249.9,
-      "periodStart": "2026-03-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!T21"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-20",
-      "amount": 249.9,
-      "periodStart": "2026-04-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!U21"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-20",
-      "amount": 249.9,
-      "periodStart": "2026-05-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!V21"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-21",
-      "amount": 221.05,
-      "periodStart": "2026-01-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!R22"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-21",
-      "amount": 25.94,
-      "periodStart": "2026-02-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!S22"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-21",
-      "amount": 226.43,
-      "periodStart": "2026-03-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!T22"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-21",
-      "amount": 261.58,
-      "periodStart": "2026-04-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!U22"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-21",
-      "amount": 260.78,
-      "periodStart": "2026-05-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!V22"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-21",
-      "amount": 265.56,
-      "periodStart": "2026-06-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!W22"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-21",
-      "amount": 243.18,
-      "periodStart": "2026-07-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!X22"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-22",
-      "amount": 851.23,
-      "periodStart": "2026-04-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!U23"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-22",
-      "amount": 2.23,
-      "periodStart": "2026-05-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!V23"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-23",
-      "amount": 269.75,
-      "periodStart": "2026-02-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!S24"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-24",
-      "amount": 72.79,
-      "periodStart": "2026-02-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!S25"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-25",
-      "amount": 423.94,
-      "periodStart": "2026-02-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!S26"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-26",
-      "amount": 1456.58,
-      "periodStart": "2026-03-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!T27"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-26",
-      "amount": 976.42,
-      "periodStart": "2026-04-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!U27"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-27",
-      "amount": 494.73,
-      "periodStart": "2026-04-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!U28"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-27",
-      "amount": 504.77,
-      "periodStart": "2026-05-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!V28"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-28",
-      "amount": 10524.31,
-      "periodStart": "2026-05-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!V29"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-29",
-      "amount": 599,
-      "periodStart": "2026-05-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!V30"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "platform-30",
-      "amount": 1116.24,
-      "periodStart": "2026-06-01",
-      "periodKind": "month",
-      "note": null,
-      "sourceRef": "Platforms!W31"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "certificate-1",
-      "amount": 4166.93,
-      "periodStart": "2024-01-01",
-      "periodKind": "year",
-      "note": "Annual total; no month-level purchase date was available in Excel.",
-      "sourceRef": "Certificates!B2"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "certificate-2",
-      "amount": 1261.79,
-      "periodStart": "2024-01-01",
-      "periodKind": "year",
-      "note": "Annual total; no month-level purchase date was available in Excel.",
-      "sourceRef": "Certificates!B3"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "certificate-3",
-      "amount": 3462.36,
-      "periodStart": "2024-01-01",
-      "periodKind": "year",
-      "note": "Annual total; no month-level purchase date was available in Excel.",
-      "sourceRef": "Certificates!B4"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "certificate-4",
-      "amount": 1086.74,
-      "periodStart": "2024-01-01",
-      "periodKind": "year",
-      "note": "Annual total; no month-level purchase date was available in Excel.",
-      "sourceRef": "Certificates!B5"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "certificate-5",
-      "amount": 1086.74,
-      "periodStart": "2024-01-01",
-      "periodKind": "year",
-      "note": "Annual total; no month-level purchase date was available in Excel.",
-      "sourceRef": "Certificates!B6"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "certificate-6",
-      "amount": 2173.49,
-      "periodStart": "2024-01-01",
-      "periodKind": "year",
-      "note": "Annual total; no month-level purchase date was available in Excel.",
-      "sourceRef": "Certificates!B7"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "certificate-7",
-      "amount": 1483.98,
-      "periodStart": "2024-01-01",
-      "periodKind": "year",
-      "note": "Annual total; no month-level purchase date was available in Excel.",
-      "sourceRef": "Certificates!B8"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "certificate-8",
-      "amount": 9600,
-      "periodStart": "2025-01-01",
-      "periodKind": "year",
-      "note": "Annual total; no month-level purchase date was available in Excel.",
-      "sourceRef": "Certificates!C9"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "certificate-10",
-      "amount": 9600,
-      "periodStart": "2025-01-01",
-      "periodKind": "year",
-      "note": "Annual total; no month-level purchase date was available in Excel.",
-      "sourceRef": "Certificates!C11"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "certificate-12",
-      "amount": 7500,
-      "periodStart": "2025-01-01",
-      "periodKind": "year",
-      "note": "Annual total; no month-level purchase date was available in Excel.",
-      "sourceRef": "Certificates!C13"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "certificate-13",
-      "amount": 6000,
-      "periodStart": "2025-01-01",
-      "periodKind": "year",
-      "note": "Annual total; no month-level purchase date was available in Excel.",
-      "sourceRef": "Certificates!C14"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "certificate-14",
-      "amount": 6000,
-      "periodStart": "2025-01-01",
-      "periodKind": "year",
-      "note": "Annual total; no month-level purchase date was available in Excel.",
-      "sourceRef": "Certificates!C15"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "certificate-15",
-      "amount": 6000,
-      "periodStart": "2025-01-01",
-      "periodKind": "year",
-      "note": "Annual total; no month-level purchase date was available in Excel.",
-      "sourceRef": "Certificates!C16"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "certificate-16",
-      "amount": 6000,
-      "periodStart": "2025-01-01",
-      "periodKind": "year",
-      "note": "Annual total; no month-level purchase date was available in Excel.",
-      "sourceRef": "Certificates!C17"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "certificate-17",
-      "amount": 6000,
-      "periodStart": "2025-01-01",
-      "periodKind": "year",
-      "note": "Annual total; no month-level purchase date was available in Excel.",
-      "sourceRef": "Certificates!C18"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "device-1",
-      "amount": 57899.02,
-      "periodStart": "2025-01-01",
-      "periodKind": "year",
-      "note": "2025 total; no exact purchase date was available in Excel.",
-      "sourceRef": "Devices!B2"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "device-2",
-      "amount": 19618,
-      "periodStart": "2025-01-01",
-      "periodKind": "year",
-      "note": "2025 total; no exact purchase date was available in Excel.",
-      "sourceRef": "Devices!B3"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "device-3",
-      "amount": 132824.07,
-      "periodStart": "2025-01-01",
-      "periodKind": "year",
-      "note": "2025 total; no exact purchase date was available in Excel.",
-      "sourceRef": "Devices!B4"
-    },
-    {
-      "currency": "TRY",
-      "itemKey": "device-4",
-      "amount": 40198,
-      "periodStart": "2025-01-01",
-      "periodKind": "year",
-      "note": "2025 total; no exact purchase date was available in Excel.",
-      "sourceRef": "Devices!B5"
     }
   ]
 }

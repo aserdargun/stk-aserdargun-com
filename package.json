@@ -16,7 +16,9 @@
     "typecheck": "tsc --noEmit && npm --workspace api run typecheck",
     "test": "npm run test:client && npm run test:local-dev && npm --workspace api test",
     "test:client": "vitest run src/client tools/vite-config.test.ts",
-    "test:local-dev": "node --test tools/*.test.mjs"
+    "test:local-dev": "node --test tools/*.test.mjs",
+    "import:statements": "node tools/import-card-statements.mjs --dir data/statements",
+    "import:statements:dry": "node tools/import-card-statements.mjs --dir data/statements --dry-run"
   },
   "dependencies": {
     "lucide-react": "1.31.0",
@@ -29,6 +31,7 @@
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.4",
     "@vitejs/plugin-react": "6.0.5",
+    "pdfjs-dist": "6.2.108",
     "typescript": "5.9.3",
     "vite": "8.2.1",
     "vitest": "4.1.10"

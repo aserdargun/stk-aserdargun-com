@@ -22,17 +22,19 @@ const entries: EntryRecord[] = payload.entries.map((entry, index) => ({
   createdAt: "2026-08-10T00:00:00.000Z",
 }));
 
+const sourceGrandTotal = Number(payload.metadata.sourceGrandTotal);
+
 describe("Azure-native dashboard analytics", () => {
   it("reconciles the migrated source data", () => {
-    const dashboard = buildDashboard(items, entries, 426621.77, 2025);
-    expect(dashboard.metrics.lifetimeSpend).toBe(426621.77);
-    expect(dashboard.metrics.trackedItems).toBe(51);
+    const dashboard = buildDashboard(items, entries, sourceGrandTotal, 2025);
+    expect(dashboard.metrics.lifetimeSpend).toBe(sourceGrandTotal);
+    expect(dashboard.metrics.trackedItems).toBe(payload.items.length);
     expect(dashboard.availableYears).toEqual([2026, 2025, 2024]);
     expect(dashboard.monthlySeries).toHaveLength(12);
   });
 
   it("keeps annual-only entries out of monthly charts", () => {
-    const dashboard = buildDashboard(items, entries, 426621.77, 2025);
+    const dashboard = buildDashboard(items, entries, sourceGrandTotal, 2025);
     const monthlyTotal = dashboard.monthlySeries.reduce((total, month) => total + month.spend, 0);
     const expectedMonthlyTotal = entries
       .filter((entry) => entry.periodKind === "month" && entry.periodStart.startsWith("2025"))
