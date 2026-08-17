@@ -4,6 +4,8 @@ import type {
   DashboardData,
   ItemDetail,
   NewCostPayload,
+  StatementImportPreview,
+  StatementImportResult,
   TableViewData,
 } from "../types";
 
@@ -85,6 +87,18 @@ export const api = {
     return request<ItemDetail>(`/api/items/${itemId}/entries/${entryId}`, {
       method: "PATCH",
       body: JSON.stringify(payload),
+    });
+  },
+  previewStatementImport(fileName: string, data: string) {
+    return request<StatementImportPreview>("/api/statements/import", {
+      method: "POST",
+      body: JSON.stringify({ fileName, data }),
+    });
+  },
+  applyStatementImport(fileName: string, data: string) {
+    return request<StatementImportResult>("/api/statements/import", {
+      method: "POST",
+      body: JSON.stringify({ fileName, data, apply: true }),
     });
   },
 };

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from "react";
-import { BarChart3, Cloud, ExternalLink, LayoutDashboard, LogOut, Plus, TableProperties, WalletCards } from "lucide-react";
+import { BarChart3, Cloud, ExternalLink, FileUp, LayoutDashboard, LogOut, Plus, TableProperties, WalletCards } from "lucide-react";
 import { AddCostModal } from "./components/AddCostModal";
 import { CostsPage } from "./components/CostsPage";
 
@@ -9,8 +9,13 @@ const Dashboard = lazy(() =>
 const TableViewPage = lazy(() =>
   import("./components/TableViewPage").then((module) => ({ default: module.TableViewPage })),
 );
+const ImportStatementsPage = lazy(() =>
+  import("./components/ImportStatementsPage").then((module) => ({
+    default: module.ImportStatementsPage,
+  })),
+);
 
-type View = "overview" | "costs" | "table";
+type View = "overview" | "costs" | "table" | "import";
 
 export function App() {
   const [view, setView] = useState<View>("overview");
@@ -47,6 +52,9 @@ export function App() {
           </button>
           <button className={view === "table" ? "active" : ""} onClick={() => setView("table")}>
             <TableProperties size={19} /> Table View
+          </button>
+          <button className={view === "import" ? "active" : ""} onClick={() => setView("import")}>
+            <FileUp size={19} /> Import
           </button>
         </nav>
 
@@ -104,6 +112,13 @@ export function App() {
           ) : view === "costs" ? (
             <CostsPage
               onChanged={(message) => {
+                setRefreshKey((value) => value + 1);
+                announce(message);
+              }}
+            />
+          ) : view === "import" ? (
+            <ImportStatementsPage
+              onImported={(message) => {
                 setRefreshKey((value) => value + 1);
                 announce(message);
               }}

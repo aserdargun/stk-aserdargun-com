@@ -103,3 +103,42 @@ export interface NewCostPayload {
     note?: string;
   };
 }
+
+export interface StatementImportPreview {
+  preview: true;
+  fileName: string;
+  cutoffDate: string | null;
+  charges: Array<{ name: string; date: string; amount: number; description: string }>;
+  newItems: Array<{
+    serviceKey: string;
+    name: string;
+    category: Category;
+    billingType: BillingType;
+    plan: string | null;
+    url: string | null;
+    account: string | null;
+  }>;
+  newEntries: Array<{
+    serviceKey: string;
+    name: string;
+    itemId: number | null;
+    amount: number;
+    currency: string;
+    periodStart: string;
+    periodKind: string;
+    membership: string | null;
+    note: string;
+    sourceRef: string;
+  }>;
+  matchedCount: number;
+  unclassified: Array<{ date: string; amount: number; description: string }>;
+  summary: { charges: number; newItems: number; newEntries: number; matched: number };
+}
+
+export interface StatementImportResult {
+  applied: true;
+  itemsCreated: number;
+  entriesCreated: number;
+  matchedSkipped: number;
+  summary: { charges: number; newItems: number; newEntries: number; matched: number };
+}

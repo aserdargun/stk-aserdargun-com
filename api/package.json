@@ -5,13 +5,14 @@
   "type": "module",
   "main": "dist/functions/*.js",
   "scripts": {
-    "build": "tsc && mkdir -p dist/data && cp ../data/seed-data.json dist/data/seed-data.json",
+    "build": "tsc && mkdir -p dist/data && cp ../data/seed-data.json dist/data/seed-data.json && cp ../data/card-digital-services.json dist/data/card-digital-services.json",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
   "dependencies": {
     "@azure/data-tables": "13.3.2",
     "@azure/functions": "4.16.2",
+    "pdfjs-dist": "6.2.108",
     "zod": "4.4.3"
   },
   "devDependencies": {

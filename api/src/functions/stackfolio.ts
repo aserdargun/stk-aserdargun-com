@@ -11,6 +11,7 @@ import { isAuthorizedRequest } from "../lib/auth.js";
 import { buildRecurringTableView, summarizeItems, updateEntry } from "../lib/costs.js";
 import { isValidIsoDate } from "../lib/dates.js";
 import type { EntryRecord, ItemRecord } from "../lib/models.js";
+import { applyStatementImport, previewStatementImport } from "../lib/statement-import.js";
 import { TableRepository } from "../lib/storage.js";
 
 const dateSchema = z
@@ -58,6 +59,11 @@ const filtersSchema = z.object({
   search: z.string().trim().max(120).optional(),
   category: categorySchema.optional(),
   status: statusSchema.optional(),
+});
+const statementImportSchema = z.object({
+  fileName: z.string().trim().min(1).max(255),
+  data: z.string().min(1),
+  apply: z.boolean().optional().default(false),
 });
 
 let repository: TableRepository | undefined;
@@ -314,5 +320,21 @@ app.http("itemEntry", {
       }),
     );
     return json(await itemDetail(repo, id));
+  }),
+});
+
+app.http("statementImport", {
+  route: "statements/import",
+  methods: ["POST"],
+  authLevel: "anonymous",
+  handler: protectedHandler(async (request) => {
+    const repo = await getRepository();
+    const payload = statementImportSchema.parse(await request.json());
+    if (payload.apply) {
+      const applied = await applyStatementImport(repo, payload.fileName, payload.data);
+      return json({ applied: true, ...applied });
+    }
+    const preview = await previewStatementImport(repo, payload.fileName, payload.data);
+    return json({ preview: true, ...preview });
   }),
 });
