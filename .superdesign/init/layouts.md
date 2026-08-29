@@ -1,5 +1,12 @@
+# Shared Layouts
+
+## `src/client/App.tsx`
+
+The single application shell provides the desktop sidebar, responsive bottom navigation, sticky action header, lazy view switching, global add-cost modal, and toast status surface.
+
+```tsx
 import { lazy, Suspense, useState } from "react";
-import { BarChart3, Cloud, ExternalLink, FileUp, LayoutDashboard, LogOut, Plus, TableProperties, WalletCards } from "lucide-react";
+import { BarChart3, Cloud, ExternalLink, LayoutDashboard, LogOut, Plus, TableProperties, WalletCards } from "lucide-react";
 import { AddCostModal } from "./components/AddCostModal";
 import { CostsPage } from "./components/CostsPage";
 
@@ -9,13 +16,8 @@ const Dashboard = lazy(() =>
 const TableViewPage = lazy(() =>
   import("./components/TableViewPage").then((module) => ({ default: module.TableViewPage })),
 );
-const ImportStatementsPage = lazy(() =>
-  import("./components/ImportStatementsPage").then((module) => ({
-    default: module.ImportStatementsPage,
-  })),
-);
 
-type View = "overview" | "costs" | "table" | "import";
+type View = "overview" | "costs" | "table";
 
 export function App() {
   const [view, setView] = useState<View>("overview");
@@ -43,35 +45,15 @@ export function App() {
           </span>
         </button>
 
-        <nav className="primary-nav" aria-label="Workspace navigation">
-          <span className="nav-section-label">Workspace</span>
-          <button
-            className={view === "overview" ? "active" : ""}
-            onClick={() => setView("overview")}
-            aria-current={view === "overview" ? "page" : undefined}
-          >
-            <LayoutDashboard size={19} /> <span>Overview</span>
+        <nav className="primary-nav" aria-label="Main navigation">
+          <button className={view === "overview" ? "active" : ""} onClick={() => setView("overview")}>
+            <LayoutDashboard size={19} /> Overview
           </button>
-          <button
-            className={view === "costs" ? "active" : ""}
-            onClick={() => setView("costs")}
-            aria-current={view === "costs" ? "page" : undefined}
-          >
-            <WalletCards size={19} /> <span>Costs</span>
+          <button className={view === "costs" ? "active" : ""} onClick={() => setView("costs")}>
+            <WalletCards size={19} /> Costs
           </button>
-          <button
-            className={view === "table" ? "active" : ""}
-            onClick={() => setView("table")}
-            aria-current={view === "table" ? "page" : undefined}
-          >
-            <TableProperties size={19} /> <span>Table View</span>
-          </button>
-          <button
-            className={view === "import" ? "active" : ""}
-            onClick={() => setView("import")}
-            aria-current={view === "import" ? "page" : undefined}
-          >
-            <FileUp size={19} /> <span>Import</span>
+          <button className={view === "table" ? "active" : ""} onClick={() => setView("table")}>
+            <TableProperties size={19} /> Table View
           </button>
         </nav>
 
@@ -111,37 +93,24 @@ export function App() {
               {new Intl.DateTimeFormat("en-US", { dateStyle: "long" }).format(new Date())}
             </span>
           </div>
-          <div className="topbar-actions">
-            <a
-              className="button secondary sign-out"
-              href={`/.auth/logout?post_logout_redirect_uri=${signedOutUrl}`}
-              aria-label="Sign out"
-            >
-              <LogOut size={17} /> <span className="button-label">Sign out</span>
-            </a>
-            <button className="button primary" onClick={() => setShowAddCost(true)}>
-              <Plus size={18} /> <span className="button-label">Add cost</span>
-            </button>
-          </div>
+          <a
+            className="button secondary sign-out"
+            href={`/.auth/logout?post_logout_redirect_uri=${signedOutUrl}`}
+            aria-label="Sign out"
+          >
+            <LogOut size={17} /> <span className="button-label">Sign out</span>
+          </a>
+          <button className="button primary" onClick={() => setShowAddCost(true)}>
+            <Plus size={18} /> <span className="button-label">Add cost</span>
+          </button>
         </header>
 
         <Suspense fallback={<div className="page-state">Loading Stackfolio…</div>}>
           {view === "overview" ? (
-            <Dashboard
-              key={`dashboard-${refreshKey}`}
-              onOpenCosts={() => setView("costs")}
-              onOpenImport={() => setView("import")}
-            />
+            <Dashboard key={`dashboard-${refreshKey}`} onOpenCosts={() => setView("costs")} />
           ) : view === "costs" ? (
             <CostsPage
               onChanged={(message) => {
-                setRefreshKey((value) => value + 1);
-                announce(message);
-              }}
-            />
-          ) : view === "import" ? (
-            <ImportStatementsPage
-              onImported={(message) => {
                 setRefreshKey((value) => value + 1);
                 announce(message);
               }}
@@ -171,3 +140,4 @@ export function App() {
     </div>
   );
 }
+```

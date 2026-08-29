@@ -5,9 +5,11 @@ import {
   ArrowRight,
   ArrowUpRight,
   CalendarRange,
+  FileUp,
   Layers3,
   TrendingUp,
   Wallet,
+  WalletCards,
 } from "lucide-react";
 import {
   Area,
@@ -34,6 +36,10 @@ const categoryColors: Record<Category, string> = {
   Other: "#db91ff",
 };
 
+export function selectInsightItems<T>(items: readonly T[]) {
+  return items.slice(0, 4);
+}
+
 function StatCard({
   label,
   value,
@@ -59,7 +65,13 @@ function StatCard({
   );
 }
 
-export function Dashboard({ onOpenCosts }: { onOpenCosts: () => void }) {
+export function Dashboard({
+  onOpenCosts,
+  onOpenImport,
+}: {
+  onOpenCosts: () => void;
+  onOpenImport: () => void;
+}) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [year, setYear] = useState<number>();
   const [loading, setLoading] = useState(true);
@@ -107,12 +119,6 @@ export function Dashboard({ onOpenCosts }: { onOpenCosts: () => void }) {
 
       <section className="stats-grid" aria-label="Portfolio metrics">
         <StatCard
-          label="Lifetime spend"
-          value={formatMoney(data.metrics.lifetimeSpend)}
-          note={`Across ${data.metrics.trackedItems} tracked items`}
-          icon={<Wallet size={19} />}
-        />
-        <StatCard
           label={`${data.year} spend`}
           value={formatMoney(data.metrics.yearSpend)}
           note={
@@ -136,6 +142,12 @@ export function Dashboard({ onOpenCosts }: { onOpenCosts: () => void }) {
           tone="blue"
         />
         <StatCard
+          label="Lifetime spend"
+          value={formatMoney(data.metrics.lifetimeSpend)}
+          note={`Across ${data.metrics.trackedItems} tracked items`}
+          icon={<Wallet size={19} />}
+        />
+        <StatCard
           label="Active costs"
           value={String(data.metrics.activeItems)}
           note={`${data.metrics.closedItems} closed · ${data.metrics.trackedItems} total`}
@@ -144,8 +156,9 @@ export function Dashboard({ onOpenCosts }: { onOpenCosts: () => void }) {
         />
       </section>
 
-      <section className="analytics-grid">
-        <article className="panel chart-panel wide">
+      <section className="workbench-layout">
+        <div className="workbench-main">
+          <article className="panel chart-panel primary-chart-panel">
           <div className="panel-heading">
             <div>
               <span className="panel-kicker">Monthly pulse</span>
@@ -190,101 +203,127 @@ export function Dashboard({ onOpenCosts }: { onOpenCosts: () => void }) {
               {formatMoney(data.metrics.annualOnlySpend)} in annual-only or reconciliation entries is included in yearly totals but excluded here because the source workbook did not provide exact months.
             </p>
           )}
-        </article>
+          </article>
 
-        <article className="panel chart-panel">
-          <div className="panel-heading">
-            <div>
-              <span className="panel-kicker">Portfolio mix</span>
-              <h2>Lifetime allocation</h2>
-            </div>
-          </div>
-          <div className="donut-layout">
-            <div className="donut-chart">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={data.lifetimeCategories}
-                    dataKey="spend"
-                    nameKey="category"
-                    innerRadius={62}
-                    outerRadius={90}
-                    paddingAngle={3}
-                    stroke="none"
-                  >
-                    {data.lifetimeCategories.map((entry) => (
-                      <Cell key={entry.category} fill={categoryColors[entry.category]} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value) => formatMoney(Number(value))} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="donut-center">
-                <strong>{data.lifetimeCategories.length}</strong>
-                <span>categories</span>
-              </div>
-            </div>
-            <div className="category-legend">
-              {data.lifetimeCategories.map((entry) => (
-                <div key={entry.category}>
-                  <span className="color-dot" style={{ background: categoryColors[entry.category] }} />
-                  <span>{entry.category}</span>
-                  <strong>{formatMoney(entry.spend, true)}</strong>
+          <div className="workbench-secondary">
+            <article className="panel chart-panel">
+              <div className="panel-heading">
+                <div>
+                  <span className="panel-kicker">Portfolio mix</span>
+                  <h2>Lifetime allocation</h2>
                 </div>
+              </div>
+              <div className="donut-layout">
+                <div className="donut-chart">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={data.lifetimeCategories}
+                        dataKey="spend"
+                        nameKey="category"
+                        innerRadius={62}
+                        outerRadius={90}
+                        paddingAngle={3}
+                        stroke="none"
+                      >
+                        {data.lifetimeCategories.map((entry) => (
+                          <Cell key={entry.category} fill={categoryColors[entry.category]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => formatMoney(Number(value))} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="donut-center">
+                    <strong>{data.lifetimeCategories.length}</strong>
+                    <span>categories</span>
+                  </div>
+                </div>
+                <div className="category-legend">
+                  {data.lifetimeCategories.map((entry) => (
+                    <div key={entry.category}>
+                      <span className="color-dot" style={{ background: categoryColors[entry.category] }} />
+                      <span>{entry.category}</span>
+                      <strong>{formatMoney(entry.spend, true)}</strong>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </article>
+
+            <article className="panel chart-panel">
+              <div className="panel-heading">
+                <div>
+                  <span className="panel-kicker">Annual view</span>
+                  <h2>Spend by year</h2>
+                </div>
+              </div>
+              <div className="chart-wrap compact">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={data.yearlySeries} margin={{ top: 10, right: 5, left: 0, bottom: 0 }}>
+                    <CartesianGrid stroke="#dbe6e1" strokeDasharray="4 5" vertical={false} />
+                    <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{ fill: "#6b7c75" }} />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      width={62}
+                      tick={{ fill: "#6b7c75", fontSize: 11 }}
+                      tickFormatter={(value) => formatMoney(Number(value), true)}
+                    />
+                    <Tooltip formatter={(value) => [formatMoney(Number(value)), "Spend"]} />
+                    <Bar dataKey="spend" fill="#8aa8ff" radius={[8, 8, 2, 2]} maxBarSize={72} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <aside className="insights-rail" aria-label="Portfolio insights">
+          <article className="panel top-costs-panel">
+            <div className="panel-heading">
+              <div>
+                <span className="panel-kicker">Largest commitments</span>
+                <h2>Top costs in {data.year}</h2>
+              </div>
+              <button className="text-button" onClick={onOpenCosts}>
+                View all <ArrowRight size={15} />
+              </button>
+            </div>
+            <div className="top-cost-list">
+              {selectInsightItems(data.topItems).map((item, index) => (
+                <button key={item.id} onClick={onOpenCosts}>
+                  <span className="rank">{String(index + 1).padStart(2, "0")}</span>
+                  <span className="top-cost-name">
+                    <strong>{item.name}</strong>
+                    <small>{item.category}</small>
+                  </span>
+                  <strong>{formatMoney(item.spend)}</strong>
+                </button>
               ))}
             </div>
-          </div>
-        </article>
+          </article>
 
-        <article className="panel chart-panel">
-          <div className="panel-heading">
-            <div>
-              <span className="panel-kicker">Annual view</span>
-              <h2>Spend by year</h2>
+          <article className="panel utility-panel">
+            <div className="panel-heading">
+              <div>
+                <span className="panel-kicker">Quick utilities</span>
+                <h2>Keep the ledger current</h2>
+              </div>
             </div>
-          </div>
-          <div className="chart-wrap compact">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.yearlySeries} margin={{ top: 10, right: 5, left: 0, bottom: 0 }}>
-                <CartesianGrid stroke="#dbe6e1" strokeDasharray="4 5" vertical={false} />
-                <XAxis dataKey="year" axisLine={false} tickLine={false} tick={{ fill: "#6b7c75" }} />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  width={62}
-                  tick={{ fill: "#6b7c75", fontSize: 11 }}
-                  tickFormatter={(value) => formatMoney(Number(value), true)}
-                />
-                <Tooltip formatter={(value) => [formatMoney(Number(value)), "Spend"]} />
-                <Bar dataKey="spend" fill="#8aa8ff" radius={[8, 8, 2, 2]} maxBarSize={72} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </article>
-
-        <article className="panel top-costs-panel">
-          <div className="panel-heading">
-            <div>
-              <span className="panel-kicker">Largest commitments</span>
-              <h2>Top costs in {data.year}</h2>
-            </div>
-            <button className="text-button" onClick={onOpenCosts}>
-              View all <ArrowRight size={15} />
-            </button>
-          </div>
-          <div className="top-cost-list">
-            {data.topItems.map((item, index) => (
-              <button key={item.id} onClick={onOpenCosts}>
-                <span className="rank">{String(index + 1).padStart(2, "0")}</span>
-                <span className="top-cost-name">
-                  <strong>{item.name}</strong>
-                  <small>{item.category}</small>
-                </span>
-                <strong>{formatMoney(item.spend)}</strong>
+            <div className="utility-actions">
+              <button onClick={onOpenCosts}>
+                <span><WalletCards size={18} /></span>
+                <strong>Open cost ledger</strong>
+                <small>Search, filter, and edit</small>
               </button>
-            ))}
-          </div>
-        </article>
+              <button onClick={onOpenImport}>
+                <span><FileUp size={18} /></span>
+                <strong>Import statement</strong>
+                <small>Preview before applying</small>
+              </button>
+            </div>
+          </article>
+        </aside>
       </section>
     </div>
   );

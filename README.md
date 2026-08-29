@@ -109,7 +109,7 @@ The production naming map is:
 - Resource group: `rg-stk-aserdargun-com`
 - Static Web App: `swa-stk-aserdargun-com`
 - Storage account: `ststkaserdarguncom`
-- GitHub deployment secret: `AZURE_STATIC_WEB_APPS_API_TOKEN_STK`
+- GitHub deployment secret: `AZURE_STATIC_WEB_APPS_API_TOKEN_SWA_STK_ASERDARGUN_COM`
 
 The Static Web App requires these application settings:
 

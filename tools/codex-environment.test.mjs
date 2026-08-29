@@ -10,7 +10,7 @@ const environment = readFileSync(
   "utf8",
 );
 const azureWorkflow = readFileSync(
-  resolve(repositoryRoot, ".github/workflows/azure-static-web-apps-stackfolio.yml"),
+  resolve(repositoryRoot, ".github/workflows/deploy-swa-stk-aserdargun-com.yml"),
   "utf8",
 );
 
@@ -40,7 +40,21 @@ test("cleans stale project services before and after the Full App action", () =>
   assert.doesNotMatch(fullAppAction, /kill "\$azurite_pid"/);
 });
 
-test("uses SWA CLI-compatible workflow job keys without changing check labels", () => {
-  assert.match(azureWorkflow, /^  build_and_deploy_job:\n    name: build_and_deploy$/m);
-  assert.match(azureWorkflow, /^  close_pull_request_job:\n    name: close_pull_request$/m);
+test("serializes a validated prebuilt production artifact into the stk Static Web App", () => {
+  assert.match(azureWorkflow, /^concurrency:\n  group: swa-stk-aserdargun-com-production\n  cancel-in-progress: false$/m);
+  assert.doesNotMatch(azureWorkflow, /pull_request:/);
+  assert.match(azureWorkflow, /npm ci/);
+  assert.match(azureWorkflow, /npm run typecheck/);
+  assert.match(azureWorkflow, /npm test/);
+  assert.match(azureWorkflow, /npm run build/);
+  assert.match(azureWorkflow, /app_location: dist/);
+  assert.match(azureWorkflow, /skip_app_build: true/);
+  assert.match(azureWorkflow, /output_location: ""/);
+  assert.match(
+    azureWorkflow,
+    /secrets\.AZURE_STATIC_WEB_APPS_API_TOKEN_SWA_STK_ASERDARGUN_COM/,
+  );
+  assert.match(azureWorkflow, /actions\/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1/);
+  assert.match(azureWorkflow, /actions\/setup-node@820762786026740c76f36085b0efc47a31fe5020/);
+  assert.match(azureWorkflow, /Azure\/static-web-apps-deploy@4d27395796ac319302594769cfe812bd207490b1/);
 });

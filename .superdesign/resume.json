@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "targets": {
+    "/": {
+      "targetKind": "existing-ui",
+      "projectId": "7f663321-414a-4c25-8222-11e9fcee3b6e",
+      "baselineDraftId": "2abcfae9-e52d-4192-aabf-d0198c2e3c18",
+      "activeDraftId": "b7df1029-7c89-436e-aaec-e53bb823a42b",
+      "designSystemPath": ".superdesign/design-system.md",
+      "referenceIds": [],
+      "contextFiles": [
+        ".superdesign/design-system.md",
+        "src/client/App.tsx",
+        "src/client/components/Dashboard.tsx",
+        "src/client/components/AddCostModal.tsx",
+        "src/client/styles.css"
+      ],
+      "fingerprints": {
+        ".superdesign/design-system.md": "5ce241572d44b70b26924291b536bb5db09b1c3ee48162ec4010670b568de8f1",
+        "src/client/App.tsx": "231642c4453b0bd93dcad34758dd7ac79e7dc02906baf5bdf66bf54f11365e5e",
+        "src/client/components/Dashboard.tsx": "d3dfd7b415b0ea282d2ab55f57b411a2471a1d5d91d99a273083e14503b2e7d9",
+        "src/client/components/AddCostModal.tsx": "a5705a791491e6cc5e1e3b8b5222b58ed1a686e999d188725e25ff94e3c9c9f4",
+        "src/client/styles.css": "325481356143dd518fca9628f0ed53b3a7b1c05e7a0dcf9c76fd7225e753eed3"
+      },
+      "components": [
+        {
+          "name": "AppShell",
+          "id": "523df5b3-7259-4c48-a9c1-ccd74cf1ca3e",
+          "sourcePath": "src/client/App.tsx"
+        }
+      ],
+      "drafts": {
+        "2abcfae9-e52d-4192-aabf-d0198c2e3c18": {
+          "title": "Stackfolio Overview",
+          "visualDirection": "faithful current-state baseline",
+          "currentVersion": 2
+        },
+        "40bf319b-b43f-4fa8-98f5-821eaf70045a": {
+          "title": "Stackfolio Decision Ledger",
+          "visualDirection": "decision-first ledger with wide trend surface and restrained cards",
+          "parentDraftId": "2abcfae9-e52d-4192-aabf-d0198c2e3c18",
+          "currentVersion": 2
+        },
+        "b7df1029-7c89-436e-aaec-e53bb823a42b": {
+          "title": "Stackfolio - Financial Workbench",
+          "visualDirection": "professional workbench with dominant spend workspace and insights rail",
+          "parentDraftId": "2abcfae9-e52d-4192-aabf-d0198c2e3c18",
+          "currentVersion": 2
+        }
+      },
+      "updatedAt": "2026-08-29T13:31:36Z"
+    }
+  }
+}

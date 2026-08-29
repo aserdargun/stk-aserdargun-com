@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CalendarRange, TableProperties } from "lucide-react";
+import { ArrowRight, CalendarRange, TableProperties } from "lucide-react";
 import { api } from "../lib/api";
 import { formatMoney } from "../lib/format";
 import type { TableViewData } from "../types";
@@ -62,7 +62,17 @@ export function TableViewPage() {
             <span>Activate a recurring cost to include it in this view.</span>
           </div>
         ) : (
-          <div className="table-view-scroll">
+          <>
+            <div className="table-scroll-guide" aria-hidden="true">
+              <span>Swipe to compare months</span>
+              <ArrowRight size={15} />
+            </div>
+            <div
+              className="table-view-scroll"
+              tabIndex={0}
+              role="region"
+              aria-label="Monthly subscription comparison table"
+            >
             <table className="subscription-table">
               <thead>
                 <tr>
@@ -102,7 +112,8 @@ export function TableViewPage() {
                 </tr>
               </tfoot>
             </table>
-          </div>
+            </div>
+          </>
         )}
       </section>
     </div>

@@ -35,4 +35,20 @@ describe("App branding", () => {
       "post_logout_redirect_uri=https%3A%2F%2Fcalm-stone-123.azurestaticapps.net%2Fsigned-out.html",
     );
   });
+
+  it("exposes the active workspace destination to assistive technology", () => {
+    const markup = renderToStaticMarkup(<App />);
+
+    expect(markup).toContain('aria-current="page"');
+    expect(markup).toContain('aria-label="Workspace navigation"');
+  });
+
+  it("keeps every primary workspace available in the redesigned navigation", () => {
+    const markup = renderToStaticMarkup(<App />);
+
+    expect(markup).toContain(">Overview</span>");
+    expect(markup).toContain(">Costs</span>");
+    expect(markup).toContain(">Table View</span>");
+    expect(markup).toContain(">Import</span>");
+  });
 });

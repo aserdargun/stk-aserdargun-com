@@ -15,10 +15,12 @@ test-results/
 .playwright-cli/
 output/
 *.log
-
 # Raw credit-card statements and generated statement artifacts contain personal
 # financial data and are kept out of version control.
 data/statements/
 data/statement-ledger.json
 data/reconciliation-report.json
 data/seed-data.json.backup-*
+
+# Superdesign render exports are reproducible local artifacts.
+.superdesign/tmp/
