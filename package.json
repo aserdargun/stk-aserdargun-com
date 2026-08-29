@@ -12,6 +12,7 @@
     "dev:frontend": "vite --host 127.0.0.1 --port 5173 --strictPort",
     "stop:local": "node tools/stop-local.mjs",
     "build": "npm run build:app && npm --workspace api run build",
+    "build:api:artifact": "node tools/build-api-artifact.mjs",
     "build:app": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit && npm --workspace api run typecheck",
     "test": "npm run test:client && npm run test:local-dev && npm --workspace api test",

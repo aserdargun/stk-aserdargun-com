@@ -111,6 +111,11 @@ The production naming map is:
 - Storage account: `ststkaserdarguncom`
 - GitHub deployment secret: `AZURE_STATIC_WEB_APPS_API_TOKEN_SWA_STK_ASERDARGUN_COM`
 
+The `main` deployment workflow validates the repository, builds the web app,
+packages the Functions runtime with locked production dependencies, and uploads
+the prebuilt `dist/` and `api-dist/` artifacts. Azure does not rebuild either
+artifact during publication.
+
 The Static Web App requires these application settings:
 
 - `AZURE_STORAGE_CONNECTION_STRING`: connection string for the private storage account
