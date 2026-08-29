@@ -14,3 +14,7 @@ test("serves the authentication redirect helper to anonymous login pages", () =>
 
   assert.deepEqual(route?.allowedRoles, ["anonymous"]);
 });
+
+test("declares the managed Functions runtime for prebuilt API deployment", () => {
+  assert.deepEqual(config.platform, { apiRuntime: "node:22" });
+});
