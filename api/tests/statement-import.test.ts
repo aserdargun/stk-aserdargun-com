@@ -2,11 +2,12 @@ import { describe, expect, it } from "vitest";
 import {
   classifyDescription,
   compileServices,
+  extractLearnedPattern,
   parseAmount,
   parseStatementLines,
   resolveItem,
 } from "../src/lib/statement-import.js";
-import type { ItemRecord } from "../src/lib/models.js";
+import type { ItemRecord, LearnedMapping } from "../src/lib/models.js";
 
 describe("statement import parsing", () => {
   it("parses Turkish-formatted amounts and refund signs", () => {
@@ -93,5 +94,47 @@ describe("statement import parsing", () => {
     expect(classifyDescription("NETFLIX.COM AMSTERDAM NL 379,99", services)?.key).toBe("netflix");
     expect(classifyDescription("APPLE.COM/BILL CORK IRIR 249,99", services)?.key).toBe("apple");
     expect(classifyDescription("SARDUNYA GIDA-HADIMKOY TR 300,00", services)).toBeNull();
+  });
+
+  it("extracts a pattern token from a raw merchant description", () => {
+    expect(extractLearnedPattern("CAPCUT SINGAPORE SG 72,79")).toBe("CAPCUT");
+    expect(extractLearnedPattern("HEPSIPAY *HEPSIBURADA ISTANBUL TR 109,96")).toBe("HEPSIPAY");
+    expect(extractLearnedPattern("APPLE.COM/BILL CORK IRIR 249,99")).toBe("APPLE.COM");
+    expect(extractLearnedPattern("NETFLIX.COM AMSTERDAM NL 379,99")).toBe("NETFLIX.COM");
+    expect(extractLearnedPattern("10 02 2026 SPOTIFY AB STOCKHOLM SE 89,99")).toBe("SPOTIFY");
+  });
+
+  it("classifies previously-unmapped merchants after a learned mapping is registered", () => {
+    const learned: LearnedMapping = {
+      id: "uuid-1",
+      pattern: "HEPSIPAY",
+      name: "Hepsiburada",
+      category: "Platform",
+      billingType: "recurring",
+      plan: "Plus",
+      url: "https://www.hepsiburada.com",
+      account: "aserdargun@gmail.com",
+      createdAt: "2026-08-26T00:00:00.000Z",
+    };
+    const services = compileServices([
+      ...[],
+      {
+        key: `learned:${learned.id}`,
+        name: learned.name,
+        itemKey: null,
+        category: learned.category,
+        billingType: learned.billingType,
+        plan: learned.plan,
+        url: learned.url,
+        account: learned.account,
+        patterns: [learned.pattern],
+      },
+    ]);
+    const match = classifyDescription(
+      "HEPSIPAY *HEPSIBURADA ISTANBUL TR +109,96 -2",
+      services,
+    );
+    expect(match?.name).toBe("Hepsiburada");
+    expect(match?.plan).toBe("Plus");
   });
 });

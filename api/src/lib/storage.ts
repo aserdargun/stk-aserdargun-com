@@ -1,6 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { TableClient, type TableEntity } from "@azure/data-tables";
-import type { EntryRecord, ItemRecord, SeedPayload } from "./models.js";
+import type { EntryRecord, ItemRecord, LearnedMapping, SeedPayload } from "./models.js";
+
+const LEARNED_MAPPINGS_META_KEY = "statementLearnedMappings";
 
 interface ItemEntity {
   id: number;
@@ -211,6 +213,32 @@ export class TableRepository {
       if (statusCode(error) === 404) return null;
       throw error;
     }
+  }
+
+  async listLearnedMappings(): Promise<LearnedMapping[]> {
+    const raw = await this.getMeta(LEARNED_MAPPINGS_META_KEY);
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .filter((entry): entry is LearnedMapping =>
+        Boolean(
+          entry &&
+            typeof entry === "object" &&
+            typeof (entry as LearnedMapping).pattern === "string" &&
+            typeof (entry as LearnedMapping).name === "string",
+        ),
+      )
+      .map((entry) => ({ ...entry }));
+  }
+
+  async addLearnedMapping(mapping: LearnedMapping): Promise<LearnedMapping> {
+    const existing = await this.listLearnedMappings();
+    const deduped = existing.filter(
+      (entry) => entry.pattern.toUpperCase() !== mapping.pattern.toUpperCase(),
+    );
+    deduped.push(mapping);
+    deduped.sort((a, b) => a.pattern.localeCompare(b.pattern));
+    await this.setMeta(LEARNED_MAPPINGS_META_KEY, deduped);
+    return mapping;
   }
 
   private async setMeta(metaKey: string, value: unknown) {

@@ -763,7 +763,43 @@ a { color: inherit; }
 .import-drop:hover, .import-drop.dragging { border-color: var(--mint-dark); background: #f0f9ff; }
 .import-drop svg { color: var(--mint-dark); }
 .import-drop strong { font-size: 15px; }
-.import-drop span { max-width: 420px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.import-drop span { max-width: 460px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.import-paste-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 6px 10px;
+  background: #ecfeff;
+  border: 1px solid #bae6fd;
+  border-radius: 999px;
+  color: #0c4a6e;
+  font-size: 11px;
+  line-height: 1.2;
+  max-width: none;
+}
+.import-paste-hint kbd {
+  font: 700 10px/1 Inter, sans-serif;
+  background: #fff;
+  border: 1px solid #bae6fd;
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: 0 1px;
+}
+.import-paste-toggle {
+  margin-top: 4px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+.import-paste-toggle:hover { background: #e0f2fe; color: #0c4a6e; }
 
 .import-preview { display: grid; gap: 0; overflow: hidden; }
 .import-preview-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; padding: 22px; border-bottom: 1px solid var(--line); }
@@ -782,6 +818,60 @@ a { color: inherit; }
 .import-muted { color: var(--muted); font-size: 11px; }
 .import-amount { font-weight: 800; font-size: 12px; }
 .import-unclassified summary { color: var(--muted); font-size: 11px; cursor: pointer; }
+
+.import-unmapped-editor { background: #f9fafb; }
+.import-unmapped-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.import-unmapped-head h3 { margin: 0; }
+.import-unmapped-counts { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font: 700 10px/1 Inter, sans-serif;
+  letter-spacing: .3px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+.chip.muted { background: #e2e8f0; color: #475569; border-color: #cbd5e1; }
+.chip.warn  { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+.chip.good  { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+.chip.skip  { background: #f1f5f9; color: #64748b; border-color: #e2e8f0; }
+.import-unmapped-help { margin: 4px 0 14px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+.import-unmapped-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.import-unmapped-row {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  transition: border-color .15s ease, background .15s ease;
+}
+.import-unmapped-row[data-status="mapped"] { border-color: #bbf7d0; background: #f0fdf4; }
+.import-unmapped-row[data-status="skipped"] { border-color: #e2e8f0; background: #f8fafc; opacity: .85; }
+.import-row-summary { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.import-row-desc { flex: 1; font-weight: 700; font-size: 13px; min-width: 0; word-break: break-word; }
+.import-row-date { color: var(--muted); font-size: 11px; }
+.import-row-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+}
+.import-row-form .field.small span { font-size: 10px; }
+.import-row-form .field.small input,
+.import-row-form .field.small select {
+  font-size: 12px;
+  padding: 7px 9px;
+}
+.import-row-actions { display: flex; gap: 8px; justify-content: flex-end; align-items: end; }
+.import-row-actions .button { padding: 7px 10px; font-size: 11px; }
+.import-row-skipped { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--muted); font-size: 12px; }
+
+.import-learned-list { display: grid; gap: 6px; list-style: none; margin: 8px 0 0; padding: 0; }
+.import-learned-list li { display: flex; gap: 8px; align-items: center; font-size: 12px; color: var(--muted); }
+.import-learned-list code { background: #ecfdf5; color: #047857; border: 1px solid #bbf7d0; padding: 2px 6px; border-radius: 6px; font: 700 11px/1.2 ui-monospace, monospace; }
+.import-learned-list strong { color: #0f172a; font-size: 12px; }
 
 .import-actions { display: flex; justify-content: flex-end; gap: 12px; padding: 20px 22px; }
 .import-done { display: grid; place-items: center; gap: 12px; padding: 44px 24px; text-align: center; }

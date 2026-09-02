@@ -64,6 +64,23 @@ const statementImportSchema = z.object({
   fileName: z.string().trim().min(1).max(255),
   data: z.string().min(1),
   apply: z.boolean().optional().default(false),
+  manualMappings: z
+    .array(
+      z.object({
+        date: dateSchema,
+        amount: z.coerce.number(),
+        description: z.string().trim().min(1).max(500),
+        name: z.string().trim().min(1).max(140),
+        category: categorySchema,
+        billingType: billingTypeSchema,
+        plan: z.string().trim().max(120).optional().nullable(),
+        url: z.union([z.url(), z.literal("")]).optional().nullable(),
+        account: z.string().trim().max(160).optional().nullable(),
+        pattern: z.string().trim().max(120).optional().nullable(),
+      }),
+    )
+    .optional()
+    .default([]),
 });
 
 let repository: TableRepository | undefined;
@@ -330,8 +347,15 @@ app.http("statementImport", {
   handler: protectedHandler(async (request) => {
     const repo = await getRepository();
     const payload = statementImportSchema.parse(await request.json());
+    const manualMappings = (payload.manualMappings ?? []).map((mapping) => ({
+      ...mapping,
+      plan: emptyToNull(mapping.plan ?? null),
+      url: emptyToNull(mapping.url ?? null),
+      account: emptyToNull(mapping.account ?? null),
+      pattern: emptyToNull(mapping.pattern ?? null),
+    }));
     if (payload.apply) {
-      const applied = await applyStatementImport(repo, payload.fileName, payload.data);
+      const applied = await applyStatementImport(repo, payload.fileName, payload.data, manualMappings);
       return json({ applied: true, ...applied });
     }
     const preview = await previewStatementImport(repo, payload.fileName, payload.data);

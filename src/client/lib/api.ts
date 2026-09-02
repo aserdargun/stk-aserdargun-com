@@ -95,10 +95,25 @@ export const api = {
       body: JSON.stringify({ fileName, data }),
     });
   },
-  applyStatementImport(fileName: string, data: string) {
+  applyStatementImport(
+    fileName: string,
+    data: string,
+    manualMappings: Array<{
+      date: string;
+      amount: number;
+      description: string;
+      name: string;
+      category: string;
+      billingType: string;
+      plan: string | null;
+      url: string | null;
+      account: string | null;
+      pattern: string | null;
+    }> = [],
+  ) {
     return request<StatementImportResult>("/api/statements/import", {
       method: "POST",
-      body: JSON.stringify({ fileName, data, apply: true }),
+      body: JSON.stringify({ fileName, data, apply: true, manualMappings }),
     });
   },
 };

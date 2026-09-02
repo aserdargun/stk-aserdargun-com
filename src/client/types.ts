@@ -141,4 +141,6 @@ export interface StatementImportResult {
   entriesCreated: number;
   matchedSkipped: number;
   summary: { charges: number; newItems: number; newEntries: number; matched: number };
+  manualMappingsApplied?: number;
+  learnedPatterns?: Array<{ id: string; pattern: string; name: string }>;
 }

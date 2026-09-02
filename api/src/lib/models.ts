@@ -50,3 +50,15 @@ export interface SeedPayload {
     }
   >;
 }
+
+export interface LearnedMapping {
+  id: string;
+  pattern: string;
+  name: string;
+  category: Category;
+  billingType: BillingType;
+  plan: string | null;
+  url: string | null;
+  account: string | null;
+  createdAt: string;
+}

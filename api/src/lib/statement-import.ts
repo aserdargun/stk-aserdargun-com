@@ -1,6 +1,14 @@
 import { readFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
 import { getDocument } from "pdfjs-dist/legacy/build/pdf.mjs";
-import type { BillingType, Category, EntryRecord, ItemRecord } from "./models.js";
+import type {
+  BillingType,
+  Category,
+  EntryRecord,
+  ItemRecord,
+  LearnedMapping,
+  PeriodKind,
+} from "./models.js";
 import type { TableRepository } from "./storage.js";
 
 const round2 = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
@@ -77,6 +85,24 @@ export interface PreviewNewEntry {
   membership: string | null;
   note: string;
   sourceRef: string;
+}
+
+export interface ManualMappingPayload {
+  date: string;
+  amount: number;
+  description: string;
+  name: string;
+  category: Category;
+  billingType: BillingType;
+  plan: string | null;
+  url: string | null;
+  account: string | null;
+  pattern: string | null;
+}
+
+export interface ManualMappingResult {
+  applied: number;
+  patterns: string[];
 }
 
 export interface StatementImportPreview {
@@ -194,10 +220,68 @@ const isOnlineCandidate = (description: string) =>
   /\.(com|io|dev|ai|app|net|org|co|cloud|tech)\b/i.test(description) ||
   /(SUBSCR|BILL|CLOUD|PREMIUM)/i.test(description);
 
-async function loadCatalog(): Promise<CatalogService[]> {
+async function loadCatalog(repo: TableRepository): Promise<CatalogService[]> {
   const raw = await readFile(new URL("../data/card-digital-services.json", import.meta.url), "utf8");
   const catalog = JSON.parse(raw) as Catalog;
-  return compileServices(catalog.services);
+  const baseServices = compileServices(catalog.services);
+  const learned = await repo.listLearnedMappings();
+  const learnedServices = compileServices(learnedToServices(learned));
+  return [...baseServices, ...learnedServices];
+}
+
+function learnedToServices(learned: LearnedMapping[]): CatalogService[] {
+  return learned.map((mapping) => ({
+    key: `learned:${mapping.id}`,
+    name: mapping.name,
+    itemKey: null,
+    category: mapping.category,
+    billingType: mapping.billingType,
+    plan: mapping.plan,
+    url: mapping.url,
+    account: mapping.account,
+    patterns: [escapeForContainsRegex(mapping.pattern)],
+  }));
+}
+
+const REGEX_RESERVED = /[.*+?^${}()|[\]\\]/g;
+function escapeForContainsRegex(value: string): string {
+  return value.replace(REGEX_RESERVED, "\\$&");
+}
+
+export function extractLearnedPattern(description: string): string {
+  const tokens = description
+    .replace(/\d+/g, " ")
+    .split(/[\s/]+/)
+    .map((token) => token.replace(/^[^A-Za-zÇĞİÖŞÜçğıöşü*]+|[^A-Za-zÇĞİÖŞÜçğıöşü*]+$/g, ""))
+    .filter((token) => token.length >= 3);
+  if (tokens.length === 0) {
+    return description.trim().toUpperCase().slice(0, 24) || "UNKNOWN";
+  }
+  return tokens[0].toUpperCase();
+}
+
+export function buildLearnedMapping(input: {
+  description: string;
+  name: string;
+  category: Category;
+  billingType: BillingType;
+  plan: string | null;
+  url: string | null;
+  account: string | null;
+  pattern?: string;
+}): LearnedMapping {
+  const pattern = (input.pattern && input.pattern.trim()) || extractLearnedPattern(input.description);
+  return {
+    id: randomUUID(),
+    pattern: pattern.toUpperCase().trim(),
+    name: input.name.trim(),
+    category: input.category,
+    billingType: input.billingType,
+    plan: input.plan?.trim() || null,
+    url: input.url?.trim() || null,
+    account: input.account?.trim() || null,
+    createdAt: new Date().toISOString(),
+  };
 }
 
 export function resolveItem(items: ItemRecord[], service: CatalogService): {
@@ -245,12 +329,34 @@ function chargeToEntry(
   };
 }
 
+function manualMappingToEntry(
+  itemId: number | null,
+  mapping: ManualMappingPayload,
+  mappingId: string,
+  now: string,
+): PreviewNewEntry {
+  const oneTime = mapping.billingType === "one_time";
+  const membership = mapping.plan && mapping.plan !== "-" ? mapping.plan : null;
+  return {
+    serviceKey: `learned:${mappingId}`,
+    name: mapping.name,
+    itemId,
+    amount: round2(Math.abs(mapping.amount)),
+    currency: "TRY",
+    periodStart: oneTime ? mapping.date : `${mapping.date.slice(0, 7)}-01`,
+    periodKind: oneTime ? "one_time" : "month",
+    membership,
+    note: `Card: ${mapping.description}`,
+    sourceRef: `manual:${mappingId}`,
+  };
+}
+
 export async function previewStatementImport(
   repo: TableRepository,
   fileName: string,
   base64Data: string,
 ): Promise<StatementImportPreview> {
-  const services = await loadCatalog();
+  const services = await loadCatalog(repo);
   const lines = await extractPdfLines(base64Data);
   const { cutoffDate, transactions } = parseStatementLines(lines);
 
@@ -371,6 +477,7 @@ export async function applyStatementImport(
   repo: TableRepository,
   fileName: string,
   base64Data: string,
+  manualMappings: ManualMappingPayload[] = [],
 ) {
   const preview = await previewStatementImport(repo, fileName, base64Data);
   const now = new Date().toISOString();
@@ -396,6 +503,48 @@ export async function applyStatementImport(
     itemIdByServiceKey.set(newItem.serviceKey, item.id);
   }
 
+  // Apply manually-mapped unmapped transactions: remember the pattern, create
+  // the item, and add the ledger entry. Future statement imports will match
+  // these patterns against the catalog automatically.
+  const learnedMappings: LearnedMapping[] = [];
+  for (const mapping of manualMappings) {
+    const learned = buildLearnedMapping({
+      description: mapping.description,
+      name: mapping.name,
+      category: mapping.category,
+      billingType: mapping.billingType,
+      plan: mapping.plan,
+      url: mapping.url,
+      account: mapping.account,
+      pattern: mapping.pattern ?? undefined,
+    });
+    await repo.addLearnedMapping(learned);
+    learnedMappings.push(learned);
+  }
+
+  const manualItemIds = new Map<string, number>();
+  learnedMappings.forEach((learned, index) => {
+    const mapping = manualMappings[index];
+    manualItemIds.set(learned.id, -1); // placeholder; resolved below
+  });
+  const existingItems = await repo.listItems();
+  const itemsByNamePlan = new Map<string, ItemRecord>();
+  for (const item of existingItems) {
+    const key = `${item.name.trim().toLowerCase()}|${(item.plan ?? "").trim().toLowerCase()}`;
+    itemsByNamePlan.set(key, item);
+  }
+  learnedMappings.forEach((learned, index) => {
+    const mapping = manualMappings[index];
+    const key = `${mapping.name.trim().toLowerCase()}|${(mapping.plan ?? "").trim().toLowerCase()}`;
+    const existing = itemsByNamePlan.get(key);
+    if (existing) {
+      manualItemIds.set(learned.id, existing.id);
+      return;
+    }
+    // Create lazily; resolve below after we know the next id.
+    manualItemIds.set(learned.id, -2);
+  });
+
   let entriesCreated = 0;
   for (const entry of preview.newEntries) {
     const itemId = entry.itemId ?? itemIdByServiceKey.get(entry.serviceKey);
@@ -416,10 +565,58 @@ export async function applyStatementImport(
     entriesCreated += 1;
   }
 
+  for (let index = 0; index < manualMappings.length; index += 1) {
+    const mapping = manualMappings[index];
+    const learned = learnedMappings[index];
+    let itemId = manualItemIds.get(learned.id);
+    if (itemId === -2) {
+      const newItem: ItemRecord = {
+        id: await repo.nextItemId(),
+        name: mapping.name,
+        category: mapping.category,
+        billingType: mapping.billingType,
+        plan: mapping.plan,
+        url: mapping.url,
+        account: mapping.account,
+        powerWatts: null,
+        status: "active",
+        closedAt: null,
+        notes: "Created from a manual mapping of an unmapped statement charge.",
+        createdAt: now,
+        updatedAt: now,
+      };
+      await repo.saveItem(newItem);
+      itemId = newItem.id;
+      manualItemIds.set(learned.id, itemId);
+    }
+    if (!itemId || itemId < 1) continue;
+    const entry = manualMappingToEntry(itemId, mapping, learned.id, now);
+    const record: EntryRecord = {
+      id: await repo.nextEntryId(),
+      itemId,
+      amount: entry.amount,
+      currency: entry.currency,
+      periodStart: entry.periodStart,
+      periodKind: entry.periodKind as PeriodKind,
+      membership: entry.membership,
+      note: entry.note,
+      sourceRef: entry.sourceRef,
+      createdAt: now,
+    };
+    await repo.saveEntry(record);
+    entriesCreated += 1;
+  }
+
   return {
     itemsCreated: preview.newItems.length,
     entriesCreated,
     matchedSkipped: preview.matchedCount,
     summary: preview.summary,
+    manualMappingsApplied: manualMappings.length,
+    learnedPatterns: learnedMappings.map((learned) => ({
+      id: learned.id,
+      pattern: learned.pattern,
+      name: learned.name,
+    })),
   };
 }
