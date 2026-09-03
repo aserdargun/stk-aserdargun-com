@@ -1,6 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Stackfolio">
-  <rect width="64" height="64" rx="16" fill="#08101f"/>
-  <path d="M14 17h36v9H14z" fill="#38bdf8"/>
-  <path d="M19 29h31v9H19z" fill="#818cf8"/>
-  <path d="M14 41h36v9H14z" fill="#f59e0b"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" role="img" aria-label="stk">
+  <rect width="320" height="320" rx="64" fill="#121310"/>
+  <circle cx="160" cy="142" r="108" fill="#c8ff36"/>
+  <g transform="translate(60 42)">
+    <g fill="none" stroke="#0c0d0a" stroke-width="9" stroke-linejoin="round">
+      <path d="M20 56 L100 18 L180 56 L100 94 Z" />
+      <path d="M20 104 L100 66 L180 104 L100 142 Z" />
+      <path d="M20 152 L100 114 L180 152 L100 190 Z" />
+    </g></g>
+  <text x="160" y="296" text-anchor="middle" fill="#c8ff36"
+    font-family="Inter, Helvetica, Arial, sans-serif" font-size="40" font-weight="800"
+    letter-spacing="-2">STK</text>
 </svg>
