@@ -24,10 +24,10 @@
   "items": [
     {
       "key": "platform-1",
-      "name": "Turknet",
+      "name": "TurkNet",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "1Gbit",
+      "plan": "1 Gbps",
       "url": "https://www.turk.net/",
       "account": "aserdargun@gmail.com",
       "powerWatts": null,
@@ -50,7 +50,7 @@
     },
     {
       "key": "platform-3",
-      "name": "Youtube",
+      "name": "YouTube",
       "category": "Platform",
       "billingType": "recurring",
       "plan": "Premium",
@@ -79,7 +79,7 @@
       "name": "IHS",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "-",
+      "plan": null,
       "url": "https://www.ihs.com.tr/",
       "account": "aserdargun@gmail.com",
       "powerWatts": null,
@@ -92,7 +92,7 @@
       "name": "Google One",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "Premium(2TB)",
+      "plan": "Premium (2 TB)",
       "url": "https://one.google.com",
       "account": "aserdargun@gmail.com",
       "powerWatts": null,
@@ -102,7 +102,7 @@
     },
     {
       "key": "platform-7",
-      "name": "Linkedin",
+      "name": "LinkedIn",
       "category": "Platform",
       "billingType": "recurring",
       "plan": "Premium Career",
@@ -167,10 +167,10 @@
     },
     {
       "key": "platform-12",
-      "name": "Github",
+      "name": "GitHub",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "Github Pro",
+      "plan": "GitHub Pro",
       "url": "https://github.com/",
       "account": "aserdargun@gmail.com",
       "powerWatts": null,
@@ -235,7 +235,7 @@
       "name": "Azure",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "-",
+      "plan": null,
       "url": "https://portal.azure.com/",
       "account": "aserdargun@gmail.com",
       "powerWatts": null,
@@ -248,7 +248,7 @@
       "name": "Hetzner",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "-",
+      "plan": null,
       "url": "https://console.hetzner.com",
       "account": "K1159648225",
       "powerWatts": null,
@@ -258,7 +258,7 @@
     },
     {
       "key": "platform-19",
-      "name": "Huggingface",
+      "name": "Hugging Face",
       "category": "Platform",
       "billingType": "recurring",
       "plan": "Free",
@@ -300,7 +300,7 @@
       "name": "Google Cloud",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "-",
+      "plan": null,
       "url": "https://console.cloud.google.com/",
       "account": "aserdargun@gmail.com",
       "powerWatts": null,
@@ -310,7 +310,7 @@
     },
     {
       "key": "platform-23",
-      "name": "Elevenlabs",
+      "name": "ElevenLabs",
       "category": "Platform",
       "billingType": "recurring",
       "plan": "Starter",
@@ -323,7 +323,7 @@
     },
     {
       "key": "platform-24",
-      "name": "capcut",
+      "name": "CapCut",
       "category": "Platform",
       "billingType": "recurring",
       "plan": "Starter",
@@ -404,7 +404,7 @@
       "name": "GoDaddy",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "-",
+      "plan": null,
       "url": "https://godaddy.com",
       "account": "serdargundogdu@leanviser.com",
       "powerWatts": null,
@@ -648,7 +648,7 @@
     },
     {
       "key": "device-2",
-      "name": "iPad Wifi 128GB A16 + Apple Pencil USB-C",
+      "name": "iPad Wi-Fi 128GB A16 + Apple Pencil USB-C",
       "category": "Device",
       "billingType": "one_time",
       "plan": null,
@@ -952,7 +952,7 @@
       "currency": "TRY",
       "periodStart": "2026-01-01",
       "periodKind": "month",
-      "membership": "1Gbit",
+      "membership": "1 Gbps",
       "note": "Card: TURK.NET ISTANBUL TR 7.198,80",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091943251.PDF"
     },
@@ -1012,7 +1012,7 @@
       "currency": "TRY",
       "periodStart": "2025-10-01",
       "periodKind": "month",
-      "membership": "Github Pro",
+      "membership": "GitHub Pro",
       "note": "Card: GITHUB, INC. GITHUB.COM CAUS 2.035,70",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
     },
@@ -2222,7 +2222,7 @@
       "currency": "TRY",
       "periodStart": "2025-07-01",
       "periodKind": "month",
-      "membership": "Premium(2TB)",
+      "membership": "Premium (2 TB)",
       "note": "Card: GOOGLE *GOOGLE ONE G.CO/HELPPAY# GB 11,99",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092102074.PDF"
     },
@@ -2232,7 +2232,7 @@
       "currency": "TRY",
       "periodStart": "2025-08-01",
       "periodKind": "month",
-      "membership": "Premium(2TB)",
+      "membership": "Premium (2 TB)",
       "note": "Card: GOOGLE *GOOGLE ONE G.CO/HELPPAY# GB 11,99",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092047747.PDF"
     },
@@ -2242,7 +2242,7 @@
       "currency": "TRY",
       "periodStart": "2025-09-01",
       "periodKind": "month",
-      "membership": "Premium(2TB)",
+      "membership": "Premium (2 TB)",
       "note": "Card: GOOGLE *GOOGLE ONE G.CO/HELPPAY# GB 11,99",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
     },
@@ -2252,7 +2252,7 @@
       "currency": "TRY",
       "periodStart": "2025-10-01",
       "periodKind": "month",
-      "membership": "Premium(2TB)",
+      "membership": "Premium (2 TB)",
       "note": "Card: GOOGLE ONE LONDON GB +16,13",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092015947.PDF"
     },
@@ -2262,7 +2262,7 @@
       "currency": "TRY",
       "periodStart": "2025-10-01",
       "periodKind": "month",
-      "membership": "Premium(2TB)",
+      "membership": "Premium (2 TB)",
       "note": "Card: GOOGLE *GOOGLE ONE G.CO/HELPPAY# GB +2,40",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
     },
@@ -2272,7 +2272,7 @@
       "currency": "TRY",
       "periodStart": "2025-10-01",
       "periodKind": "month",
-      "membership": "Premium(2TB)",
+      "membership": "Premium (2 TB)",
       "note": "Card: GOOGLE ONE LONDON GB 99,99",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092032577.PDF"
     },
@@ -2282,7 +2282,7 @@
       "currency": "TRY",
       "periodStart": "2025-12-01",
       "periodKind": "month",
-      "membership": "Premium(2TB)",
+      "membership": "Premium (2 TB)",
       "note": "Card: GOOGLE *GOOGLE ONE G.CO/HELPPAY# GB 719,99",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_092002413.PDF"
     },
@@ -2292,7 +2292,7 @@
       "currency": "TRY",
       "periodStart": "2026-01-01",
       "periodKind": "month",
-      "membership": "Premium(2TB)",
+      "membership": "Premium (2 TB)",
       "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB 204,99",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091943251.PDF"
     },
@@ -2302,7 +2302,7 @@
       "currency": "TRY",
       "periodStart": "2026-02-01",
       "periodKind": "month",
-      "membership": "Premium(2TB)",
+      "membership": "Premium (2 TB)",
       "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB +33,06",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
     },
@@ -2312,7 +2312,7 @@
       "currency": "TRY",
       "periodStart": "2026-02-01",
       "periodKind": "month",
-      "membership": "Premium(2TB)",
+      "membership": "Premium (2 TB)",
       "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB 359,99",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091929668.PDF"
     },
@@ -2322,7 +2322,7 @@
       "currency": "TRY",
       "periodStart": "2026-03-01",
       "periodKind": "month",
-      "membership": "Premium(2TB)",
+      "membership": "Premium (2 TB)",
       "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB 359,99",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091915928.PDF"
     },
@@ -2332,7 +2332,7 @@
       "currency": "TRY",
       "periodStart": "2026-04-01",
       "periodKind": "month",
-      "membership": "Premium(2TB)",
+      "membership": "Premium (2 TB)",
       "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB 719,99",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091901554.PDF"
     },
@@ -2342,7 +2342,7 @@
       "currency": "TRY",
       "periodStart": "2026-05-01",
       "periodKind": "month",
-      "membership": "Premium(2TB)",
+      "membership": "Premium (2 TB)",
       "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB 204,99",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091843030.PDF"
     },
@@ -2352,7 +2352,7 @@
       "currency": "TRY",
       "periodStart": "2026-06-01",
       "periodKind": "month",
-      "membership": "Premium(2TB)",
+      "membership": "Premium (2 TB)",
       "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB 204,99",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091824027.PDF"
     },
@@ -2362,7 +2362,7 @@
       "currency": "TRY",
       "periodStart": "2026-07-01",
       "periodKind": "month",
-      "membership": "Premium(2TB)",
+      "membership": "Premium (2 TB)",
       "note": "Card: GOOGLE *GOOGLE ONE LONDON GBGB 204,99",
       "sourceRef": "Kredi_Karti_Hesap_Ozeti_AHMET_SERDAR_GUNDOGDU_20260817_091803501.PDF"
     },

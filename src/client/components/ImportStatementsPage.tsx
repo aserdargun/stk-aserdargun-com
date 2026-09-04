@@ -20,7 +20,13 @@ import {
   X,
 } from "lucide-react";
 import { api } from "../lib/api";
-import { formatBillingType, formatDate, formatMoney } from "../lib/format";
+import {
+  formatBillingType,
+  formatDate,
+  formatMembership,
+  formatMoney,
+  formatServiceName,
+} from "../lib/format";
 import type {
   BillingType,
   Category,
@@ -134,7 +140,7 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
   const handleFile = useCallback(async (file: File) => {
     const inferredName = inferPdfFileName(file, `statement-${new Date().toISOString().slice(0, 10)}.pdf`);
     if (!inferredName.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
-      setError("Please paste or choose a PDF account statement.");
+      setError("Please paste or choose a PDF credit-card statement.");
       return;
     }
     setError(null);
@@ -273,7 +279,7 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
           <span className="eyebrow">Statement import</span>
           <h1>Drop, paste, or map a statement.</h1>
           <p>
-            Choose a Yapı Kredi account statement PDF, paste it from WhatsApp, or fill in the
+            Choose a Yapı Kredi credit-card statement PDF, paste it from WhatsApp, or fill in the
             unmapped charges by hand. Anything you map by hand is remembered for next month.
           </p>
         </div>
@@ -307,13 +313,15 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
             <FileUp size={34} />
             <strong>Choose a statement PDF</strong>
             <span>
-              drag &amp; drop, or copy the PDF from WhatsApp and tap to paste it here. It is parsed
-              locally by the API and never stored.
+              drag &amp; drop, or copy the PDF from WhatsApp and paste it here. The private API
+              processes the PDF without storing the file.
             </span>
             <span className="import-paste-hint">
-              <ClipboardPaste size={14} /> Paste is armed — press{" "}
-              <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>V</kbd> or use the mobile paste menu anywhere on
-              this page.
+              <ClipboardPaste size={14} />
+              <span className="import-paste-copy">
+                Paste is armed — press <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>V</kbd> or use the mobile
+                paste menu anywhere on this page.
+              </span>
             </span>
             {pasteArmed && (
               <button
@@ -362,12 +370,12 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
               <ul className="import-list">
                 {preview.newItems.map((item) => (
                   <li key={item.serviceKey}>
-                    <span className="import-name">{item.name}</span>
+                    <span className="import-name">{formatServiceName(item.name)}</span>
                     <span className={`category-pill category-${item.category.toLowerCase()}`}>
                       {item.category}
                     </span>
                     <span className="import-muted">{formatBillingType(item.billingType)}</span>
-                    <span className="import-muted">{item.plan ?? ""}</span>
+                    <span className="import-muted">{formatMembership(item.plan, "")}</span>
                   </li>
                 ))}
               </ul>
@@ -380,7 +388,7 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
               <ul className="import-list">
                 {[...groupedEntries.entries()].map(([name, amount]) => (
                   <li key={name}>
-                    <span className="import-name">{name}</span>
+                    <span className="import-name">{formatServiceName(name)}</span>
                     <span className="import-muted">
                       {preview.newEntries
                         .filter((entry) => entry.name === name)

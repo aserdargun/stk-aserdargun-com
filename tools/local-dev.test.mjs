@@ -70,6 +70,24 @@ test("defines the complete loopback development stack", () => {
   assert.equal(vite.env.STACKFOLIO_LOCAL_AUTH_BYPASS, undefined);
 });
 
+test("supports explicit alternate ports without changing the secure defaults", () => {
+  const services = localDev.createServiceDefinitions(
+    "/repo",
+    {
+      STACKFOLIO_API_PORT: "3002",
+      STACKFOLIO_VITE_PORT: "5174",
+    },
+    "per-run-local-token",
+  );
+
+  const functions = services.find(({ name }) => name === "Functions");
+  assert.deepEqual(functions.args, ["start", "--port", "3002"]);
+
+  const vite = services.find(({ name }) => name === "Vite");
+  assert.deepEqual(vite.args.slice(-3), ["--port", "5174", "--strictPort"]);
+  assert.equal(vite.env.STACKFOLIO_API_PORT, "3002");
+});
+
 test("does not erase an inherited Azure marker", () => {
   const [,, functions] = localDev.createServiceDefinitions("/repo", {
     WEBSITE_SITE_NAME: "swa-stk-aserdargun-com",

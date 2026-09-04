@@ -4,11 +4,11 @@
   "services": [
     {
       "key": "turknet",
-      "name": "Turknet",
+      "name": "TurkNet",
       "itemKey": "platform-1",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "1Gbit",
+      "plan": "1 Gbps",
       "url": "https://www.turk.net/",
       "account": "aserdargun@gmail.com",
       "patterns": ["TURK\\.NET"]
@@ -26,7 +26,7 @@
     },
     {
       "key": "youtube",
-      "name": "Youtube",
+      "name": "YouTube",
       "itemKey": "platform-3",
       "category": "Platform",
       "billingType": "recurring",
@@ -52,7 +52,7 @@
       "itemKey": "platform-5",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "-",
+      "plan": null,
       "url": "https://www.ihs.com.tr/",
       "account": "aserdargun@gmail.com",
       "patterns": ["IHS\\.COM\\.TR"]
@@ -63,7 +63,7 @@
       "itemKey": "platform-6",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "Premium(2TB)",
+      "plan": "Premium (2 TB)",
       "url": "https://one.google.com",
       "account": "aserdargun@gmail.com",
       "patterns": ["GOOGLE ONE"]
@@ -92,11 +92,11 @@
     },
     {
       "key": "github",
-      "name": "Github",
+      "name": "GitHub",
       "itemKey": "platform-12",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "Github Pro",
+      "plan": "GitHub Pro",
       "url": "https://github.com/",
       "account": "aserdargun@gmail.com",
       "patterns": ["GITHUB"]
@@ -151,7 +151,7 @@
       "itemKey": "platform-17",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "-",
+      "plan": null,
       "url": "https://portal.azure.com/",
       "account": "aserdargun@gmail.com",
       "patterns": ["MICROSOFT"]
@@ -162,14 +162,14 @@
       "itemKey": "platform-18",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "-",
+      "plan": null,
       "url": "https://console.hetzner.com",
       "account": "K1159648225",
       "patterns": ["HETZNER"]
     },
     {
       "key": "huggingface",
-      "name": "Huggingface",
+      "name": "Hugging Face",
       "itemKey": "platform-19",
       "category": "Platform",
       "billingType": "recurring",
@@ -206,14 +206,14 @@
       "itemKey": "platform-22",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "-",
+      "plan": null,
       "url": "https://console.cloud.google.com/",
       "account": "aserdargun@gmail.com",
       "patterns": ["GOOGLE\\s*\\*?\\s*CLOUD"]
     },
     {
       "key": "elevenlabs",
-      "name": "Elevenlabs",
+      "name": "ElevenLabs",
       "itemKey": "platform-23",
       "category": "Platform",
       "billingType": "recurring",
@@ -224,7 +224,7 @@
     },
     {
       "key": "capcut",
-      "name": "capcut",
+      "name": "CapCut",
       "itemKey": "platform-24",
       "category": "Platform",
       "billingType": "recurring",
@@ -272,7 +272,7 @@
       "itemKey": null,
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "-",
+      "plan": null,
       "url": "https://kommunity.com/",
       "account": "aserdargun@gmail.com",
       "patterns": ["KOMMUNITY"]

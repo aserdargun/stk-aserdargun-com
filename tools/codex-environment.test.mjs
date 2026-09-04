@@ -69,13 +69,11 @@ test("keeps the prebuilt Functions manifest limited to runtime dependencies", ()
   const manifest = JSON.parse(
     readFileSync(resolve(repositoryRoot, "api/package.artifact.json"), "utf8"),
   );
+  const apiManifest = JSON.parse(
+    readFileSync(resolve(repositoryRoot, "api/package.json"), "utf8"),
+  );
 
   assert.equal(manifest.main, "dist/functions/*.js");
   assert.equal(manifest.devDependencies, undefined);
-  assert.deepEqual(manifest.dependencies, {
-    "@azure/data-tables": "13.3.2",
-    "@azure/functions": "4.16.2",
-    "pdfjs-dist": "6.2.108",
-    zod: "4.4.3",
-  });
+  assert.deepEqual(manifest.dependencies, apiManifest.dependencies);
 });

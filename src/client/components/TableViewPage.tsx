@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, CalendarRange, TableProperties } from "lucide-react";
 import { api } from "../lib/api";
-import { formatMoney } from "../lib/format";
+import { formatDate, formatMembership, formatMoney, formatServiceName, normalizeMembership } from "../lib/format";
 import type { TableViewData } from "../types";
 
 export function TableViewPage() {
@@ -26,7 +26,7 @@ export function TableViewPage() {
   }
 
   const rangeLabel = data.periods.length
-    ? `${data.periods[0].label} – ${data.periods[data.periods.length - 1].label}`
+    ? `${formatDate(`${data.periods[0].key}-01`, { month: "short", year: "numeric" })} – ${formatDate(`${data.periods[data.periods.length - 1].key}-01`, { month: "short", year: "numeric" })}`
     : "Latest 12 months";
 
   return (
@@ -87,12 +87,14 @@ export function TableViewPage() {
               <tbody>
                 {data.rows.map((row) => (
                   <tr key={row.id}>
-                    <th className="sticky-service" scope="row">{row.name}</th>
-                    <td className="current-membership">{row.currentMembership || "—"}</td>
+                    <th className="sticky-service" scope="row">{formatServiceName(row.name)}</th>
+                    <td className="current-membership">{formatMembership(row.currentMembership)}</td>
                     {row.cells.map((cell) => (
                       <td className="subscription-cell numeric" key={cell.period}>
                         <strong>{cell.amount === 0 ? "—" : formatMoney(cell.amount)}</strong>
-                        <small>{cell.membership || "—"}</small>
+                        {normalizeMembership(cell.membership) && (
+                          <small>{formatMembership(cell.membership)}</small>
+                        )}
                       </td>
                     ))}
                     <td className="numeric sticky-total"><strong>{formatMoney(row.total)}</strong></td>

@@ -94,6 +94,9 @@ on port `3001`, and serves Vite at the strict endpoint
 the Functions child for that run. Vite overwrites the capability header while
 proxying `/api`; direct requests to the raw Functions listener remain
 unauthorized even if they spoof localhost or a Static Web Apps principal.
+When those ports are already occupied, set `STACKFOLIO_API_PORT` and
+`STACKFOLIO_VITE_PORT` to unused loopback ports; the secure proxy capability and
+the default ports remain unchanged.
 
 To exercise production-like Static Web Apps routing and authentication instead,
 run the Codex `Full App` action. It builds the app, puts a capability-gated API

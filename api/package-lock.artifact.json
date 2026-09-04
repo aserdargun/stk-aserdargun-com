@@ -10,8 +10,8 @@
       "dependencies": {
         "@azure/data-tables": "13.3.2",
         "@azure/functions": "4.16.2",
-        "pdfjs-dist": "6.2.108",
-        "zod": "4.4.3"
+        "pdfjs-dist": "6.3.289",
+        "zod": "4.5.4"
       },
       "engines": {
         "node": ">=22"
@@ -44,9 +44,9 @@
       }
     },
     "node_modules/@azure/core-client": {
-      "version": "1.11.0",
-      "resolved": "https://registry.npmjs.org/@azure/core-client/-/core-client-1.11.0.tgz",
-      "integrity": "sha512-JjQWO6akOck45PH/XBrxzsQGAiKrfFl4m5iggJ0ItMIz5omRufOXWpqCPpdjKN3vKDzlSUvFjaMb7Zwf0gvAdA==",
+      "version": "1.11.1",
+      "resolved": "https://registry.npmjs.org/@azure/core-client/-/core-client-1.11.1.tgz",
+      "integrity": "sha512-2QygG2F76ZpMP2eMztiJvAiFMu71M9rDeU7vO/QKg5Css7MgM4frUOslFjhVjRhbGaCNPtz/S8M6y46/fFKVuQ==",
       "license": "MIT",
       "dependencies": {
         "@azure/abort-controller": "^2.1.2",
@@ -448,9 +448,9 @@
       "license": "MIT"
     },
     "node_modules/@typespec/ts-http-runtime": {
-      "version": "0.3.8",
-      "resolved": "https://registry.npmjs.org/@typespec/ts-http-runtime/-/ts-http-runtime-0.3.8.tgz",
-      "integrity": "sha512-bLMpVcWZNzq6lYOybwFwOAR1IXKcHnhUNqYeHjl1bET/qE3jFPFH+p8Wrh3rU4xwdnifPxmKNESBYnvnmc75aA==",
+      "version": "0.3.9",
+      "resolved": "https://registry.npmjs.org/@typespec/ts-http-runtime/-/ts-http-runtime-0.3.9.tgz",
+      "integrity": "sha512-edSdeAqkdxBVzA1yL1LrLCml1YjyCVvPMtMqJpbF+6K609tHe8V6sQUzFQSGcYNhcuhOceZtjvN32+mpIth30A==",
       "license": "MIT",
       "dependencies": {
         "http-proxy-agent": "^7.0.0",
@@ -607,9 +607,9 @@
       }
     },
     "node_modules/pdfjs-dist": {
-      "version": "6.2.108",
-      "resolved": "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.2.108.tgz",
-      "integrity": "sha512-YxFb+SQcodN2rnX9Tn3dHYlqfb7NjlzzfONPpJd+AKoKtUjEdevTfbC07d5TcczzOK6261auRkP/M8OBHs9vFQ==",
+      "version": "6.3.289",
+      "resolved": "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.3.289.tgz",
+      "integrity": "sha512-ZHjSVpDa3D6izMq8/04lvkhkATUmL9px6ChPaXc1k6nU2Mrhlg1/7F0bdUqCwUjw3NsPTfPZsMDUU6ZIcRaeQw==",
       "license": "Apache-2.0",
       "engines": {
         "node": ">=22.13.0 || >=24"
@@ -655,9 +655,9 @@
       }
     },
     "node_modules/zod": {
-      "version": "4.4.3",
-      "resolved": "https://registry.npmjs.org/zod/-/zod-4.4.3.tgz",
-      "integrity": "sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==",
+      "version": "4.5.4",
+      "resolved": "https://registry.npmjs.org/zod/-/zod-4.5.4.tgz",
+      "integrity": "sha512-sC95tT5iHHH9gtpj6A81kh+NEaRAUFN+qlUPDUbRfOMvNf5QCBqsb3WgvnpVtK5Y+4UfA6KqufotuTvMGiTlsA==",
       "license": "MIT",
       "funding": {
         "url": "https://github.com/sponsors/colinhacks"

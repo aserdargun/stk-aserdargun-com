@@ -18,7 +18,14 @@ import {
   type CostSort,
   type CostSortKey,
 } from "../lib/costs";
-import { formatBillingType, formatDate, formatMoney } from "../lib/format";
+import {
+  formatBillingType,
+  formatDate,
+  formatMembership,
+  formatMoney,
+  formatServiceName,
+  normalizeMembership,
+} from "../lib/format";
 import type { CostItemSummary } from "../types";
 import { ItemDrawer } from "./ItemDrawer";
 
@@ -101,9 +108,8 @@ function MembershipEditor({
           value={draft}
           onChange={(event) => onDraft(event.target.value)}
           maxLength={120}
-          required
           autoFocus
-          aria-label={`Membership for ${item.name}`}
+          aria-label={`Membership for ${formatServiceName(item.name)}`}
         />
         <button className="membership-action save" disabled={saving} aria-label="Save membership">
           <Check size={13} />
@@ -125,7 +131,7 @@ function MembershipEditor({
 
   return (
     <div className="membership-editor" onClick={stop}>
-      <span>{item.currentMembership || "—"}</span>
+      <span>{formatMembership(item.currentMembership)}</span>
       {item.latestEntryId ? (
         <button
           className="membership-action"
@@ -133,7 +139,7 @@ function MembershipEditor({
             event.stopPropagation();
             onBegin(item);
           }}
-          aria-label={`Edit membership for ${item.name}`}
+          aria-label={`Edit membership for ${formatServiceName(item.name)}`}
         >
           <Pencil size={12} />
         </button>
@@ -188,7 +194,7 @@ export function CostsPage({ onChanged }: { onChanged: (message: string) => void 
 
   const beginMembershipEdit = (item: CostItemSummary) => {
     setEditingMembershipId(item.id);
-    setMembershipDraft(item.currentMembership || "");
+    setMembershipDraft(normalizeMembership(item.currentMembership) || "");
     setError(null);
   };
 
@@ -406,11 +412,15 @@ export function CostsPage({ onChanged }: { onChanged: (message: string) => void 
                     type="button"
                     className="mobile-cost-open"
                     onClick={() => setSelectedId(item.id)}
-                    aria-label={`Open ${item.name} details`}
+                    aria-label={`Open ${formatServiceName(item.name)} details`}
                   >
                     <span className="mobile-cost-main">
-                      <strong>{item.name}</strong>
-                      <small>{item.currentMembership || `${item.entryCount} ledger entries`}</small>
+                      <strong>{formatServiceName(item.name)}</strong>
+                      <small>
+                        {normalizeMembership(item.currentMembership)
+                          ? formatMembership(item.currentMembership)
+                          : `${item.entryCount} ledger ${item.entryCount === 1 ? "entry" : "entries"}`}
+                      </small>
                     </span>
                     <strong className="mobile-cost-amount">{formatMoney(item.lifetimeSpend)}</strong>
                     <span className="mobile-cost-meta">
@@ -461,7 +471,7 @@ export function CostsPage({ onChanged }: { onChanged: (message: string) => void 
                   {visibleItems.map((item) => (
                     <tr key={item.id}>
                       <td>
-                        <strong>{item.name}</strong>
+                        <strong>{formatServiceName(item.name)}</strong>
                         <span>{item.entryCount} ledger {item.entryCount === 1 ? "entry" : "entries"}</span>
                       </td>
                       <td>
@@ -479,7 +489,7 @@ export function CostsPage({ onChanged }: { onChanged: (message: string) => void 
                           type="button"
                           className="table-detail-button"
                           onClick={() => setSelectedId(item.id)}
-                          aria-label={`Open ${item.name} details`}
+                          aria-label={`Open ${formatServiceName(item.name)} details`}
                         >
                           <ChevronRight size={17} aria-hidden="true" />
                         </button>

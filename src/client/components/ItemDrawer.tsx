@@ -10,7 +10,16 @@ import {
 import { Archive, Check, ExternalLink, Pencil, Plus, RotateCcw, X } from "lucide-react";
 import { api } from "../lib/api";
 import { buildItemMonthlySeries } from "../lib/costs";
-import { formatBillingType, formatDate, formatMoney, formatPeriodKind } from "../lib/format";
+import {
+  formatBillingType,
+  formatDate,
+  formatMembership,
+  formatMoney,
+  formatPeriodDate,
+  formatPeriodKind,
+  formatServiceName,
+  normalizeMembership,
+} from "../lib/format";
 import type { CostEntry, ItemDetail, PeriodKind } from "../types";
 
 const ItemMonthlyChart = lazy(() =>
@@ -66,7 +75,8 @@ export function ItemDrawer({
     [chartYear, detail?.entries],
   );
   const chartYears = chartData.availableYears.length ? chartData.availableYears : [chartData.year];
-  const currentMembership = detail?.entries[0]?.membership || detail?.item.plan || null;
+  const currentMembership =
+    normalizeMembership(detail?.entries[0]?.membership) || normalizeMembership(detail?.item.plan);
 
   const toggleStatus = async () => {
     if (!detail) return;
@@ -172,9 +182,13 @@ export function ItemDrawer({
               <span className={`category-pill category-${detail.item.category.toLowerCase()}`}>
                 {detail.item.category}
               </span>
-              <h2>{detail.item.name}</h2>
+              <h2>{formatServiceName(detail.item.name)}</h2>
               <div className="drawer-subtitle">
-                <span>{currentMembership || formatBillingType(detail.item.billingType)}</span>
+                <span>{
+                  currentMembership
+                    ? formatMembership(currentMembership)
+                    : formatBillingType(detail.item.billingType)
+                }</span>
                 <span className={`status-pill ${detail.item.status}`}>{detail.item.status}</span>
               </div>
             </div>
@@ -291,7 +305,7 @@ export function ItemDrawer({
             <section className="detail-section ledger-section">
               <div className="section-heading">
                 <h3>Ledger history</h3>
-                <span>{detail.entries.length} entries</span>
+                <span>{detail.entries.length} {detail.entries.length === 1 ? "entry" : "entries"}</span>
               </div>
               <div className="ledger-list">
                 {detail.entries.map((entry) =>
@@ -375,13 +389,13 @@ export function ItemDrawer({
                   ) : (
                     <div className="ledger-row" key={entry.id}>
                       <div className="ledger-row-main">
-                        <strong>{formatDate(entry.periodStart, { month: "short", year: "numeric" })}</strong>
+                        <strong>{formatPeriodDate(entry.periodStart, entry.periodKind)}</strong>
                         <span>
                           {formatPeriodKind(entry.periodKind)}
                           {entry.sourceRef ? ` · ${entry.sourceRef}` : ""}
                         </span>
                         <span className="ledger-membership">
-                          Membership: {entry.membership || detail.item.plan || "—"}
+                          Membership: {formatMembership(entry.membership || detail.item.plan)}
                         </span>
                         {entry.note && <small>{entry.note}</small>}
                       </div>
@@ -402,4 +416,3 @@ export function ItemDrawer({
     </div>
   );
 }
-

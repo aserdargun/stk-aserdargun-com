@@ -5,6 +5,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   CalendarRange,
+  Clock3,
   FileUp,
   Layers3,
   TrendingUp,
@@ -26,7 +27,7 @@ import {
   YAxis,
 } from "recharts";
 import { api } from "../lib/api";
-import { formatDate, formatMoney } from "../lib/format";
+import { formatDate, formatMoney, formatServiceName } from "../lib/format";
 import type { Category, DashboardData } from "../types";
 
 const categoryColors: Record<Category, string> = {
@@ -38,6 +39,33 @@ const categoryColors: Record<Category, string> = {
 
 export function selectInsightItems<T>(items: readonly T[]) {
   return items.slice(0, 4);
+}
+
+export function describeMonthlyFreshness(latestPeriod: string | null, now = new Date()) {
+  if (!latestPeriod) {
+    return {
+      label: "No monthly data yet",
+      detail: "Import a statement to start the monthly view",
+      needsAttention: true,
+    };
+  }
+
+  const latest = new Date(`${latestPeriod.slice(0, 7)}-01T00:00:00Z`);
+  const monthsElapsed = Math.max(
+    0,
+    (now.getUTCFullYear() - latest.getUTCFullYear()) * 12 +
+      now.getUTCMonth() -
+      latest.getUTCMonth(),
+  );
+
+  return {
+    label: `Current through ${formatDate(latestPeriod, { month: "long", year: "numeric" })}`,
+    detail:
+      monthsElapsed === 0
+        ? "Latest month recorded"
+        : `${monthsElapsed} month${monthsElapsed === 1 ? "" : "s"} since the latest monthly entry`,
+    needsAttention: monthsElapsed > 1,
+  };
 }
 
 function StatCard({
@@ -95,6 +123,7 @@ export function Dashboard({
 
   const yoy = data.metrics.yearOverYearPercent;
   const yoyPositive = yoy !== null && yoy >= 0;
+  const freshness = describeMonthlyFreshness(data.metrics.latestMonthlyPeriod);
 
   return (
     <div className="page-stack">
@@ -104,17 +133,30 @@ export function Dashboard({
           <h1>Know what your stack costs.</h1>
           <p>Track recurring tools, career investments, and hardware from one private ledger.</p>
         </div>
-        <label className="year-picker">
-          <CalendarRange size={17} />
-          <span>Analysis year</span>
-          <select value={data.year} onChange={(event) => setYear(Number(event.target.value))}>
-            {data.availableYears.map((option) => (
-              <option value={option} key={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="page-heading-tools">
+          <div
+            className={`data-freshness ${freshness.needsAttention ? "needs-attention" : ""}`}
+            aria-label={`Data freshness: ${freshness.label}. ${freshness.detail}.`}
+          >
+            <Clock3 size={17} aria-hidden="true" />
+            <span>
+              <small>Data freshness</small>
+              <strong>{freshness.label}</strong>
+              <em>{freshness.detail}</em>
+            </span>
+          </div>
+          <label className="year-picker">
+            <CalendarRange size={17} />
+            <span>Analysis year</span>
+            <select value={data.year} onChange={(event) => setYear(Number(event.target.value))}>
+              {data.availableYears.map((option) => (
+                <option value={option} key={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
       </section>
 
       <section className="stats-grid" aria-label="Portfolio metrics">
@@ -294,7 +336,7 @@ export function Dashboard({
                 <button key={item.id} onClick={onOpenCosts}>
                   <span className="rank">{String(index + 1).padStart(2, "0")}</span>
                   <span className="top-cost-name">
-                    <strong>{item.name}</strong>
+                    <strong>{formatServiceName(item.name)}</strong>
                     <small>{item.category}</small>
                   </span>
                   <strong>{formatMoney(item.spend)}</strong>

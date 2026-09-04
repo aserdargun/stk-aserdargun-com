@@ -7,8 +7,8 @@
   "dependencies": {
     "@azure/data-tables": "13.3.2",
     "@azure/functions": "4.16.2",
-    "pdfjs-dist": "6.2.108",
-    "zod": "4.4.3"
+    "pdfjs-dist": "6.3.289",
+    "zod": "4.5.4"
   },
   "engines": {
     "node": ">=22"

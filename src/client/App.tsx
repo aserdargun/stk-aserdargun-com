@@ -93,10 +93,10 @@ export function App() {
             <Cloud size={18} />
             <div>
               <strong>Private by design</strong>
-              <span>GitHub identity and encrypted Azure storage.</span>
+              <span>GitHub owner access and private Azure storage.</span>
             </div>
           </div>
-          <span className="version">Stackfolio v1.0</span>
+          <span className="version">Owner-only financial workspace</span>
         </div>
       </aside>
 

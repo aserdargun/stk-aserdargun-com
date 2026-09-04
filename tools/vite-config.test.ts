@@ -3,9 +3,9 @@ import { createApiProxyOptions } from "../vite.config";
 
 describe("Vite private API proxy capability", () => {
   it("overwrites the private request header with the supervisor-provided capability", () => {
-    const proxy = createApiProxyOptions("per-run-local-token");
+    const proxy = createApiProxyOptions("per-run-local-token", "3002");
 
-    expect(proxy.target).toBe("http://127.0.0.1:3001");
+    expect(proxy.target).toBe("http://127.0.0.1:3002");
     expect(proxy.headers).toEqual({
       "x-stackfolio-local-proxy-token": "per-run-local-token",
     });

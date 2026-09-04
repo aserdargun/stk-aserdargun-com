@@ -17,6 +17,8 @@ export function createServiceDefinitions(
   baseEnv = process.env,
   localProxyToken = generateLocalProxyToken(),
 ) {
+  const apiPort = baseEnv.STACKFOLIO_API_PORT || "3001";
+  const vitePort = baseEnv.STACKFOLIO_VITE_PORT || "5173";
   const azureDirectory = resolve(rootDir, ".azure");
   const sharedEnv = { ...baseEnv };
   delete sharedEnv.STACKFOLIO_LOCAL_AUTH_BYPASS;
@@ -49,7 +51,7 @@ export function createServiceDefinitions(
     {
       name: "Functions",
       command: "func",
-      args: ["start", "--port", "3001"],
+      args: ["start", "--port", apiPort],
       cwd: resolve(rootDir, "api"),
       env: {
         ...sharedEnv,
@@ -68,7 +70,7 @@ export function createServiceDefinitions(
         "--host",
         "127.0.0.1",
         "--port",
-        "5173",
+        vitePort,
         "--strictPort",
       ],
       cwd: rootDir,
