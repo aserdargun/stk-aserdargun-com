@@ -910,6 +910,20 @@ a { color: inherit; }
 .import-learned-list code { background: #ecfdf5; color: #047857; border: 1px solid #bbf7d0; padding: 2px 6px; border-radius: 6px; font: 700 11px/1.2 ui-monospace, monospace; }
 .import-learned-list strong { color: #0f172a; font-size: 12px; }
 
+.reconciliation-warning { display: grid; gap: 8px; padding: 14px 18px; margin: 0; border: 1px solid #fcd34d; border-radius: 12px; background: #fffbeb; }
+.reconciliation-warning-head { display: flex; align-items: center; gap: 8px; color: #92400e; }
+.reconciliation-warning-head svg { color: #b45309; }
+.reconciliation-warning-head strong { font: 800 13px Inter, sans-serif; }
+.reconciliation-warning p { margin: 0; color: #78350f; font-size: 12px; line-height: 1.5; }
+.reconciliation-warning ul { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.reconciliation-warning li { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border: 1px solid #fde68a; border-radius: 8px; background: #fff; font-size: 12px; }
+.reconciliation-warning li strong { color: #0f172a; font-size: 12px; }
+.reconciliation-warning .button { justify-self: start; margin-top: 4px; }
+.reconciliation-warning-hint { color: #92400e !important; font-style: italic; }
+
+.table-view-heading-tools { display: inline-flex; align-items: center; gap: 12px; }
+.table-view-heading-tools .button { padding: 6px 10px; font-size: 11px; }
+
 .import-mode-toggle { display: inline-flex; gap: 4px; align-self: center; padding: 4px; border: 1px solid var(--line); border-radius: 11px; background: #f8fafc; }
 .import-mode-toggle button { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; color: var(--muted); font: 700 11px/1 Inter, sans-serif; letter-spacing: .4px; text-transform: uppercase; border: 0; border-radius: 8px; background: transparent; cursor: pointer; transition: background .15s ease, color .15s ease; }
 .import-mode-toggle button:hover { color: var(--ink); }

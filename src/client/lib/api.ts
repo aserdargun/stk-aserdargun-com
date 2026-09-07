@@ -154,4 +154,28 @@ export const api = {
       body: JSON.stringify({ fileName, data, apply: true, manualMapping }),
     });
   },
+  /**
+   * Cross-check the Table View against the live `/api/items` list so the
+   * page can surface any drift (e.g. a new active cost that is missing
+   * from the matrix) and offer a one-tap re-sync. Both fetches run in
+   * parallel; the result of the table-view request is returned untouched
+   * so the page can keep using it as-is.
+   */
+  async reconcileTableView() {
+    const [tableData, itemsResponse] = await Promise.all([
+      request<TableViewData>("/api/table-view"),
+      request<{ items: CostItemSummary[] }>("/api/items?status=active"),
+    ]);
+    const activeItems = itemsResponse.items;
+    const tableItemIds = new Set(tableData.rows.map((row) => row.id));
+    const missingFromTable = activeItems.filter(
+      (item) => !tableItemIds.has(item.id),
+    );
+    return {
+      tableData,
+      activeCount: activeItems.length,
+      missingFromTable,
+      consistent: missingFromTable.length === 0,
+    };
+  },
 };

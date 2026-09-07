@@ -1,29 +1,67 @@
-import { useEffect, useState } from "react";
-import { ArrowRight, CalendarRange, TableProperties } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
+import { ArrowRight, AlertTriangle, CalendarRange, RefreshCcw, TableProperties } from "lucide-react";
 import { api } from "../lib/api";
 import { formatDate, formatMembership, formatMoney, formatServiceName, normalizeMembership } from "../lib/format";
-import type { TableViewData } from "../types";
+import type { CostItemSummary, TableViewData } from "../types";
+
+interface TableReconciliation {
+  activeCount: number;
+  missingFromTable: CostItemSummary[];
+  checkedAt: string;
+}
 
 export function TableViewPage() {
   const [data, setData] = useState<TableViewData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reconciliation, setReconciliation] = useState<TableReconciliation | null>(null);
+  const [resyncing, setResyncing] = useState(false);
+
+  // Run on every mount: fetch the table-view data and cross-check it against
+  // the active items list. If the two diverge, surface a banner so the user
+  // can re-sync without leaving the page.
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await api.reconcileTableView();
+      setData(result.tableData);
+      setReconciliation({
+        activeCount: result.activeCount,
+        missingFromTable: result.missingFromTable,
+        checkedAt: new Date().toISOString(),
+      });
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Table View data is unavailable.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    api
-      .getTableView()
-      .then((response) => {
-        setData(response);
-        setError(null);
-      })
-      .catch((reason: Error) => setError(reason.message))
-      .finally(() => setLoading(false));
-  }, []);
+    void load();
+  }, [load]);
+
+  const resync = async () => {
+    setResyncing(true);
+    try {
+      // The table-view is computed server-side; an extra round trip is the
+      // cheapest way to confirm the inconsistency was a stale snapshot
+      // (e.g. just-added item) and not a persistent server-side gap.
+      await load();
+    } finally {
+      setResyncing(false);
+    }
+  };
 
   if (loading) return <div className="page-state">Building your subscription table…</div>;
   if (error || !data) {
     return <div className="page-state error">{error || "Table View data is unavailable."}</div>;
   }
+
+  const drift = reconciliation && reconciliation.missingFromTable.length > 0
+    ? reconciliation
+    : null;
 
   const rangeLabel = data.periods.length
     ? `${formatDate(`${data.periods[0].key}-01`, { month: "short", year: "numeric" })} – ${formatDate(`${data.periods[data.periods.length - 1].key}-01`, { month: "short", year: "numeric" })}`
@@ -54,8 +92,58 @@ export function TableViewPage() {
             <span className="panel-kicker">Active costs only</span>
             <h2>{data.rows.length} active cost{data.rows.length === 1 ? "" : "s"}</h2>
           </div>
-          <strong>{formatMoney(data.grandTotal)} rolling total</strong>
+          <div className="table-view-heading-tools">
+            <strong>{formatMoney(data.grandTotal)} rolling total</strong>
+            <button
+              type="button"
+              className="button tertiary"
+              onClick={resync}
+              disabled={resyncing}
+              aria-label="Re-sync with Costs"
+            >
+              <RefreshCcw size={14} className={resyncing ? "spin" : ""} /> Re-sync
+            </button>
+          </div>
         </div>
+
+        {drift && (
+          <div className="reconciliation-warning" role="status">
+            <div className="reconciliation-warning-head">
+              <AlertTriangle size={16} />
+              <strong>
+                Table View is out of sync with Costs —{" "}
+                {drift.missingFromTable.length} active cost
+                {drift.missingFromTable.length === 1 ? "" : "s"} missing.
+              </strong>
+            </div>
+            <p>
+              The Costs page lists {drift.activeCount} active costs, but this matrix only
+              includes {data.rows.length}. The following are missing here:
+            </p>
+            <ul>
+              {drift.missingFromTable.map((item) => (
+                <li key={item.id}>
+                  <strong>{formatServiceName(item.name)}</strong>
+                  <span className="import-muted">
+                    {item.category} · {item.billingType}
+                    {item.latestPeriod ? ` · last entry ${item.latestPeriod}` : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="reconciliation-warning-hint">
+              This usually clears with a refresh; if it persists, the build needs a code fix.
+            </p>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={resync}
+              disabled={resyncing}
+            >
+              <RefreshCcw size={14} className={resyncing ? "spin" : ""} /> Re-sync now
+            </button>
+          </div>
+        )}
 
         {data.rows.length === 0 ? (
           <div className="empty-state">
