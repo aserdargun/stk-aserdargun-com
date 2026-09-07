@@ -66,12 +66,17 @@ export function buildRecurringTableView(
   entries: EntryRecord[],
   now = new Date(),
 ) {
-  const recurringItems = items
-    .filter((item) => item.status === "active" && item.billingType === "recurring")
+  // Table View mirrors the Costs page: every active cost item is a row,
+  // regardless of billing type. Recurring subscriptions fill the 12-month
+  // grid monthly; one-time charges and annual entries land in the month of
+  // their periodStart and leave the rest of the row empty. Closed items
+  // are excluded so the table stays in sync with the active portfolio.
+  const activeItems = items
+    .filter((item) => item.status === "active")
     .sort((left, right) => left.name.localeCompare(right.name) || left.id - right.id);
-  const recurringIds = new Set(recurringItems.map((item) => item.id));
+  const activeIds = new Set(activeItems.map((item) => item.id));
   const anchorEntry = latestEntry(
-    entries.filter((entry) => recurringIds.has(entry.itemId) && entry.periodKind === "month"),
+    entries.filter((entry) => activeIds.has(entry.itemId)),
   );
   const anchor = anchorEntry
     ? new Date(`${anchorEntry.periodStart.slice(0, 7)}-01T00:00:00Z`)
@@ -94,7 +99,7 @@ export function buildRecurringTableView(
     entriesByItem.set(entry.itemId, itemEntries);
   }
 
-  const rows = recurringItems.map((item) => {
+  const rows = activeItems.map((item) => {
     const itemEntries = entriesByItem.get(item.id) || [];
     const current = latestEntry(itemEntries);
     const cells = periods.map((period) => {
@@ -105,10 +110,7 @@ export function buildRecurringTableView(
         period: period.key,
         amount: round(
           itemEntries
-            .filter(
-              (entry) =>
-                entry.periodKind === "month" && entry.periodStart.slice(0, 7) === period.key,
-            )
+            .filter((entry) => entry.periodStart.slice(0, 7) === period.key)
             .reduce((total, entry) => total + entry.amount, 0),
         ),
         membership: effective?.membership || item.plan,

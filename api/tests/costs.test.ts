@@ -96,7 +96,7 @@ describe("ledger entry updates", () => {
   });
 });
 
-describe("active recurring Table View", () => {
+describe("active Table View", () => {
   it("builds a latest-data rolling 12-month matrix with memberships and totals", () => {
     const items = [
       item({ id: 1, name: "Alpha", plan: "Fallback" }),
@@ -118,7 +118,8 @@ describe("active recurring Table View", () => {
     expect(result.periods).toHaveLength(12);
     expect(result.periods[0].key).toBe("2025-02");
     expect(result.periods[11].key).toBe("2026-01");
-    expect(result.rows.map((row) => row.id)).toEqual([1, 2]);
+    // Every active cost is a row, in alphabetical order. Closed items are skipped.
+    expect(result.rows.map((row) => row.id)).toEqual([1, 4, 2]);
     expect(result.rows[0].cells[0]).toEqual({
       period: "2025-02",
       amount: 0,
@@ -132,10 +133,64 @@ describe("active recurring Table View", () => {
     });
     expect(result.rows[0].currentMembership).toBe("Pro Plus");
     expect(result.rows[0].total).toBe(35);
-    expect(result.rows[1].cells[11].membership).toBe("Team");
+    // The annual item lands in the month of its periodStart, "—" everywhere else.
+    expect(result.rows[1].cells[11]).toEqual({
+      period: "2026-01",
+      amount: 77,
+      membership: "Basic",
+    });
+    expect(result.rows[1].cells[10].amount).toBe(0);
+    expect(result.rows[1].total).toBe(77);
+    expect(result.rows[2].cells[11].membership).toBe("Team");
     expect(result.monthlyTotals[1]).toBe(10);
     expect(result.monthlyTotals[10]).toBe(30);
-    expect(result.monthlyTotals[11]).toBe(25);
-    expect(result.grandTotal).toBe(65);
+    // 2026-01 totals include both the recurring subscription and the annual charge.
+    expect(result.monthlyTotals[11]).toBe(102);
+    expect(result.grandTotal).toBe(142);
+  });
+
+  it("includes one-time charges in the month of their transaction date", () => {
+    const items = [item({ id: 1, name: "Certificate", billingType: "one_time", plan: null })];
+    const entries = [
+      entry({
+        id: 1,
+        itemId: 1,
+        amount: 250,
+        periodStart: "2026-04-18",
+        periodKind: "one_time",
+        membership: null,
+      }),
+    ];
+
+    const result = buildRecurringTableView(items, entries, new Date("2026-09-01T00:00:00Z"));
+
+    expect(result.rows).toHaveLength(1);
+    const aprilIndex = result.periods.findIndex((period) => period.key === "2026-04");
+    expect(result.rows[0].cells[aprilIndex]).toEqual({
+      period: "2026-04",
+      amount: 250,
+      membership: null,
+    });
+    // All other cells are empty.
+    for (const [index, cell] of result.rows[0].cells.entries()) {
+      if (index === aprilIndex) continue;
+      expect(cell.amount).toBe(0);
+    }
+    expect(result.rows[0].total).toBe(250);
+  });
+
+  it("includes a freshly added active cost even when it has no ledger entries yet", () => {
+    const items = [
+      item({ id: 1, name: "Existing", plan: "Pro" }),
+      item({ id: 2, name: "Newly added", plan: null }),
+    ];
+    const entries = [entry({ id: 1, itemId: 1, amount: 25, periodStart: "2026-05-01" })];
+
+    const result = buildRecurringTableView(items, entries, new Date("2026-09-01T00:00:00Z"));
+
+    expect(result.rows.map((row) => row.id)).toEqual([1, 2]);
+    expect(result.rows[1].name).toBe("Newly added");
+    expect(result.rows[1].total).toBe(0);
+    expect(result.rows[1].currentMembership).toBeNull();
   });
 });

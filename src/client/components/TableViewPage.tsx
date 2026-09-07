@@ -33,11 +33,13 @@ export function TableViewPage() {
     <div className="page-stack">
       <section className="page-heading compact-heading">
         <div>
-          <span className="eyebrow">Active recurring services</span>
-          <h1>Subscriptions, month by month.</h1>
+          <span className="eyebrow">Active services</span>
+          <h1>Active costs, month by month.</h1>
           <p>
-            Membership and actual monthly ledger costs across the latest 12-month data window,
-            with monthly and rolling-year totals.
+            Every active cost from the Costs page, including subscriptions, annual items, and
+            one-time charges. Recurring subscriptions fill the 12-month grid; one-time and annual
+            entries land in the month of their ledger date, with the rolling 12-month total on
+            the right.
           </p>
         </div>
         <div className="table-range-chip">
@@ -49,8 +51,8 @@ export function TableViewPage() {
       <section className="panel table-view-panel">
         <div className="table-view-heading">
           <div>
-            <span className="panel-kicker">Active + recurring only</span>
-            <h2>{data.rows.length} active subscription{data.rows.length === 1 ? "" : "s"}</h2>
+            <span className="panel-kicker">Active costs only</span>
+            <h2>{data.rows.length} active cost{data.rows.length === 1 ? "" : "s"}</h2>
           </div>
           <strong>{formatMoney(data.grandTotal)} rolling total</strong>
         </div>
@@ -58,8 +60,8 @@ export function TableViewPage() {
         {data.rows.length === 0 ? (
           <div className="empty-state">
             <TableProperties size={28} />
-            <strong>No active recurring services.</strong>
-            <span>Activate a recurring cost to include it in this view.</span>
+            <strong>No active costs.</strong>
+            <span>Add a cost from the Costs page to include it in this view.</span>
           </div>
         ) : (
           <>
