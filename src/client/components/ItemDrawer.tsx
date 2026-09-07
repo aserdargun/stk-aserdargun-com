@@ -7,7 +7,17 @@ import {
   useState,
   type FormEvent,
 } from "react";
-import { Archive, Check, ExternalLink, Pencil, Plus, RotateCcw, X } from "lucide-react";
+import {
+  Archive,
+  ArrowRightLeft,
+  Check,
+  ExternalLink,
+  Pencil,
+  Plus,
+  RotateCcw,
+  Search,
+  X,
+} from "lucide-react";
 import { api } from "../lib/api";
 import { buildItemMonthlySeries } from "../lib/costs";
 import {
@@ -20,7 +30,7 @@ import {
   formatServiceName,
   normalizeMembership,
 } from "../lib/format";
-import type { CostEntry, ItemDetail, PeriodKind } from "../types";
+import type { CostEntry, CostItemSummary, ItemDetail, PeriodKind } from "../types";
 
 const ItemMonthlyChart = lazy(() =>
   import("./ItemMonthlyChart").then((module) => ({ default: module.ItemMonthlyChart })),
@@ -52,6 +62,12 @@ export function ItemDrawer({
   const [entryDraft, setEntryDraft] = useState<EntryDraft | null>(null);
   const [chartYear, setChartYear] = useState<number>();
   const [error, setError] = useState<string | null>(null);
+  const [showMovePanel, setShowMovePanel] = useState(false);
+  const [moveTargetId, setMoveTargetId] = useState<number | null>(null);
+  const [moveQuery, setMoveQuery] = useState("");
+  const [moveCandidates, setMoveCandidates] = useState<CostItemSummary[] | null>(null);
+  const [moveCandidatesLoading, setMoveCandidatesLoading] = useState(false);
+  const [moveConfirming, setMoveConfirming] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -65,6 +81,70 @@ export function ItemDrawer({
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (!showMovePanel) {
+      setMoveQuery("");
+      setMoveTargetId(null);
+      setMoveCandidates(null);
+      setMoveCandidatesLoading(false);
+      setMoveConfirming(false);
+    }
+  }, [showMovePanel]);
+
+  const openMovePanel = async () => {
+    setShowMovePanel(true);
+    setError(null);
+    if (moveCandidates) return;
+    setMoveCandidatesLoading(true);
+    try {
+      const { items } = await api.getItems();
+      setMoveCandidates(
+        items
+          .filter((candidate) => candidate.id !== id)
+          .sort((a, b) => Number(a.status === "closed") - Number(b.status === "closed") || a.name.localeCompare(b.name)),
+      );
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Other costs could not be loaded.");
+      setShowMovePanel(false);
+    } finally {
+      setMoveCandidatesLoading(false);
+    }
+  };
+
+  const moveEntryCount = detail?.entries.length ?? 0;
+  const canMove = Boolean(detail && detail.item.status === "active" && moveEntryCount > 0);
+  const filteredMoveCandidates = useMemo(() => {
+    if (!moveCandidates) return [];
+    const needle = moveQuery.trim().toLowerCase();
+    if (!needle) return moveCandidates;
+    return moveCandidates.filter((candidate) =>
+      [candidate.name, candidate.currentMembership, candidate.category, candidate.account]
+        .filter(Boolean)
+        .some((field) => field!.toLowerCase().includes(needle)),
+    );
+  }, [moveCandidates, moveQuery]);
+  const selectedTarget = moveCandidates?.find((candidate) => candidate.id === moveTargetId) ?? null;
+
+  const confirmMove = async () => {
+    if (!moveTargetId) return;
+    setMoveConfirming(true);
+    setError(null);
+    try {
+      const response = await api.mergeItem(id, moveTargetId);
+      const targetName = selectedTarget ? formatServiceName(selectedTarget.name) : "the target cost";
+      const sourceName = detail ? formatServiceName(detail.item.name) : "this cost";
+      onChanged(
+        response.moved > 0
+          ? `Moved ${response.moved} ${response.moved === 1 ? "entry" : "entries"} from ${sourceName} to ${targetName}; source closed.`
+          : `Closed ${sourceName} with no entries; nothing was moved to ${targetName}.`,
+      );
+      onClose();
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "The ledger could not be moved.");
+      setMoveConfirming(false);
+    }
+  };
 
   const lifetimeSpend = useMemo(
     () => detail?.entries.reduce((total, entry) => total + entry.amount, 0) || 0,
@@ -206,7 +286,112 @@ export function ItemDrawer({
                 {detail.item.status === "active" ? <Archive size={17} /> : <RotateCcw size={17} />}
                 {detail.item.status === "active" ? "Close cost" : "Reactivate"}
               </button>
+              <button
+                className="button secondary"
+                onClick={() => (showMovePanel ? setShowMovePanel(false) : void openMovePanel())}
+                disabled={submitting || !canMove}
+                title={
+                  detail.item.status !== "active"
+                    ? "Closed costs cannot move their ledger"
+                    : moveEntryCount === 0
+                      ? "This cost has no entries to move"
+                      : undefined
+                }
+              >
+                <ArrowRightLeft size={17} /> Move ledger…
+              </button>
             </div>
+
+            {showMovePanel && (
+              <section className="move-panel" aria-label="Move ledger to another cost">
+                <div className="move-panel-header">
+                  <strong>Move {moveEntryCount} {moveEntryCount === 1 ? "entry" : "entries"} to…</strong>
+                  <span>
+                    The source cost closes after the move. Target must be an active cost.
+                  </span>
+                </div>
+                <label className="search-field move-panel-search">
+                  <Search size={18} />
+                  <input
+                    value={moveQuery}
+                    onChange={(event) => setMoveQuery(event.target.value)}
+                    placeholder="Search by name, plan, category, or account"
+                    aria-label="Filter target cost list"
+                  />
+                </label>
+                {moveCandidatesLoading ? (
+                  <div className="page-state">Loading costs…</div>
+                ) : filteredMoveCandidates.length === 0 ? (
+                  <div className="empty-state move-panel-empty">
+                    <span>No other cost matches “{moveQuery}”.</span>
+                  </div>
+                ) : (
+                  <ul className="move-panel-list" role="listbox" aria-label="Target cost">
+                    {filteredMoveCandidates.map((candidate) => {
+                      const selected = candidate.id === moveTargetId;
+                      const disabled = candidate.status !== "active";
+                      return (
+                        <li key={candidate.id}>
+                          <button
+                            type="button"
+                            className={`move-panel-item${selected ? " selected" : ""}`}
+                            onClick={() => !disabled && setMoveTargetId(candidate.id)}
+                            disabled={disabled}
+                            aria-selected={selected}
+                            role="option"
+                            title={
+                              disabled
+                                ? "Reactivate this cost before moving entries into it"
+                                : undefined
+                            }
+                          >
+                            <span className="move-panel-item-main">
+                              <strong>{formatServiceName(candidate.name)}</strong>
+                              <small>
+                                {candidate.category} · {formatBillingType(candidate.billingType)}
+                                {candidate.currentMembership
+                                  ? ` · ${formatMembership(candidate.currentMembership)}`
+                                  : ""}
+                              </small>
+                            </span>
+                            <span className={`status-pill ${candidate.status}`}>
+                              {candidate.status}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+                <div className="entry-form-actions move-panel-actions">
+                  <button
+                    type="button"
+                    className="text-button"
+                    onClick={() => setShowMovePanel(false)}
+                    disabled={moveConfirming}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="button primary small"
+                    onClick={() => void confirmMove()}
+                    disabled={
+                      moveConfirming ||
+                      !moveTargetId ||
+                      !canMove ||
+                      selectedTarget?.status !== "active"
+                    }
+                  >
+                    {moveConfirming
+                      ? "Moving…"
+                      : selectedTarget
+                        ? `Move to ${formatServiceName(selectedTarget.name)}`
+                        : "Choose a target cost"}
+                  </button>
+                </div>
+              </section>
+            )}
 
             {showEntryForm && (
               <form className="entry-form" onSubmit={addEntry}>

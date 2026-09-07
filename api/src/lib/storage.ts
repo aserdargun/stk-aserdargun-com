@@ -96,6 +96,52 @@ export async function backfillEntryMembership(
   });
 }
 
+export interface MoveEntriesClient {
+  getItem(id: number): Promise<ItemRecord | null>;
+  listEntriesForItem(itemId: number): Promise<EntryRecord[]>;
+  deleteEntry(itemId: number, entryId: number): Promise<void>;
+  saveEntry(entry: EntryRecord): Promise<EntryRecord>;
+  saveItem(item: ItemRecord): Promise<ItemRecord>;
+}
+
+export async function moveLedgerEntries(
+  client: MoveEntriesClient,
+  sourceId: number,
+  targetId: number,
+  now: () => string = () => new Date().toISOString(),
+): Promise<{ moved: number; closed: ItemRecord | null }> {
+  if (sourceId === targetId) {
+    throw new Error("Source and target cost must be different.");
+  }
+  const source = await client.getItem(sourceId);
+  if (!source) throw new Error("Source cost not found.");
+  const target = await client.getItem(targetId);
+  if (!target) throw new Error("Target cost not found.");
+  if (target.status === "closed") {
+    throw new Error("Target cost is closed. Reactivate it before moving entries.");
+  }
+  const sourceEntries = await client.listEntriesForItem(sourceId);
+  for (const entry of sourceEntries) {
+    await client.deleteEntry(sourceId, entry.id);
+    await client.saveEntry({ ...entry, itemId: targetId });
+  }
+  if (source.status === "active") {
+    const today = now().slice(0, 10);
+    const closed: ItemRecord = {
+      ...source,
+      status: "closed",
+      closedAt: source.closedAt || today,
+      notes: source.notes
+        ? `${source.notes}\nMoved ledger to cost #${targetId} (${target.name}).`
+        : `Moved ledger to cost #${targetId} (${target.name}).`,
+      updatedAt: now(),
+    };
+    await client.saveItem(closed);
+    return { moved: sourceEntries.length, closed };
+  }
+  return { moved: sourceEntries.length, closed: null };
+}
+
 function optional(value: string | null | undefined) {
   return value || undefined;
 }
@@ -311,6 +357,25 @@ export class TableRepository {
   async saveEntry(entry: EntryRecord) {
     await this.entries.upsertEntity(this.entryEntity(entry), "Replace");
     return entry;
+  }
+
+  async moveEntriesTo(
+    sourceId: number,
+    targetId: number,
+  ): Promise<{ moved: number; closed: ItemRecord | null }> {
+    return moveLedgerEntries(
+      {
+        getItem: (id) => this.getItem(id),
+        listEntriesForItem: (itemId) => this.listEntriesForItem(itemId),
+        deleteEntry: async (itemId, entryId) => {
+          await this.entries.deleteEntity(key(itemId), key(entryId));
+        },
+        saveEntry: (entry) => this.saveEntry(entry),
+        saveItem: (item) => this.saveItem(item),
+      },
+      sourceId,
+      targetId,
+    );
   }
 
   async nextEntryId() {

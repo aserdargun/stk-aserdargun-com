@@ -286,6 +286,36 @@ app.http("item", {
   }),
 });
 
+app.http("itemMerge", {
+  route: "items/{id}/merge",
+  methods: ["POST"],
+  authLevel: "anonymous",
+  handler: protectedHandler(async (request) => {
+    const id = parseId(request);
+    if (!id) return json({ error: "Invalid cost item id." }, 400);
+    const body = (await request.json().catch(() => null)) as { targetId?: unknown } | null;
+    const targetId = Number(body?.targetId);
+    if (!Number.isInteger(targetId) || targetId <= 0) {
+      return json({ error: "A valid target cost id is required." }, 400);
+    }
+    const repo = await getRepository();
+    if (!(await repo.getItem(id))) return json({ error: "Source cost not found." }, 404);
+    if (!(await repo.getItem(targetId))) return json({ error: "Target cost not found." }, 404);
+    try {
+      const result = await repo.moveEntriesTo(id, targetId);
+      return json({
+        moved: result.moved,
+        sourceId: id,
+        targetId,
+        closed: result.closed,
+      });
+    } catch (reason) {
+      const message = reason instanceof Error ? reason.message : "The move could not be completed.";
+      return json({ error: message }, 400);
+    }
+  }),
+});
+
 app.http("itemEntries", {
   route: "items/{id}/entries",
   methods: ["POST"],

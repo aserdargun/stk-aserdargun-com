@@ -61,6 +61,17 @@ export const api = {
       body: JSON.stringify(payload),
     });
   },
+  mergeItem(id: number, targetId: number) {
+    return request<{
+      moved: number;
+      sourceId: number;
+      targetId: number;
+      closed: ItemDetail["item"] | null;
+    }>(`/api/items/${id}/merge`, {
+      method: "POST",
+      body: JSON.stringify({ targetId }),
+    });
+  },
   addEntry(
     id: number,
     payload: {

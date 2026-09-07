@@ -256,13 +256,13 @@
       "patterns": ["OPENROUTER"]
     },
     {
-      "key": "apple",
-      "name": "Apple",
-      "itemKey": null,
+      "key": "chatgpt-app-store",
+      "name": "ChatGPT",
+      "itemKey": "platform-9",
       "category": "Platform",
       "billingType": "recurring",
-      "plan": "iCloud / App Store",
-      "url": "https://www.apple.com/",
+      "plan": "Plus",
+      "url": "https://chatgpt.com/",
       "account": "aserdargun@gmail.com",
       "patterns": ["APPLE\\.COM/BILL"]
     },
