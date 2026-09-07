@@ -307,7 +307,8 @@ app.http("itemMerge", {
         moved: result.moved,
         sourceId: id,
         targetId,
-        closed: result.closed,
+        removed: result.removed,
+        fallbackClosed: result.fallbackClosed,
       });
     } catch (reason) {
       const message = reason instanceof Error ? reason.message : "The move could not be completed.";

@@ -134,11 +134,16 @@ export function ItemDrawer({
       const response = await api.mergeItem(id, moveTargetId);
       const targetName = selectedTarget ? formatServiceName(selectedTarget.name) : "the target cost";
       const sourceName = detail ? formatServiceName(detail.item.name) : "this cost";
-      onChanged(
+      const movePart =
         response.moved > 0
-          ? `Moved ${response.moved} ${response.moved === 1 ? "entry" : "entries"} from ${sourceName} to ${targetName}; source closed.`
-          : `Closed ${sourceName} with no entries; nothing was moved to ${targetName}.`,
-      );
+          ? `Moved ${response.moved} ${response.moved === 1 ? "entry" : "entries"} from ${sourceName} to ${targetName}`
+          : `No entries to move from ${sourceName}`;
+      const tail = response.removed
+        ? "; source cost removed."
+        : response.fallbackClosed
+          ? "; source cost kept (some entries remained) and was closed."
+          : ".";
+      onChanged(`${movePart}${tail}`);
       onClose();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "The ledger could not be moved.");
@@ -305,9 +310,13 @@ export function ItemDrawer({
             {showMovePanel && (
               <section className="move-panel" aria-label="Move ledger to another cost">
                 <div className="move-panel-header">
-                  <strong>Move {moveEntryCount} {moveEntryCount === 1 ? "entry" : "entries"} to…</strong>
+                  <strong>
+                    Move {moveEntryCount} {moveEntryCount === 1 ? "entry" : "entries"} and remove{" "}
+                    {detail ? formatServiceName(detail.item.name) : "this cost"}
+                  </strong>
                   <span>
-                    The source cost closes after the move. Target must be an active cost.
+                    All ledger entries are transferred to the target cost, then this cost is
+                    permanently deleted so it disappears from the table. Pick an active target.
                   </span>
                 </div>
                 <label className="search-field move-panel-search">
@@ -386,7 +395,7 @@ export function ItemDrawer({
                     {moveConfirming
                       ? "Moving…"
                       : selectedTarget
-                        ? `Move to ${formatServiceName(selectedTarget.name)}`
+                        ? `Move to ${formatServiceName(selectedTarget.name)} & remove this cost`
                         : "Choose a target cost"}
                   </button>
                 </div>

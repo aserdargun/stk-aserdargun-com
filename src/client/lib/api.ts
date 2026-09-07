@@ -66,7 +66,8 @@ export const api = {
       moved: number;
       sourceId: number;
       targetId: number;
-      closed: ItemDetail["item"] | null;
+      removed: boolean;
+      fallbackClosed: boolean;
     }>(`/api/items/${id}/merge`, {
       method: "POST",
       body: JSON.stringify({ targetId }),

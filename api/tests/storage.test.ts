@@ -140,6 +140,9 @@ function makeClient(overrides: Partial<MoveEntriesClient>): MoveEntriesClient {
     deleteEntry: async (itemId, entryId) => {
       entries.delete(`${itemId}:${entryId}`);
     },
+    deleteItem: async (id) => {
+      items.delete(id);
+    },
     saveEntry: async (entry) => {
       entries.set(`${entry.itemId}:${entry.id}`, entry);
       return entry;
@@ -153,7 +156,7 @@ function makeClient(overrides: Partial<MoveEntriesClient>): MoveEntriesClient {
 }
 
 describe("moveLedgerEntries", () => {
-  it("moves every entry from source to target and closes the source", async () => {
+  it("moves every entry and removes the source cost when it ends up empty", async () => {
     const source = baseItem({ id: 31, name: "Apple" });
     const target = baseItem({ id: 9, name: "ChatGPT" });
     const a = baseEntry({ id: 1, itemId: 31, amount: 249.99, periodStart: "2026-04-01" });
@@ -167,9 +170,9 @@ describe("moveLedgerEntries", () => {
     const result = await moveLedgerEntries(client, 31, 9, () => "2026-09-07T10:00:00.000Z");
 
     expect(result.moved).toBe(2);
-    expect(result.closed?.status).toBe("closed");
-    expect(result.closed?.closedAt).toBe("2026-09-07");
-    expect(result.closed?.notes).toContain("Moved ledger to cost #9 (ChatGPT).");
+    expect(result.removed).toBe(true);
+    expect(result.fallbackClosed).toBe(false);
+    expect(await client.getItem(31)).toBeNull();
     const targetEntries = await client.listEntriesForItem(9);
     expect(targetEntries.map((entry) => entry.id).sort()).toEqual([1, 2]);
     expect(await client.listEntriesForItem(31)).toEqual([]);
@@ -193,21 +196,37 @@ describe("moveLedgerEntries", () => {
     await expect(moveLedgerEntries(client, 31, 9)).rejects.toThrow(/Source/);
   });
 
-  it("skips closing when source is already closed", async () => {
-    const source = baseItem({ id: 31, status: "closed", closedAt: "2026-07-15" });
-    const target = baseItem({ id: 9 });
-    const a = baseEntry({ id: 5, itemId: 31 });
-    const client = makeClient({});
+  it("falls back to closing the source when entries remain after the move", async () => {
+    const source = baseItem({ id: 31, name: "Apple" });
+    const target = baseItem({ id: 9, name: "ChatGPT" });
+    const a = baseEntry({ id: 1, itemId: 31 });
+    const b = baseEntry({ id: 2, itemId: 31 });
+    let sourceListingCalls = 0;
+    const client = makeClient({
+      // First listing: return both entries so the function plans to move them.
+      // Second listing: simulate a stale entry that survived, forcing the
+      // fallback close path instead of a delete.
+      listEntriesForItem: async (itemId) => {
+        if (itemId === 31) {
+          sourceListingCalls += 1;
+          return sourceListingCalls === 1 ? [a, b] : [a];
+        }
+        return [b];
+      },
+    });
     await client.saveItem(source);
     await client.saveItem(target);
     await client.saveEntry(a);
+    await client.saveEntry(b);
 
     const result = await moveLedgerEntries(client, 31, 9, () => "2026-09-07T10:00:00.000Z");
 
-    expect(result.moved).toBe(1);
-    expect(result.closed).toBeNull();
+    expect(result.moved).toBe(2);
+    expect(result.removed).toBe(false);
+    expect(result.fallbackClosed).toBe(true);
     const afterSource = await client.getItem(31);
     expect(afterSource?.status).toBe("closed");
-    expect(afterSource?.closedAt).toBe("2026-07-15");
+    expect(afterSource?.closedAt).toBe("2026-09-07");
+    expect(afterSource?.notes).toContain("Moved ledger to cost #9 (ChatGPT).");
   });
 });

@@ -100,6 +100,7 @@ export interface MoveEntriesClient {
   getItem(id: number): Promise<ItemRecord | null>;
   listEntriesForItem(itemId: number): Promise<EntryRecord[]>;
   deleteEntry(itemId: number, entryId: number): Promise<void>;
+  deleteItem(id: number): Promise<void>;
   saveEntry(entry: EntryRecord): Promise<EntryRecord>;
   saveItem(item: ItemRecord): Promise<ItemRecord>;
 }
@@ -109,7 +110,7 @@ export async function moveLedgerEntries(
   sourceId: number,
   targetId: number,
   now: () => string = () => new Date().toISOString(),
-): Promise<{ moved: number; closed: ItemRecord | null }> {
+): Promise<{ moved: number; removed: boolean; fallbackClosed: boolean }> {
   if (sourceId === targetId) {
     throw new Error("Source and target cost must be different.");
   }
@@ -125,6 +126,11 @@ export async function moveLedgerEntries(
     await client.deleteEntry(sourceId, entry.id);
     await client.saveEntry({ ...entry, itemId: targetId });
   }
+  const remaining = await client.listEntriesForItem(sourceId);
+  if (remaining.length === 0) {
+    await client.deleteItem(sourceId);
+    return { moved: sourceEntries.length, removed: true, fallbackClosed: false };
+  }
   if (source.status === "active") {
     const today = now().slice(0, 10);
     const closed: ItemRecord = {
@@ -137,9 +143,9 @@ export async function moveLedgerEntries(
       updatedAt: now(),
     };
     await client.saveItem(closed);
-    return { moved: sourceEntries.length, closed };
+    return { moved: sourceEntries.length, removed: false, fallbackClosed: true };
   }
-  return { moved: sourceEntries.length, closed: null };
+  return { moved: sourceEntries.length, removed: false, fallbackClosed: false };
 }
 
 function optional(value: string | null | undefined) {
@@ -318,6 +324,10 @@ export class TableRepository {
     return item;
   }
 
+  async deleteItem(id: number) {
+    await this.items.deleteEntity(itemPartition, key(id));
+  }
+
   async nextItemId() {
     const items = await this.listItems();
     return Math.max(0, ...items.map((item) => item.id)) + 1;
@@ -362,7 +372,7 @@ export class TableRepository {
   async moveEntriesTo(
     sourceId: number,
     targetId: number,
-  ): Promise<{ moved: number; closed: ItemRecord | null }> {
+  ): Promise<{ moved: number; removed: boolean; fallbackClosed: boolean }> {
     return moveLedgerEntries(
       {
         getItem: (id) => this.getItem(id),
@@ -370,6 +380,7 @@ export class TableRepository {
         deleteEntry: async (itemId, entryId) => {
           await this.entries.deleteEntity(key(itemId), key(entryId));
         },
+        deleteItem: (id) => this.deleteItem(id),
         saveEntry: (entry) => this.saveEntry(entry),
         saveItem: (item) => this.saveItem(item),
       },
