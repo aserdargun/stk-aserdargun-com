@@ -11,7 +11,7 @@ import { isAuthorizedRequest } from "../lib/auth.js";
 import { buildRecurringTableView, summarizeItems, updateEntry } from "../lib/costs.js";
 import { isValidIsoDate } from "../lib/dates.js";
 import type { EntryRecord, ItemRecord } from "../lib/models.js";
-import { applyStatementImport, previewStatementImport } from "../lib/statement-import.js";
+import { applyStatementImport, applySlipImport, previewStatementImport, previewSlipImport } from "../lib/statement-import.js";
 import { TableRepository } from "../lib/storage.js";
 
 const dateSchema = z
@@ -81,6 +81,24 @@ const statementImportSchema = z.object({
     )
     .optional()
     .default([]),
+});
+
+const slipImportSchema = z.object({
+  fileName: z.string().trim().min(1).max(255),
+  data: z.string().min(1),
+  apply: z.boolean().optional().default(false),
+  manualMapping: z
+    .object({
+      name: z.string().trim().min(1).max(140),
+      category: categorySchema,
+      billingType: billingTypeSchema,
+      plan: z.string().trim().max(120).optional().nullable(),
+      url: z.union([z.url(), z.literal("")]).optional().nullable(),
+      account: z.string().trim().max(160).optional().nullable(),
+      pattern: z.string().trim().max(120).optional().nullable(),
+    })
+    .optional()
+    .nullable(),
 });
 
 let repository: TableRepository | undefined;
@@ -390,6 +408,31 @@ app.http("statementImport", {
       return json({ applied: true, ...applied });
     }
     const preview = await previewStatementImport(repo, payload.fileName, payload.data);
+    return json({ preview: true, ...preview });
+  }),
+});
+
+app.http("slipImport", {
+  route: "slips/import",
+  methods: ["POST"],
+  authLevel: "anonymous",
+  handler: protectedHandler(async (request) => {
+    const repo = await getRepository();
+    const payload = slipImportSchema.parse(await request.json());
+    const manualMapping = payload.manualMapping
+      ? {
+          ...payload.manualMapping,
+          plan: emptyToNull(payload.manualMapping.plan ?? null),
+          url: emptyToNull(payload.manualMapping.url ?? null),
+          account: emptyToNull(payload.manualMapping.account ?? null),
+          pattern: emptyToNull(payload.manualMapping.pattern ?? null),
+        }
+      : null;
+    if (payload.apply) {
+      const applied = await applySlipImport(repo, payload.fileName, payload.data, manualMapping);
+      return json({ applied: true, ...applied });
+    }
+    const preview = await previewSlipImport(repo, payload.fileName, payload.data);
     return json({ preview: true, ...preview });
   }),
 });

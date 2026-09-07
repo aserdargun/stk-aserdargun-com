@@ -45,6 +45,20 @@ AZURE_STORAGE_CONNECTION_STRING=... node tools/import-card-statements.mjs \
   --dir data/statements --apply-azure
 ```
 
+A missing charge that the statement didn't include (after the cutoff, on a
+different card, posted late) can be added as a single slip:
+
+```bash
+npm run import:slip -- /path/to/slip.pdf
+# or with a manual mapping for an unknown merchant
+node tools/import-card-statements.mjs --slip /path/to/slip.pdf \
+  --map-name "Nanonoble" --map-category Platform --map-billing one_time \
+  --map-pattern "NANONOBLE"
+```
+
+The Import view has a **Single slip** tab for the same flow with the private
+API. Slips never replace statement-window entries; they only append.
+
 Merchants are classified by the curated catalog in
 `data/card-digital-services.json`; add a new merchant there when a new digital
 service first appears.

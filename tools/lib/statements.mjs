@@ -150,3 +150,116 @@ export function compileServices(services) {
 }
 
 export { TRANSACTION_RE };
+
+// --- Single-charge digital slip (POS) parser --------------------------------
+// Mirrors api/src/lib/statement-import.ts so the local CLI can import a single
+// slip the same way the API can. The two implementations must stay in sync.
+
+const SLIP_DATE_RE = /\b(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})\b/;
+const SLIP_DATE_ONLY_RE = /\b(\d{2})\/(\d{2})\/(\d{4})\b/;
+const SLIP_AMOUNT_RE = /TUTAR\s*[:=]?\s*([\d.]+,\d{2})/i;
+const SLIP_TERMINAL_RE = /TERMİNAL\s*NO\s*[:=]?\s*([A-Z0-9]+)/i;
+const SLIP_WORKPLACE_RE = /İŞYERİ\s*NO\s*[:=]?\s*([A-Z0-9]+)/i;
+const SLIP_APPROVAL_RE = /ONAY\s*KODU\s*[:=]?\s*(\d+)/i;
+const SLIP_SEQUENCE_RE = /SIRA\s*NO\s*[:=]?\s*(\d+)/i;
+const SLIP_BANKREF_RE = /BANKA\s*REF\s*NO\s*[:=]?\s*(\d+)/i;
+const SLIP_RRN_RE = /\bRRN\s*[:=]?\s*(\d+)/i;
+const SLIP_AID_RE = /AID\s*[:=]?\s*([A-Z0-9]+)/i;
+const SLIP_CARD_RE = /\b(\d{0,6})\*+(\d{4})\b/;
+const SLIP_NETWORK_RE = /\b(VISA|MASTERCARD|MAESTRO|AMEX|TROY)\b/i;
+
+const _isoSlipDate = (day, month, year) => `${year}-${month}-${day}`;
+
+function _firstMatch(re, text) {
+  const m = re.exec(text);
+  return m ? m[1] : null;
+}
+
+function _cleanLine(value) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function _pickMerchant(lines) {
+  for (const raw of lines) {
+    const line = _cleanLine(raw);
+    if (!line) continue;
+    if (SLIP_DATE_RE.test(line)) continue;
+    if (SLIP_AMOUNT_RE.test(line)) continue;
+    if (/^[\d*]+$/.test(line)) continue;
+    if (/^SIRA NO|^ONAY KODU|^BANKA REF|^RRN|^AID|^TUTAR|^GRUP NO/i.test(line)) continue;
+    if (/^[A-ZÇĞİÖŞÜ][A-Z0-9 .ÇĞİÖŞÜ&'/-]{1,}$/.test(line)) return line;
+  }
+  return null;
+}
+
+function _pickCity(lines, merchantIndex) {
+  for (let index = merchantIndex + 1; index < Math.min(merchantIndex + 5, lines.length); index += 1) {
+    const line = _cleanLine(lines[index] ?? "");
+    if (!line) continue;
+    if (SLIP_DATE_RE.test(line)) return null;
+    if (/^[\d*]+$/.test(line)) return null;
+    if (/^[A-Z]{2,}\/[A-Z]{2,3}$/.test(line)) return line;
+    return null;
+  }
+  return null;
+}
+
+export function parseSlipLines(lines) {
+  if (lines.length === 0) return null;
+  const merchantIndex = lines.findIndex((raw) => {
+    const line = _cleanLine(raw);
+    return Boolean(
+      line &&
+        /^[A-ZÇĞİÖŞÜ][A-Z0-9 .ÇĞİÖŞÜ&'/-]{1,}$/.test(line) &&
+        !SLIP_DATE_RE.test(line) &&
+        !SLIP_AMOUNT_RE.test(line),
+    );
+  });
+  const merchant = merchantIndex >= 0 ? _cleanLine(lines[merchantIndex]) : null;
+  if (!merchant) return null;
+
+  const city = _pickCity(lines, merchantIndex);
+  const flattened = lines.map(_cleanLine).filter(Boolean).join(" \u00b7 ");
+
+  const dateTimeMatch = SLIP_DATE_RE.exec(flattened);
+  let date = null;
+  let time = null;
+  if (dateTimeMatch) {
+    date = _isoSlipDate(dateTimeMatch[1], dateTimeMatch[2], dateTimeMatch[3]);
+    time = `${dateTimeMatch[4]}:${dateTimeMatch[5]}:${dateTimeMatch[6]}`;
+  } else {
+    const dateOnlyMatch = SLIP_DATE_ONLY_RE.exec(flattened);
+    if (dateOnlyMatch) date = _isoSlipDate(dateOnlyMatch[1], dateOnlyMatch[2], dateOnlyMatch[3]);
+  }
+  if (!date) return null;
+
+  const amountMatch = SLIP_AMOUNT_RE.exec(flattened);
+  if (!amountMatch) return null;
+  const amount = Number(amountMatch[1].replace(/\./g, "").replace(",", "."));
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+
+  const cardMatch = SLIP_CARD_RE.exec(flattened);
+  const networkMatch = SLIP_NETWORK_RE.exec(flattened);
+
+  const references = {
+    terminalNo: _firstMatch(SLIP_TERMINAL_RE, flattened),
+    workplaceNo: _firstMatch(SLIP_WORKPLACE_RE, flattened),
+    approvalCode: _firstMatch(SLIP_APPROVAL_RE, flattened),
+    sequenceNo: _firstMatch(SLIP_SEQUENCE_RE, flattened),
+    bankRefNo: _firstMatch(SLIP_BANKREF_RE, flattened),
+    rrn: _firstMatch(SLIP_RRN_RE, flattened),
+    aid: _firstMatch(SLIP_AID_RE, flattened),
+    cardLast4: cardMatch ? cardMatch[2] : null,
+    network: networkMatch ? networkMatch[1].toUpperCase() : null,
+  };
+
+  return {
+    merchant,
+    city,
+    date,
+    time,
+    amount,
+    description: city ? `${merchant} ${city}` : merchant,
+    references,
+  };
+}

@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
+import { ImportStatementsPage } from "./components/ImportStatementsPage";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -50,5 +51,14 @@ describe("App branding", () => {
     expect(markup).toContain(">Costs</span>");
     expect(markup).toContain(">Table View</span>");
     expect(markup).toContain(">Import</span>");
+  });
+
+  it("exposes both statement and slip import modes on the import page", () => {
+    const markup = renderToStaticMarkup(<ImportStatementsPage onImported={() => {}} />);
+
+    expect(markup).toContain("aria-label=\"Import mode\"");
+    expect(markup).toContain("Statement");
+    expect(markup).toContain("Single slip");
+    expect(markup).toContain("Choose a statement PDF");
   });
 });

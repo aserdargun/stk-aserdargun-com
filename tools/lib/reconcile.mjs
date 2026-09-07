@@ -215,3 +215,143 @@ export function reconcile({ seed, charges, now = new Date().toISOString().slice(
 
   return { mergedSeed, report, addedEntries, newItems };
 }
+
+function slipToEntry(slip, service, itemKey, fileName) {
+  const oneTime = service.billingType === "one_time";
+  const membership =
+    service.plan && service.plan !== "-" && service.plan !== "None" ? service.plan : null;
+  const ref =
+    slip.references?.bankRefNo ??
+    slip.references?.rrn ??
+    slip.references?.sequenceNo ??
+    null;
+  const sourceRef = ref ? `slip:${fileName}#${ref}` : `slip:${fileName}`;
+  return {
+    itemKey,
+    amount: round2(slip.amount),
+    currency: "TRY",
+    periodStart: oneTime ? slip.date : `${slip.date.slice(0, 7)}-01`,
+    periodKind: oneTime ? "one_time" : "month",
+    membership,
+    note: `Slip: ${slip.merchant}${slip.city ? ` (${slip.city})` : ""} \u00b7 file: ${fileName}`,
+    sourceRef,
+  };
+}
+
+function recomputeMetadataForSlip(seed, now, report) {
+  const entries = seed.entries;
+  const categoryTotals = {};
+  for (const entry of entries) {
+    const item = seed.items.find((candidate) => candidate.key === entry.itemKey);
+    const plural = CATEGORY_PLURAL[item?.category] ?? "Other";
+    categoryTotals[plural] = round2((categoryTotals[plural] ?? 0) + entry.amount);
+  }
+  const grandTotal = round2(entries.reduce((total, entry) => total + entry.amount, 0));
+  return {
+    ...seed.metadata,
+    importedOn: now,
+    sourceGrandTotal: grandTotal,
+    importedGrandTotal: grandTotal,
+    sourceCategoryTotals: categoryTotals,
+    importPolicy:
+      seed.metadata.importPolicy ??
+      "Digital-service ledger entries are sourced from credit-card statements and single slips.",
+    slipImport: {
+      runDate: now,
+      addedEntryCount: report.summary.addedEntries,
+      newItemCount: report.summary.newItems,
+    },
+  };
+}
+
+/**
+ * Reconcile a single digital slip into the current seed.
+ *
+ * Unlike a statement, a slip does not replace any existing window of entries;
+ * it simply appends one new ledger row. If the slip's merchant is in the
+ * catalog, the existing item (matched by name + plan) is reused. Otherwise a
+ * new item is created from the provided `manualMapping`. The function returns
+ * the merged seed plus a small report describing the change.
+ */
+export function reconcileSlip({
+  seed,
+  slip,
+  service,
+  fileName,
+  manualMapping = null,
+  now = new Date().toISOString().slice(0, 10),
+}) {
+  const items = [...seed.items];
+  const entries = [...seed.entries];
+
+  const report = {
+    matched: Boolean(service),
+    addedEntries: [],
+    newItem: null,
+    summary: { addedEntries: 0, newItems: 0 },
+  };
+
+  // Decide which catalog record drives the entry. When the slip's merchant
+  // is in the catalog we keep the catalog's metadata; otherwise we use the
+  // user-supplied manual mapping.
+  const effectiveService = service
+    ? {
+        ...service,
+        plan: service.plan && service.plan !== "-" ? service.plan : null,
+      }
+    : {
+        key: `manual:${slip.merchant}`,
+        name: manualMapping?.name ?? slip.merchant,
+        category: manualMapping?.category ?? "Other",
+        billingType: manualMapping?.billingType ?? "one_time",
+        plan: manualMapping?.plan ?? null,
+      };
+
+  // Try to find an existing item by exact name (+ plan if both present).
+  const targetPlan = effectiveService.plan ?? "";
+  const matches = items.filter(
+    (item) =>
+      item.name.trim().toLowerCase() === effectiveService.name.trim().toLowerCase() &&
+      ((item.plan ?? "").trim().toLowerCase() === targetPlan.trim().toLowerCase() ||
+        (!item.plan && !effectiveService.plan)),
+  );
+  let itemKey = matches.length === 1 ? matches[0].key : null;
+
+  if (!itemKey) {
+    const newItem = {
+      key: nextKey(items, effectiveService.category),
+      name: effectiveService.name,
+      category: effectiveService.category,
+      billingType: effectiveService.billingType,
+      plan: effectiveService.plan,
+      url: manualMapping?.url ?? service?.url ?? null,
+      account: manualMapping?.account ?? service?.account ?? null,
+      powerWatts: null,
+      status: "active",
+      closedAt: null,
+      notes: service
+        ? "Created from a single digital slip."
+        : "Created from a manual mapping of a single digital slip.",
+    };
+    items.push(newItem);
+    itemKey = newItem.key;
+    report.newItem = newItem;
+    report.summary.newItems = 1;
+  }
+
+  const entry = slipToEntry(slip, effectiveService, itemKey, fileName);
+  entries.push(entry);
+  report.addedEntries.push(entry);
+  report.summary.addedEntries = 1;
+
+  const mergedSeed = {
+    ...seed,
+    items,
+    entries: entries.sort(
+      (a, b) => a.itemKey.localeCompare(b.itemKey) || a.periodStart.localeCompare(b.periodStart),
+    ),
+  };
+  mergedSeed.metadata = recomputeMetadataForSlip(mergedSeed, now, report);
+
+  return { mergedSeed, report };
+}

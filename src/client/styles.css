@@ -910,6 +910,21 @@ a { color: inherit; }
 .import-learned-list code { background: #ecfdf5; color: #047857; border: 1px solid #bbf7d0; padding: 2px 6px; border-radius: 6px; font: 700 11px/1.2 ui-monospace, monospace; }
 .import-learned-list strong { color: #0f172a; font-size: 12px; }
 
+.import-mode-toggle { display: inline-flex; gap: 4px; align-self: center; padding: 4px; border: 1px solid var(--line); border-radius: 11px; background: #f8fafc; }
+.import-mode-toggle button { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; color: var(--muted); font: 700 11px/1 Inter, sans-serif; letter-spacing: .4px; text-transform: uppercase; border: 0; border-radius: 8px; background: transparent; cursor: pointer; transition: background .15s ease, color .15s ease; }
+.import-mode-toggle button:hover { color: var(--ink); }
+.import-mode-toggle button.active { color: #0c4a6e; background: #e0f2fe; box-shadow: 0 1px 0 rgba(2,132,199,.05); }
+.import-mode-toggle svg { color: currentColor; }
+
+.import-slip-details { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.import-slip-details li { display: grid; gap: 4px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; }
+.import-slip-details strong { color: var(--ink); font: 700 13px Inter, sans-serif; }
+.import-slip-details code { color: #0f172a; font: 700 11px/1.4 ui-monospace, monospace; }
+.import-slip-label { color: var(--muted); font: 700 9px/1 Inter, sans-serif; letter-spacing: .6px; text-transform: uppercase; }
+
+.import-slip-note { display: inline-flex; align-items: center; gap: 6px; margin: 10px 0 0; padding: 8px 12px; color: #075985; font-size: 12px; font-weight: 700; border-radius: 9px; background: #e0f2fe; }
+.import-slip-note svg { color: #0284c7; }
+
 .import-actions { display: flex; justify-content: flex-end; gap: 12px; padding: 20px 22px; }
 .import-done { display: grid; place-items: center; gap: 12px; padding: 44px 24px; text-align: center; }
 .import-done svg { color: var(--mint-dark); }
@@ -921,4 +936,9 @@ a { color: inherit; }
 
 @media (max-width: 860px) {
   .sidebar::before { background-size: auto, 28px 28px, 28px 28px; }
+}
+
+@media (max-width: 720px) {
+  .page-heading.compact-heading { flex-direction: column; align-items: flex-start; }
+  .import-mode-toggle { align-self: flex-start; }
 }

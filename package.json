@@ -19,7 +19,9 @@
     "test:client": "vitest run src/client tools/vite-config.test.ts",
     "test:local-dev": "node --test tools/*.test.mjs",
     "import:statements": "node tools/import-card-statements.mjs --dir data/statements",
-    "import:statements:dry": "node tools/import-card-statements.mjs --dir data/statements --dry-run"
+    "import:statements:dry": "node tools/import-card-statements.mjs --dir data/statements --dry-run",
+    "import:slip": "node tools/import-card-statements.mjs --slip",
+    "import:slip:dry": "node tools/import-card-statements.mjs --slip --dry-run"
   },
   "dependencies": {
     "lucide-react": "1.41.0",

@@ -13,6 +13,7 @@ import {
   ClipboardPaste,
   FileUp,
   Loader2,
+  Receipt,
   RotateCcw,
   Save,
   Sparkles,
@@ -30,11 +31,14 @@ import {
 import type {
   BillingType,
   Category,
+  SlipImportPreview,
+  SlipImportResult,
   StatementImportPreview,
   StatementImportResult,
 } from "../types";
 
 type Phase = "idle" | "loading" | "preview" | "applying" | "done";
+type ImportMode = "statement" | "slip";
 
 type UnmappedStatus = "pending" | "mapped" | "skipped";
 
@@ -51,6 +55,17 @@ interface UnmappedRow {
   plan: string;
   url: string;
   account: string;
+  touched: boolean;
+}
+
+interface SlipManualForm {
+  name: string;
+  category: Category;
+  billingType: BillingType;
+  plan: string;
+  url: string;
+  account: string;
+  pattern: string;
   touched: boolean;
 }
 
@@ -125,7 +140,26 @@ function blankRow(candidate: { date: string; amount: number; description: string
   };
 }
 
+function blankSlipForm(description: string, suggestedName: string): SlipManualForm {
+  const pattern = inferPattern(description || suggestedName);
+  return {
+    name: pattern
+      .toLowerCase()
+      .split(" ")
+      .map((token) => token.charAt(0).toUpperCase() + token.slice(1))
+      .join(" "),
+    category: "Platform",
+    billingType: "one_time",
+    plan: "",
+    url: "",
+    account: "",
+    pattern,
+    touched: false,
+  };
+}
+
 export function ImportStatementsPage({ onImported }: { onImported: (message: string) => void }) {
+  const [mode, setMode] = useState<ImportMode>("statement");
   const [phase, setPhase] = useState<Phase>("idle");
   const [fileName, setFileName] = useState<string | null>(null);
   const [data, setData] = useState<string | null>(null);
@@ -135,32 +169,52 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
   const [dragging, setDragging] = useState(false);
   const [pasteArmed, setPasteArmed] = useState(true);
   const [unmapped, setUnmapped] = useState<UnmappedRow[]>([]);
+  const [slipPreview, setSlipPreview] = useState<SlipImportPreview | null>(null);
+  const [slipResult, setSlipResult] = useState<SlipImportResult | null>(null);
+  const [slipForm, setSlipForm] = useState<SlipManualForm | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = useCallback(async (file: File) => {
-    const inferredName = inferPdfFileName(file, `statement-${new Date().toISOString().slice(0, 10)}.pdf`);
-    if (!inferredName.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
-      setError("Please paste or choose a PDF credit-card statement.");
-      return;
-    }
-    setError(null);
-    setPreview(null);
-    setResult(null);
-    setUnmapped([]);
-    setFileName(inferredName);
-    setPhase("loading");
-    try {
-      const base64 = await readFileAsBase64(file);
-      setData(base64);
-      const parsed = await api.previewStatementImport(inferredName, base64);
-      setPreview(parsed);
-      setUnmapped(parsed.unclassified.map((candidate, index) => blankRow(candidate, index)));
-      setPhase("preview");
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "The statement could not be parsed.");
-      setPhase("idle");
-    }
-  }, []);
+  const handleFile = useCallback(
+    async (file: File) => {
+      const fallbackPrefix = mode === "slip" ? "slip" : "statement";
+      const inferredName = inferPdfFileName(file, `${fallbackPrefix}-${new Date().toISOString().slice(0, 10)}.pdf`);
+      if (!inferredName.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
+        setError(mode === "slip"
+          ? "Please paste or choose a single-charge slip PDF."
+          : "Please paste or choose a PDF credit-card statement.");
+        return;
+      }
+      setError(null);
+      setPreview(null);
+      setResult(null);
+      setSlipPreview(null);
+      setSlipResult(null);
+      setSlipForm(null);
+      setUnmapped([]);
+      setFileName(inferredName);
+      setPhase("loading");
+      try {
+        const base64 = await readFileAsBase64(file);
+        setData(base64);
+        if (mode === "slip") {
+          const parsed = await api.previewSlipImport(inferredName, base64);
+          setSlipPreview(parsed);
+          if (!parsed.matched) {
+            setSlipForm(blankSlipForm(parsed.slip.description, parsed.slip.merchant));
+          }
+        } else {
+          const parsed = await api.previewStatementImport(inferredName, base64);
+          setPreview(parsed);
+          setUnmapped(parsed.unclassified.map((candidate, index) => blankRow(candidate, index)));
+        }
+        setPhase("preview");
+      } catch (reason) {
+        setError(reason instanceof Error ? reason.message : "The PDF could not be parsed.");
+        setPhase("idle");
+      }
+    },
+    [mode],
+  );
 
   const onInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -178,7 +232,9 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
   const onPaste = (event: ClipboardEvent<HTMLDivElement>) => {
     const pasted = fileFromClipboard(event);
     if (!pasted) {
-      setError("The clipboard does not contain a PDF file. Copy the statement PDF first.");
+      setError(mode === "slip"
+        ? "The clipboard does not contain a PDF file. Copy the slip PDF first."
+        : "The clipboard does not contain a PDF file. Copy the statement PDF first.");
       return;
     }
     event.preventDefault();
@@ -237,14 +293,58 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
     }
   };
 
+  const applySlip = async () => {
+    if (!fileName || !data || !slipPreview) return;
+    const manualMapping =
+      !slipPreview.matched && slipForm && slipForm.touched
+        ? {
+            name: slipForm.name,
+            category: slipForm.category,
+            billingType: slipForm.billingType,
+            plan: slipForm.plan || null,
+            url: slipForm.url || null,
+            account: slipForm.account || null,
+            pattern: slipForm.pattern || null,
+          }
+        : null;
+    if (!slipPreview.matched && !manualMapping) return;
+    if (manualMapping && (!manualMapping.name.trim() || !manualMapping.pattern?.trim())) return;
+    setPhase("applying");
+    setError(null);
+    try {
+      const applied = await api.applySlipImport(fileName, data, manualMapping);
+      setSlipResult(applied);
+      setPhase("done");
+      const learnedNote = applied.learnedPattern
+        ? ` Learned pattern ${applied.learnedPattern} for next month.`
+        : "";
+      const trackedNote = applied.alreadyTracked
+        ? " That charge is already tracked."
+        : ` Added ${applied.entriesCreated} ledger entr${applied.entriesCreated === 1 ? "y" : "ies"}.`;
+      onImported(`Imported slip from ${slipPreview.slip.merchant}.${trackedNote}${learnedNote}`);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "The slip could not be applied.");
+      setPhase("preview");
+    }
+  };
+
   const reset = () => {
     setPhase("idle");
     setFileName(null);
     setData(null);
     setPreview(null);
     setResult(null);
+    setSlipPreview(null);
+    setSlipResult(null);
+    setSlipForm(null);
     setUnmapped([]);
     setError(null);
+  };
+
+  const switchMode = (next: ImportMode) => {
+    if (next === mode) return;
+    setMode(next);
+    reset();
   };
 
   const updateRow = (key: string, patch: Partial<UnmappedRow>) => {
@@ -256,6 +356,10 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
   const skipRow = (key: string) => updateRow(key, { status: "skipped" });
   const unskipRow = (key: string) => updateRow(key, { status: "pending" });
   const markMapped = (key: string) => updateRow(key, { status: "mapped" });
+
+  const updateSlipForm = (patch: Partial<SlipManualForm>) => {
+    setSlipForm((form) => (form ? { ...form, ...patch, touched: true } : form));
+  };
 
   const groupedEntries = new Map<string, number>();
   for (const entry of preview?.newEntries ?? []) {
@@ -272,16 +376,57 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
     return counts;
   }, [unmapped]);
 
+  const slipFormValid =
+    !slipPreview ||
+    Boolean(slipPreview.matched) ||
+    Boolean(
+      slipForm &&
+        slipForm.name.trim() &&
+        slipForm.pattern?.trim() &&
+        slipForm.touched,
+    );
+
   return (
     <div className="page-stack">
       <section className="page-heading compact-heading">
         <div>
-          <span className="eyebrow">Statement import</span>
-          <h1>Drop, paste, or map a statement.</h1>
+          <span className="eyebrow">{mode === "slip" ? "Slip import" : "Statement import"}</span>
+          <h1>{mode === "slip" ? "Import a single slip." : "Drop, paste, or map a statement."}</h1>
           <p>
-            Choose a Yapı Kredi credit-card statement PDF, paste it from WhatsApp, or fill in the
-            unmapped charges by hand. Anything you map by hand is remembered for next month.
+            {mode === "slip" ? (
+              <>
+                Drop a single-charge digital slip when the monthly statement missed it (cutoff,
+                different card, posted later) or for a one-off purchase. Map unknown merchants once
+                and the pattern is saved for next month.
+              </>
+            ) : (
+              <>
+                Choose a Yapı Kredi credit-card statement PDF, paste it from WhatsApp, or fill in
+                the unmapped charges by hand. Anything you map by hand is remembered for next
+                month.
+              </>
+            )}
           </p>
+        </div>
+        <div className="import-mode-toggle" role="tablist" aria-label="Import mode">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "statement"}
+            className={mode === "statement" ? "active" : ""}
+            onClick={() => switchMode("statement")}
+          >
+            <WalletCards size={14} /> Statement
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "slip"}
+            className={mode === "slip" ? "active" : ""}
+            onClick={() => switchMode("slip")}
+          >
+            <Receipt size={14} /> Single slip
+          </button>
         </div>
       </section>
 
@@ -311,7 +456,7 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
               onChange={onInputChange}
             />
             <FileUp size={34} />
-            <strong>Choose a statement PDF</strong>
+            <strong>{mode === "slip" ? "Choose a slip PDF" : "Choose a statement PDF"}</strong>
             <span>
               drag &amp; drop, or copy the PDF from WhatsApp and paste it here. The private API
               processes the PDF without storing the file.
@@ -347,7 +492,7 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
         </div>
       )}
 
-      {phase === "preview" && preview && (
+      {phase === "preview" && mode === "statement" && preview && (
         <section className="panel import-preview">
           <div className="import-preview-head">
             <div>
@@ -561,6 +706,228 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
         </section>
       )}
 
+      {phase === "preview" && mode === "slip" && slipPreview && (
+        <section className="panel import-preview import-slip-preview">
+          <div className="import-preview-head">
+            <div>
+              <span className="panel-kicker">Slip preview</span>
+              <h2>{slipPreview.fileName}</h2>
+              <small>
+                {slipPreview.slip.merchant}
+                {slipPreview.slip.city ? ` · ${slipPreview.slip.city}` : ""}
+                {" · "}
+                {formatDate(slipPreview.slip.date)}
+                {slipPreview.slip.time ? ` ${slipPreview.slip.time}` : ""}
+              </small>
+            </div>
+            <div className="import-total">
+              <strong>{formatMoney(slipPreview.slip.amount)}</strong>
+              <span>charge</span>
+            </div>
+          </div>
+
+          <div className="import-section">
+            <h3><Receipt size={15} /> Slip details</h3>
+            <ul className="import-slip-details">
+              <li>
+                <span className="import-slip-label">Merchant</span>
+                <strong>{slipPreview.slip.merchant}</strong>
+              </li>
+              {slipPreview.slip.city && (
+                <li>
+                  <span className="import-slip-label">City</span>
+                  <span>{slipPreview.slip.city}</span>
+                </li>
+              )}
+              <li>
+                <span className="import-slip-label">Date</span>
+                <span>
+                  {formatDate(slipPreview.slip.date)}
+                  {slipPreview.slip.time ? ` ${slipPreview.slip.time}` : ""}
+                </span>
+              </li>
+              <li>
+                <span className="import-slip-label">Amount</span>
+                <strong>{formatMoney(slipPreview.slip.amount)}</strong>
+              </li>
+              {slipPreview.slip.references.bankRefNo && (
+                <li>
+                  <span className="import-slip-label">Bank ref</span>
+                  <code>{slipPreview.slip.references.bankRefNo}</code>
+                </li>
+              )}
+              {slipPreview.slip.references.rrn && (
+                <li>
+                  <span className="import-slip-label">RRN</span>
+                  <code>{slipPreview.slip.references.rrn}</code>
+                </li>
+              )}
+              {slipPreview.slip.references.sequenceNo && (
+                <li>
+                  <span className="import-slip-label">Sequence</span>
+                  <code>{slipPreview.slip.references.sequenceNo}</code>
+                </li>
+              )}
+              {slipPreview.slip.references.approvalCode && (
+                <li>
+                  <span className="import-slip-label">Approval</span>
+                  <code>{slipPreview.slip.references.approvalCode}</code>
+                </li>
+              )}
+              {slipPreview.slip.references.cardLast4 && (
+                <li>
+                  <span className="import-slip-label">Card</span>
+                  <span>**** {slipPreview.slip.references.cardLast4}</span>
+                </li>
+              )}
+              {slipPreview.slip.references.network && (
+                <li>
+                  <span className="import-slip-label">Network</span>
+                  <span>{slipPreview.slip.references.network}</span>
+                </li>
+              )}
+            </ul>
+          </div>
+
+          {slipPreview.matched && (
+            <div className="import-section">
+              <h3>
+                <WalletCards size={15} /> Matched service
+              </h3>
+              <ul className="import-list">
+                <li>
+                  <span className="import-name">{formatServiceName(slipPreview.matched.service.name)}</span>
+                  <span className={`category-pill category-${slipPreview.matched.service.category.toLowerCase()}`}>
+                    {slipPreview.matched.service.category}
+                  </span>
+                  <span className="import-muted">{formatBillingType(slipPreview.matched.service.billingType)}</span>
+                  <span className="import-muted">{formatMembership(slipPreview.matched.service.plan, "")}</span>
+                </li>
+              </ul>
+              {slipPreview.matched.alreadyTracked && (
+                <p className="import-slip-note">
+                  <CheckCircle2 size={14} /> A matching ledger entry for this month already
+                  exists. The import will be a no-op.
+                </p>
+              )}
+            </div>
+          )}
+
+          {!slipPreview.matched && slipForm && (
+            <div className="import-section import-unmapped-editor">
+              <div className="import-unmapped-head">
+                <h3><ClipboardPaste size={15} /> Unrecognised merchant</h3>
+                <div className="import-unmapped-counts">
+                  <span className="chip warn">Needs mapping</span>
+                </div>
+              </div>
+              <p className="import-unmapped-help">
+                The merchant on this slip is not in the catalog. Name it and pick a category so
+                the charge can be added. The pattern is saved so the same merchant is
+                auto-recognised next time.
+              </p>
+              <div className="import-row-form">
+                <label className="field small">
+                  <span>Service name</span>
+                  <input
+                    type="text"
+                    value={slipForm.name}
+                    maxLength={140}
+                    onChange={(event) => updateSlipForm({ name: event.target.value })}
+                    placeholder="e.g. Nanonoble"
+                  />
+                </label>
+                <label className="field small">
+                  <span>Pattern (regex / token)</span>
+                  <input
+                    type="text"
+                    value={slipForm.pattern}
+                    maxLength={120}
+                    onChange={(event) => updateSlipForm({ pattern: event.target.value })}
+                    placeholder="e.g. NANONOBLE"
+                  />
+                </label>
+                <label className="field small">
+                  <span>Category</span>
+                  <select
+                    value={slipForm.category}
+                    onChange={(event) => updateSlipForm({ category: event.target.value as Category })}
+                  >
+                    <option value="Platform">Platform</option>
+                    <option value="Certificate">Certificate</option>
+                    <option value="Device">Device</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </label>
+                <label className="field small">
+                  <span>Billing</span>
+                  <select
+                    value={slipForm.billingType}
+                    onChange={(event) => updateSlipForm({ billingType: event.target.value as BillingType })}
+                  >
+                    <option value="recurring">Recurring (monthly)</option>
+                    <option value="annual">Annual</option>
+                    <option value="one_time">One-time</option>
+                  </select>
+                </label>
+                <label className="field small">
+                  <span>Plan / membership</span>
+                  <input
+                    type="text"
+                    value={slipForm.plan}
+                    maxLength={120}
+                    onChange={(event) => updateSlipForm({ plan: event.target.value })}
+                    placeholder="e.g. Pro"
+                  />
+                </label>
+                <label className="field small">
+                  <span>Account (optional)</span>
+                  <input
+                    type="text"
+                    value={slipForm.account}
+                    maxLength={160}
+                    onChange={(event) => updateSlipForm({ account: event.target.value })}
+                    placeholder="you@example.com"
+                  />
+                </label>
+                <label className="field small">
+                  <span>URL (optional)</span>
+                  <input
+                    type="url"
+                    value={slipForm.url}
+                    maxLength={300}
+                    onChange={(event) => updateSlipForm({ url: event.target.value })}
+                    placeholder="https://"
+                  />
+                </label>
+              </div>
+            </div>
+          )}
+
+          {slipPreview.matched?.alreadyTracked ? (
+            <div className="import-actions">
+              <button className="button secondary" onClick={reset}>
+                <RotateCcw size={16} /> Import another slip
+              </button>
+            </div>
+          ) : (
+            <div className="import-actions">
+              <button className="button secondary" onClick={reset}>
+                <RotateCcw size={16} /> Choose another
+              </button>
+              <button
+                className="button primary"
+                onClick={applySlip}
+                disabled={!slipFormValid}
+              >
+                <Sparkles size={16} /> Add slip
+              </button>
+            </div>
+          )}
+          {error && <div className="page-state error">{error}</div>}
+        </section>
+      )}
+
       {phase === "applying" && (
         <div className="page-state">
           <Loader2 className="spin" size={26} />
@@ -568,7 +935,7 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
         </div>
       )}
 
-      {phase === "done" && result && (
+      {phase === "done" && mode === "statement" && result && (
         <section className="panel import-done">
           <CheckCircle2 size={30} />
           <h2>Import complete</h2>
@@ -596,6 +963,24 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
           <div className="import-actions">
             <button className="button secondary" onClick={reset}>
               <RotateCcw size={16} /> Import another
+            </button>
+          </div>
+        </section>
+      )}
+
+      {phase === "done" && mode === "slip" && slipResult && slipPreview && (
+        <section className="panel import-done">
+          <CheckCircle2 size={30} />
+          <h2>{slipResult.alreadyTracked ? "Slip already tracked" : "Slip imported"}</h2>
+          <p>
+            {slipResult.alreadyTracked
+              ? `A matching ledger entry for ${slipPreview.slip.merchant} on ${formatDate(slipPreview.slip.date)} was already saved.`
+              : `Added ${slipPreview.slip.merchant} on ${formatDate(slipPreview.slip.date)} for ${formatMoney(slipPreview.slip.amount)} to your portfolio.`}
+            {slipResult.learnedPattern && ` Saved pattern ${slipResult.learnedPattern} for next time.`}
+          </p>
+          <div className="import-actions">
+            <button className="button secondary" onClick={reset}>
+              <RotateCcw size={16} /> Import another slip
             </button>
           </div>
         </section>

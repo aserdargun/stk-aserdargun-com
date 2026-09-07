@@ -144,3 +144,55 @@ export interface StatementImportResult {
   manualMappingsApplied?: number;
   learnedPatterns?: Array<{ id: string; pattern: string; name: string }>;
 }
+
+export interface SlipReferences {
+  terminalNo: string | null;
+  workplaceNo: string | null;
+  approvalCode: string | null;
+  sequenceNo: string | null;
+  bankRefNo: string | null;
+  rrn: string | null;
+  aid: string | null;
+  cardLast4: string | null;
+  network: string | null;
+}
+
+export interface StatementSlip {
+  merchant: string;
+  city: string | null;
+  transactionType: string | null;
+  date: string;
+  time: string | null;
+  amount: number;
+  description: string;
+  references: SlipReferences;
+}
+
+export interface SlipImportPreview {
+  preview: true;
+  fileName: string;
+  slip: StatementSlip;
+  matched: {
+    service: {
+      serviceKey: string;
+      name: string;
+      category: Category;
+      billingType: BillingType;
+      plan: string | null;
+      url: string | null;
+      account: string | null;
+    };
+    itemId: number | null;
+    alreadyTracked: boolean;
+  } | null;
+  summary: { classified: boolean; newItem: boolean; alreadyTracked: boolean };
+}
+
+export interface SlipImportResult {
+  applied: true;
+  itemsCreated: number;
+  entriesCreated: number;
+  alreadyTracked: boolean;
+  learnedPattern: string | null;
+  summary: { classified: boolean; newItem: boolean; alreadyTracked: boolean };
+}

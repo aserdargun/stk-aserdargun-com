@@ -2,11 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   parseAmount,
+  parseSlipLines,
   parseStatementLines,
   classifyDescription,
   compileServices,
 } from "./lib/statements.mjs";
-import { reconcile, round2 } from "./lib/reconcile.mjs";
+import { reconcile, reconcileSlip, round2 } from "./lib/reconcile.mjs";
 
 test("parseAmount reads Turkish-formatted amounts and refund signs", () => {
   assert.equal(parseAmount("TR 300,00"), 300);
@@ -107,4 +108,109 @@ test("reconcile adds new items and replaces in-window seed entries with statemen
 test("round2 keeps two-decimal precision for refunds", () => {
   assert.equal(round2(-4686.48), -4686.48);
   assert.equal(round2(69.9), 69.9);
+});
+
+test("parseSlipLines reads merchant, date, amount, and bank references", () => {
+  const lines = [
+    "NANONOBLE PTE. LTD.",
+    "SINGAPORE/SG",
+    "İŞYERİ NO:JGS8BUIW5Z0G7HY TERMİNAL NO:20JHL4DY",
+    "18/08/2026 17:01:15 540062******2627",
+    "TUTAR: 1.188,00 TL",
+    "SIRA NO:212220 ONAY KODU:503441",
+    "BANKA REF NO:7700189719503441",
+    "RRN:081841212220",
+    "AID:- / MasterCard",
+  ];
+  const slip = parseSlipLines(lines);
+  assert.ok(slip, "slip should be parsed");
+  assert.equal(slip.merchant, "NANONOBLE PTE. LTD.");
+  assert.equal(slip.city, "SINGAPORE/SG");
+  assert.equal(slip.date, "2026-08-18");
+  assert.equal(slip.amount, 1188);
+  assert.equal(slip.references.bankRefNo, "7700189719503441");
+  assert.equal(slip.references.rrn, "081841212220");
+  assert.equal(slip.references.cardLast4, "2627");
+  assert.equal(slip.references.network, "MASTERCARD");
+});
+
+test("reconcileSlip adds an entry to the existing item when the merchant is in the catalog", () => {
+  const seed = {
+    metadata: { importedOn: "2026-08-10" },
+    items: [
+      {
+        key: "platform-4",
+        name: "Netflix",
+        category: "Platform",
+        billingType: "recurring",
+        plan: "Premium",
+        url: null,
+        account: null,
+        powerWatts: null,
+        status: "active",
+        closedAt: null,
+        notes: null,
+      },
+    ],
+    entries: [],
+  };
+  const slip = {
+    merchant: "NETFLIX",
+    city: null,
+    date: "2026-08-25",
+    time: null,
+    amount: 379.99,
+    description: "NETFLIX",
+    references: { bankRefNo: "111", rrn: null, sequenceNo: null, cardLast4: "0000", network: "VISA" },
+  };
+  const netflix = { key: "netflix", name: "Netflix", itemKey: "platform-4", category: "Platform", billingType: "recurring", plan: "Premium", url: null, account: null, patterns: ["NETFLIX"] };
+  const { mergedSeed, report } = reconcileSlip({ seed, slip, service: netflix, fileName: "aug-slip.pdf" });
+  assert.equal(report.summary.addedEntries, 1);
+  assert.equal(report.summary.newItems, 0);
+  assert.equal(mergedSeed.items.length, 1);
+  assert.equal(mergedSeed.entries.length, 1);
+  assert.equal(mergedSeed.entries[0].itemKey, "platform-4");
+  assert.equal(mergedSeed.entries[0].amount, 379.99);
+  assert.equal(mergedSeed.entries[0].sourceRef, "slip:aug-slip.pdf#111");
+});
+
+test("reconcileSlip creates a new item when the slip merchant needs a manual mapping", () => {
+  const seed = {
+    metadata: { importedOn: "2026-08-10" },
+    items: [],
+    entries: [],
+  };
+  const slip = {
+    merchant: "NANONOBLE PTE. LTD.",
+    city: "SINGAPORE/SG",
+    date: "2026-08-18",
+    time: "17:01:15",
+    amount: 1188,
+    description: "NANONOBLE PTE. LTD. SINGAPORE/SG",
+    references: { bankRefNo: "7700189719503441", rrn: "081841212220", sequenceNo: "212220", cardLast4: "2627", network: "MASTERCARD" },
+  };
+  const { mergedSeed, report } = reconcileSlip({
+    seed,
+    slip,
+    service: null,
+    fileName: "aug-slip.pdf",
+    manualMapping: {
+      name: "Nanonoble",
+      category: "Platform",
+      billingType: "one_time",
+      plan: null,
+      url: "https://nanonoble.example",
+      account: null,
+      pattern: "NANONOBLE",
+    },
+  });
+  assert.equal(report.summary.addedEntries, 1);
+  assert.equal(report.summary.newItems, 1);
+  assert.equal(report.newItem.name, "Nanonoble");
+  assert.match(report.newItem.key, /^platform-\d+$/);
+  assert.equal(mergedSeed.entries[0].itemKey, report.newItem.key);
+  assert.equal(mergedSeed.entries[0].amount, 1188);
+  assert.equal(mergedSeed.entries[0].periodStart, "2026-08-18");
+  assert.equal(mergedSeed.entries[0].periodKind, "one_time");
+  assert.equal(mergedSeed.entries[0].sourceRef, "slip:aug-slip.pdf#7700189719503441");
 });

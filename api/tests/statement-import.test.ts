@@ -4,6 +4,7 @@ import {
   compileServices,
   extractLearnedPattern,
   parseAmount,
+  parseSlipLines,
   parseStatementLines,
   resolveItem,
 } from "../src/lib/statement-import.js";
@@ -136,5 +137,57 @@ describe("statement import parsing", () => {
     );
     expect(match?.name).toBe("Hepsiburada");
     expect(match?.plan).toBe("Plus");
+  });
+
+  it("parses a single-charge slip into a structured charge with bank references", () => {
+    const lines = [
+      "NANONOBLE PTE. LTD.",
+      "SINGAPORE/SG",
+      "İŞYERİ NO:JGS8BUIW5Z0G7HY TERMİNAL NO:20JHL4DY",
+      "Peşin Satış - E-ticaret",
+      "Müşteri Nüshası",
+      "18/08/2026 17:01:15 540062******2627",
+      "TUTAR: 1.188,00 TL",
+      '"TUTAR KARŞILIĞI MAL/HİZMET ALDIM"',
+      "SIRA NO:212220 ONAY KODU:503441",
+      "BANKA REF NO:7700189719503441",
+      "RRN:081841212220",
+      "AID:- / MasterCard",
+    ];
+    const slip = parseSlipLines(lines);
+    expect(slip).not.toBeNull();
+    expect(slip!.merchant).toBe("NANONOBLE PTE. LTD.");
+    expect(slip!.city).toBe("SINGAPORE/SG");
+    expect(slip!.date).toBe("2026-08-18");
+    expect(slip!.time).toBe("17:01:15");
+    expect(slip!.amount).toBe(1188);
+    expect(slip!.description).toBe("NANONOBLE PTE. LTD. SINGAPORE/SG");
+    expect(slip!.references.bankRefNo).toBe("7700189719503441");
+    expect(slip!.references.rrn).toBe("081841212220");
+    expect(slip!.references.sequenceNo).toBe("212220");
+    expect(slip!.references.approvalCode).toBe("503441");
+    expect(slip!.references.cardLast4).toBe("2627");
+    expect(slip!.references.network).toBe("MASTERCARD");
+  });
+
+  it("returns null when the PDF does not look like a slip", () => {
+    expect(parseSlipLines([])).toBeNull();
+    expect(parseSlipLines(["Random header", "No amount here"])).toBeNull();
+    expect(
+      parseSlipLines(["MERCHANT NAME", "18/08/2026 17:01:15 540062******2627"]),
+    ).toBeNull();
+  });
+
+  it("falls back to the date-only form when the slip omits the time", () => {
+    const lines = [
+      "EXAMPLE MERCHANT",
+      "ISTANBUL/TR",
+      "01/09/2026",
+      "TUTAR: 49,90 TL",
+    ];
+    const slip = parseSlipLines(lines);
+    expect(slip?.date).toBe("2026-09-01");
+    expect(slip?.time).toBeNull();
+    expect(slip?.amount).toBe(49.9);
   });
 });

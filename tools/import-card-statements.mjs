@@ -6,8 +6,9 @@ import {
   classifyDescription,
   extractPdfLines,
   parseStatementLines,
+  parseSlipLines,
 } from "./lib/statements.mjs";
-import { reconcile, round2 } from "./lib/reconcile.mjs";
+import { reconcile, reconcileSlip, round2 } from "./lib/reconcile.mjs";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const DEFAULT_MAPPING = path.join(ROOT, "data", "card-digital-services.json");
@@ -17,10 +18,32 @@ const LEDGER_OUT = path.join(ROOT, "data", "statement-ledger.json");
 const REPORT_OUT = path.join(ROOT, "data", "reconciliation-report.json");
 
 function parseArgs(argv) {
-  const args = { dir: null, seed: DEFAULT_SEED, dryRun: false, applyAzure: false, ledgerOnly: false };
+  const args = {
+    dir: null,
+    slip: null,
+    mapName: null,
+    mapCategory: null,
+    mapBilling: null,
+    mapPlan: null,
+    mapUrl: null,
+    mapAccount: null,
+    mapPattern: null,
+    seed: DEFAULT_SEED,
+    dryRun: false,
+    applyAzure: false,
+    ledgerOnly: false,
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === "--dir" || arg === "-d") args.dir = argv[++index];
+    else if (arg === "--slip") args.slip = argv[++index];
+    else if (arg === "--map-name") args.mapName = argv[++index];
+    else if (arg === "--map-category") args.mapCategory = argv[++index];
+    else if (arg === "--map-billing") args.mapBilling = argv[++index];
+    else if (arg === "--map-plan") args.mapPlan = argv[++index];
+    else if (arg === "--map-url") args.mapUrl = argv[++index];
+    else if (arg === "--map-account") args.mapAccount = argv[++index];
+    else if (arg === "--map-pattern") args.mapPattern = argv[++index];
     else if (arg === "--seed") args.seed = argv[++index];
     else if (arg === "--dry-run") args.dryRun = true;
     else if (arg === "--apply-azure") args.applyAzure = true;
@@ -36,14 +59,23 @@ function help() {
     "",
     "Parses Yapı Kredi credit-card statement PDFs, detects digital-service charges",
     "via data/card-digital-services.json, and reconciles them into data/seed-data.json.",
+    "Use --slip to import a single-charge digital slip instead of a statement.",
     "",
     "Options:",
-    "  --dir <path>       Directory containing statement PDFs (default data/statements/)",
-    "  --seed <path>      Seed JSON to merge into (default data/seed-data.json)",
-    "  --dry-run          Report only; do not modify seed-data.json",
-    "  --ledger-only      Write the statement ledger + report, skip seed merge",
-    "  --apply-azure      Upsert new items/entries to Azure (needs AZURE_STORAGE_CONNECTION_STRING)",
-    "  --help             Show this help",
+    "  --dir <path>          Directory containing statement PDFs (default data/statements/)",
+    "  --slip <file>         Import a single digital slip PDF (POS receipt) instead",
+    "  --seed <path>         Seed JSON to merge into (default data/seed-data.json)",
+    "  --dry-run             Report only; do not modify seed-data.json",
+    "  --ledger-only         Write the statement ledger + report, skip seed merge",
+    "  --apply-azure         Upsert new items/entries to Azure (needs AZURE_STORAGE_CONNECTION_STRING)",
+    "    --map-name <name>   New service name when the slip merchant is not in the catalog",
+    "    --map-category <c>  New service category (Platform/Certificate/Device/Other)",
+    "    --map-billing <b>   New service billing (recurring/annual/one_time)",
+    "    --map-plan <plan>   New service plan / membership",
+    "    --map-url <url>     New service website URL",
+    "    --map-account <a>   New service account identifier",
+    "    --map-pattern <p>   Pattern to remember for the new service",
+    "  --help                Show this help",
   ].join("\n");
 }
 
@@ -236,6 +268,71 @@ async function applyToAzure({ newItems, addedEntries, seed }) {
   return { upsertedItems: newItems.length, upsertedEntries: entryId - maxEntryId - 1, skipped };
 }
 
+async function runSlipImport({ args, mapping, services, seed }) {
+  const filePath = path.resolve(args.slip);
+  if (!existsSync(filePath)) throw new Error(`Slip PDF not found: ${filePath}`);
+  const fileName = path.basename(filePath);
+
+  console.log(`Reading slip ${fileName}…`);
+  const lines = await extractPdfLines(filePath);
+  const slip = parseSlipLines(lines);
+  if (!slip) {
+    throw new Error(
+      "This PDF does not look like a single-charge slip (no merchant, date, or TUTAR amount).",
+    );
+  }
+
+  const service = classifyDescription(slip.description, services);
+  const manualMapping =
+    !service
+      ? {
+          name: args.mapName,
+          category: args.mapCategory,
+          billingType: args.mapBilling,
+          plan: args.mapPlan,
+          url: args.mapUrl,
+          account: args.mapAccount,
+          pattern: args.mapPattern,
+        }
+      : null;
+  if (!service && (!manualMapping.name || !manualMapping.category || !manualMapping.billingType)) {
+    throw new Error(
+      `Slip merchant "${slip.merchant}" is not in the catalog. Re-run with --map-name, --map-category, --map-billing, and (optionally) --map-plan, --map-url, --map-account, --map-pattern.`,
+    );
+  }
+
+  console.log(`\n=== Slip ===`);
+  console.log(`Merchant      : ${slip.merchant}${slip.city ? ` (${slip.city})` : ""}`);
+  console.log(`Date / time   : ${slip.date}${slip.time ? ` ${slip.time}` : ""}`);
+  console.log(`Amount        : ₺${slip.amount.toFixed(2)}`);
+  console.log(`Matched       : ${service ? service.name : "manual mapping"}`);
+  if (slip.references.bankRefNo) console.log(`Bank ref      : ${slip.references.bankRefNo}`);
+  if (slip.references.rrn) console.log(`RRN           : ${slip.references.rrn}`);
+
+  if (args.dryRun) {
+    console.log("\nDry run: seed-data.json was NOT modified.");
+    return;
+  }
+
+  const now = roundDateNow();
+  const { mergedSeed, report } = reconcileSlip({
+    seed,
+    slip,
+    service,
+    fileName,
+    manualMapping: manualMapping && manualMapping.name ? manualMapping : null,
+    now,
+  });
+
+  const backup = `${args.seed}.backup-${now}`;
+  copyFileSync(args.seed, backup);
+  writeFileSync(args.seed, `${JSON.stringify(mergedSeed, null, 2)}\n`);
+  console.log(`\nBackup written to ${path.relative(ROOT, backup)}`);
+  console.log(
+    `Added 1 entry${report.newItem ? ` and created new item ${report.newItem.name} (${report.newItem.key})` : ""} to ${path.relative(ROOT, args.seed)}.`,
+  );
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help) {
@@ -243,12 +340,17 @@ async function main() {
     return;
   }
 
-  const dir = args.dir ?? DEFAULT_DIR;
-  if (!existsSync(dir)) throw new Error(`Statements directory not found: ${dir}`);
-
   const mapping = loadJson(DEFAULT_MAPPING);
   const services = compileServices(mapping.services);
   const seed = loadJson(args.seed);
+
+  if (args.slip) {
+    await runSlipImport({ args, mapping, services, seed });
+    return;
+  }
+
+  const dir = args.dir ?? DEFAULT_DIR;
+  if (!existsSync(dir)) throw new Error(`Statements directory not found: ${dir}`);
 
   console.log(`Parsing statements from ${dir}…`);
   const statements = await parseDirectory(dir);

@@ -4,6 +4,8 @@ import type {
   DashboardData,
   ItemDetail,
   NewCostPayload,
+  SlipImportPreview,
+  SlipImportResult,
   StatementImportPreview,
   StatementImportResult,
   TableViewData,
@@ -126,6 +128,30 @@ export const api = {
     return request<StatementImportResult>("/api/statements/import", {
       method: "POST",
       body: JSON.stringify({ fileName, data, apply: true, manualMappings }),
+    });
+  },
+  previewSlipImport(fileName: string, data: string) {
+    return request<SlipImportPreview>("/api/slips/import", {
+      method: "POST",
+      body: JSON.stringify({ fileName, data }),
+    });
+  },
+  applySlipImport(
+    fileName: string,
+    data: string,
+    manualMapping: {
+      name: string;
+      category: string;
+      billingType: string;
+      plan: string | null;
+      url: string | null;
+      account: string | null;
+      pattern: string | null;
+    } | null = null,
+  ) {
+    return request<SlipImportResult>("/api/slips/import", {
+      method: "POST",
+      body: JSON.stringify({ fileName, data, apply: true, manualMapping }),
     });
   },
 };
