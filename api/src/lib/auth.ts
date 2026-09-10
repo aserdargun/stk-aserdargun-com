@@ -20,8 +20,10 @@ export function isAllowedOwner(encoded: string | null, allowedGithubUser: string
   if (!allowedGithubUser) return false;
   const principal = parseClientPrincipal(encoded);
   return (
-    principal?.identityProvider?.toLowerCase() === "github" &&
-    principal.userDetails?.toLowerCase() === allowedGithubUser.toLowerCase()
+    typeof principal?.identityProvider === "string" &&
+    typeof principal.userDetails === "string" &&
+    principal.identityProvider.toLowerCase() === "github" &&
+    principal.userDetails.toLowerCase() === allowedGithubUser.toLowerCase()
   );
 }
 

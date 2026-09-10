@@ -41,7 +41,7 @@ export function summarizeItems(
       entryCount: itemEntries.length,
       latestPeriod: latest?.periodStart || null,
       latestEntryId: latest?.id || null,
-      currentMembership: latest?.membership || item.plan,
+      currentMembership: latest ? latest.membership : item.plan,
     };
   });
 }
@@ -113,13 +113,13 @@ export function buildRecurringTableView(
             .filter((entry) => entry.periodStart.slice(0, 7) === period.key)
             .reduce((total, entry) => total + entry.amount, 0),
         ),
-        membership: effective?.membership || item.plan,
+        membership: effective ? effective.membership : null,
       };
     });
     return {
       id: item.id,
       name: item.name,
-      currentMembership: current?.membership || item.plan,
+      currentMembership: current ? current.membership : item.plan,
       cells,
       total: round(cells.reduce((total, cell) => total + cell.amount, 0)),
     };

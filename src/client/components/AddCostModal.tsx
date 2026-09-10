@@ -1,12 +1,14 @@
 import { useState, type FormEvent } from "react";
 import { CircleDollarSign, X } from "lucide-react";
+import { useDialog } from "../lib/useDialog";
+import { localToday } from "../lib/format";
 import { api } from "../lib/api";
 import type { BillingType, Category, ItemStatus } from "../types";
 
-const today = new Date().toISOString().slice(0, 10);
 
 export function AddCostModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const [submitting, setSubmitting] = useState(false);
+  const dialogRef = useDialog(onClose, submitting);
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState<Category>("Platform");
   const [billingType, setBillingType] = useState<BillingType>("recurring");
@@ -14,6 +16,7 @@ export function AddCostModal({ onClose, onCreated }: { onClose: () => void; onCr
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitting) return;
     setSubmitting(true);
     setError(null);
     const form = new FormData(event.currentTarget);
@@ -48,8 +51,8 @@ export function AddCostModal({ onClose, onCreated }: { onClose: () => void; onCr
   };
 
   return (
-    <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}>
-      <div className="modal-card" role="dialog" aria-modal="true" aria-labelledby="add-cost-title">
+    <div className="modal-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && !submitting && onClose()}>
+      <div ref={dialogRef} tabIndex={-1} className="modal-card" role="dialog" aria-modal="true" aria-labelledby="add-cost-title">
         <div className="modal-header">
           <div>
             <span className="modal-icon"><CircleDollarSign size={20} /></span>
@@ -58,7 +61,7 @@ export function AddCostModal({ onClose, onCreated }: { onClose: () => void; onCr
               <h2 id="add-cost-title">Add a new cost</h2>
             </div>
           </div>
-          <button className="icon-button" onClick={onClose} aria-label="Close dialog">
+          <button className="icon-button" onClick={onClose} disabled={submitting} aria-label="Close dialog">
             <X size={20} />
           </button>
         </div>
@@ -127,7 +130,7 @@ export function AddCostModal({ onClose, onCreated }: { onClose: () => void; onCr
             </label>
             <label className="field">
               <span>Entry date</span>
-              <input name="periodStart" type="date" defaultValue={today} required />
+              <input name="periodStart" type="date" defaultValue={localToday()} required />
             </label>
             {category === "Device" && (
               <label className="field">
@@ -148,9 +151,9 @@ export function AddCostModal({ onClose, onCreated }: { onClose: () => void; onCr
               <textarea name="notes" rows={3} maxLength={2000} placeholder="Why this cost matters, renewal details, or context." />
             </label>
           </div>
-          {error && <div className="form-error">{error}</div>}
+          {error && <div className="form-error" role="alert">{error}</div>}
           <div className="modal-actions">
-            <button type="button" className="button secondary" onClick={onClose}>Cancel</button>
+            <button type="button" className="button secondary" onClick={onClose} disabled={submitting}>Cancel</button>
             <button type="submit" className="button primary" disabled={submitting}>
               {submitting ? "Adding…" : "Add to portfolio"}
             </button>

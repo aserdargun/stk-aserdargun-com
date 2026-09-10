@@ -150,7 +150,7 @@ function MembershipEditor({
   );
 }
 
-export function CostsPage({ onChanged }: { onChanged: (message: string) => void }) {
+export function CostsPage({ onChanged, refreshKey = 0 }: { onChanged: (message: string) => void; refreshKey?: number }) {
   const [items, setItems] = useState<CostItemSummary[]>([]);
   const [filters, setFilters] = useState<CostFilters>(emptyFilters);
   const [sort, setSort] = useState<CostSort>({ key: "name", direction: "asc" });
@@ -163,16 +163,19 @@ export function CostsPage({ onChanged }: { onChanged: (message: string) => void 
   const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
+    let active = true;
     setLoading(true);
     api
       .getItems()
       .then(({ items: responseItems }) => {
+        if (!active) return;
         setItems(responseItems);
         setError(null);
       })
-      .catch((reason: Error) => setError(reason.message))
-      .finally(() => setLoading(false));
-  }, [reloadKey]);
+      .catch((reason: Error) => { if (active) setError(reason.message); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [reloadKey, refreshKey]);
 
   const visibleItems = useMemo(
     () => filterAndSortCosts(items, filters, sort),
@@ -396,7 +399,7 @@ export function CostsPage({ onChanged }: { onChanged: (message: string) => void 
         </div>
 
         {error ? (
-          <div className="page-state error">{error}</div>
+          <div className="page-state error" role="alert">{error}<button className="button secondary" onClick={() => setReloadKey((value) => value + 1)}>Try again</button></div>
         ) : visibleItems.length === 0 && !loading ? (
           <div className="empty-state">
             <WalletCards size={28} />

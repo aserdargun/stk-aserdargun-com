@@ -105,28 +105,32 @@ export function Dashboard({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [reloadKey, setReloadKey] = useState(0);
+
   useEffect(() => {
+    let active = true;
     setLoading(true);
     api
       .getDashboard(year)
       .then((response) => {
+        if (!active) return;
         setData(response);
-        setYear(response.year);
         setError(null);
       })
-      .catch((reason: Error) => setError(reason.message))
-      .finally(() => setLoading(false));
-  }, [year]);
+      .catch((reason: Error) => { if (active) setError(reason.message); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [year, reloadKey]);
 
   if (loading && !data) return <div className="page-state">Loading your portfolio…</div>;
-  if (error || !data) return <div className="page-state error">{error || "Dashboard data is unavailable."}</div>;
+  if (error || !data) return <div className="page-state error" role="alert">{error || "Dashboard data is unavailable."}<button className="button secondary" onClick={() => setReloadKey((value) => value + 1)}>Try again</button></div>;
 
   const yoy = data.metrics.yearOverYearPercent;
   const yoyPositive = yoy !== null && yoy >= 0;
   const freshness = describeMonthlyFreshness(data.metrics.latestMonthlyPeriod);
 
   return (
-    <div className="page-stack">
+    <div className="page-stack" aria-busy={loading}>
       <section className="page-heading">
         <div>
           <span className="eyebrow">Portfolio overview</span>
@@ -148,8 +152,8 @@ export function Dashboard({
           <label className="year-picker">
             <CalendarRange size={17} />
             <span>Analysis year</span>
-            <select value={data.year} onChange={(event) => setYear(Number(event.target.value))}>
-              {data.availableYears.map((option) => (
+            <select value={year ?? data.year} onChange={(event) => setYear(Number(event.target.value))}>
+              {(data.availableYears.length ? data.availableYears : [data.year]).map((option) => (
                 <option value={option} key={option}>
                   {option}
                 </option>
@@ -204,7 +208,7 @@ export function Dashboard({
           <div className="panel-heading">
             <div>
               <span className="panel-kicker">Monthly pulse</span>
-              <h2>{data.year} monthly platform spend</h2>
+              <h2>{data.year} monthly ledger spend</h2>
             </div>
             <span className="legend-chip mint">Monthly entries</span>
           </div>
@@ -242,7 +246,7 @@ export function Dashboard({
           </div>
           {data.metrics.annualOnlySpend !== 0 && (
             <p className="chart-note">
-              {formatMoney(data.metrics.annualOnlySpend)} in annual-only or reconciliation entries is included in yearly totals but excluded here because the source workbook did not provide exact months.
+              {formatMoney(data.metrics.annualOnlySpend)} in annual, one-time, or reconciliation entries is included in yearly totals. This chart shows monthly entries only.
             </p>
           )}
           </article>

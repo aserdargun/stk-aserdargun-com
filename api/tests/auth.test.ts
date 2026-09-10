@@ -170,3 +170,10 @@ describe("production authorization", () => {
     ).toBe(false);
   });
 });
+
+it("denies malformed principal field types without throwing", () => {
+  const encode = (payload: unknown) => Buffer.from(JSON.stringify(payload)).toString("base64");
+  for (const principal of [null, 1, [], { identityProvider: 5 }, { identityProvider: "github", userDetails: {} }]) {
+    expect(isAllowedOwner(encode(principal), "aserdargun")).toBe(false);
+  }
+});

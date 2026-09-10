@@ -172,10 +172,16 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
   const [slipPreview, setSlipPreview] = useState<SlipImportPreview | null>(null);
   const [slipResult, setSlipResult] = useState<SlipImportResult | null>(null);
   const [slipForm, setSlipForm] = useState<SlipManualForm | null>(null);
+  const busyRef = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = useCallback(
     async (file: File) => {
+      if (busyRef.current) return;
+      if (!file.size || file.size > 10 * 1024 * 1024) {
+        setError("Choose a non-empty PDF file no larger than 10 MB.");
+        return;
+      }
       const fallbackPrefix = mode === "slip" ? "slip" : "statement";
       const inferredName = inferPdfFileName(file, `${fallbackPrefix}-${new Date().toISOString().slice(0, 10)}.pdf`);
       if (!inferredName.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
@@ -192,6 +198,7 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
       setSlipForm(null);
       setUnmapped([]);
       setFileName(inferredName);
+      busyRef.current = true;
       setPhase("loading");
       try {
         const base64 = await readFileAsBase64(file);
@@ -211,6 +218,8 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
       } catch (reason) {
         setError(reason instanceof Error ? reason.message : "The PDF could not be parsed.");
         setPhase("idle");
+      } finally {
+        busyRef.current = false;
       }
     },
     [mode],
@@ -238,6 +247,7 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
       return;
     }
     event.preventDefault();
+    event.stopPropagation();
     void handleFile(pasted.file);
   };
 
@@ -257,7 +267,8 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
   }, [phase, pasteArmed, handleFile]);
 
   const apply = async () => {
-    if (!fileName || !data) return;
+    if (!fileName || !data || busyRef.current) return;
+    busyRef.current = true;
     const manualMappings = unmapped
       .filter((row) => row.status === "mapped" && row.touched)
       .map((row) => ({
@@ -290,11 +301,13 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "The import could not be applied.");
       setPhase("preview");
+    } finally {
+      busyRef.current = false;
     }
   };
 
   const applySlip = async () => {
-    if (!fileName || !data || !slipPreview) return;
+    if (!fileName || !data || !slipPreview || busyRef.current) return;
     const manualMapping =
       !slipPreview.matched && slipForm && slipForm.touched
         ? {
@@ -309,6 +322,7 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
         : null;
     if (!slipPreview.matched && !manualMapping) return;
     if (manualMapping && (!manualMapping.name.trim() || !manualMapping.pattern?.trim())) return;
+    busyRef.current = true;
     setPhase("applying");
     setError(null);
     try {
@@ -325,6 +339,8 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "The slip could not be applied.");
       setPhase("preview");
+    } finally {
+      busyRef.current = false;
     }
   };
 
@@ -445,7 +461,10 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
             tabIndex={0}
             onClick={() => inputRef.current?.click()}
             onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") inputRef.current?.click();
+              if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
+                event.preventDefault();
+                inputRef.current?.click();
+              }
             }}
           >
             <input
@@ -464,8 +483,7 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
             <span className="import-paste-hint">
               <ClipboardPaste size={14} />
               <span className="import-paste-copy">
-                Paste is armed — press <kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>V</kbd> or use the mobile
-                paste menu anywhere on this page.
+                {pasteArmed ? "Paste is armed — press " : "Focus this area and press "}<kbd>⌘</kbd>/<kbd>Ctrl</kbd>+<kbd>V</kbd> to paste a PDF.
               </span>
             </span>
             {pasteArmed && (
@@ -481,7 +499,7 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
               </button>
             )}
           </div>
-          {error && <div className="page-state error">{error}</div>}
+          {error && <div className="page-state error" role="alert">{error}</div>}
         </section>
       )}
 
@@ -504,7 +522,7 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
               </small>
             </div>
             <div className="import-total">
-              <strong>{formatMoney(preview.newEntries.reduce((total, entry) => total + entry.amount, 0))}</strong>
+              <strong>{formatMoney(preview.newEntries.reduce((total, entry) => total + entry.amount, 0) + unmapped.filter((row) => row.status === "mapped").reduce((total, row) => total + row.amount, 0))}</strong>
               <span>to add</span>
             </div>
           </div>
@@ -702,7 +720,7 @@ export function ImportStatementsPage({ onImported }: { onImported: (message: str
               </button>
             </div>
           )}
-          {error && <div className="page-state error">{error}</div>}
+          {error && <div className="page-state error" role="alert">{error}</div>}
         </section>
       )}
 

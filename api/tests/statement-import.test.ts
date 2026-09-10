@@ -191,3 +191,58 @@ describe("statement import parsing", () => {
     expect(slip?.amount).toBe(49.9);
   });
 });
+
+// Apply against a memory repository to exercise persistence and safe retries.
+import { applyStatementPreview, manualMappingToEntry, type ManualMappingPayload, type StatementImportPreview } from "../src/lib/statement-import.js";
+import type { EntryRecord } from "../src/lib/models.js";
+import type { TableRepository } from "../src/lib/storage.js";
+
+const mapping: ManualMappingPayload = {
+  date: "2026-09-05", amount: -25, description: "NEWCLOUD REFUND +25,00", name: "New Cloud",
+  category: "Platform", billingType: "recurring", plan: "Pro", url: null, account: null, pattern: "NEWCLOUD",
+};
+const preview: StatementImportPreview = {
+  fileName: "statement.pdf", cutoffDate: "2026-09-10", charges: [], newItems: [], newEntries: [], matchedCount: 0,
+  unclassified: [mapping], summary: { charges: 0, newItems: 0, newEntries: 0, matched: 0 },
+};
+function memoryRepository() {
+  const items: ItemRecord[] = [];
+  const entries: EntryRecord[] = [];
+  const repo = {
+    listItems: async () => [...items], listEntries: async () => [...entries],
+    nextItemId: async () => items.length + 1, nextEntryId: async () => entries.length + 1,
+    saveItem: async (item: ItemRecord) => { items.push(item); return item; },
+    saveEntry: async (entry: EntryRecord) => { entries.push(entry); return entry; },
+    addLearnedMapping: async (learned: LearnedMapping) => learned,
+  } as unknown as TableRepository;
+  return { repo, items, entries };
+}
+describe("manual statement persistence", () => {
+  it("keeps the refund sign", () => {
+    expect(manualMappingToEntry(1, mapping, "id", "2026-09-10").amount).toBe(-25);
+  });
+  it("counts new manual items and does not duplicate a repeated mapping or retry", async () => {
+    const { repo, items, entries } = memoryRepository();
+    const first = await applyStatementPreview(repo, preview, [mapping, mapping]);
+    expect(first).toMatchObject({ itemsCreated: 1, entriesCreated: 1, manualMappingsApplied: 1 });
+    expect(entries[0].amount).toBe(-25);
+    const second = await applyStatementPreview(repo, preview, [mapping]);
+    expect(second).toMatchObject({ itemsCreated: 0, entriesCreated: 0 });
+    expect(items).toHaveLength(1);
+    expect(entries).toHaveLength(1);
+  });
+  it("rejects fabricated mappings before making any writes", async () => {
+    const { repo, items, entries } = memoryRepository();
+    await expect(applyStatementPreview(repo, preview, [{ ...mapping, amount: 999 }])).rejects.toThrow("not present in this statement");
+    expect(items).toHaveLength(0);
+    expect(entries).toHaveLength(0);
+  });
+  it("reuses a service for multiple manually mapped charges", async () => {
+    const { repo, items, entries } = memoryRepository();
+    const second = { ...mapping, date: "2026-09-07", amount: 75, description: "NEWCLOUD 75,00" };
+    const result = await applyStatementPreview(repo, { ...preview, unclassified: [mapping, second] }, [mapping, second]);
+    expect(result).toMatchObject({ itemsCreated: 1, entriesCreated: 2 });
+    expect(items).toHaveLength(1);
+    expect(entries.map(e => e.amount)).toEqual([-25, 75]);
+  });
+});

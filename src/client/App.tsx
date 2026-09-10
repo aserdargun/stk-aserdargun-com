@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { BarChart3, Cloud, ExternalLink, FileUp, LayoutDashboard, LogOut, Plus, TableProperties, WalletCards } from "lucide-react";
 import { AddCostModal } from "./components/AddCostModal";
 import { CostsPage } from "./components/CostsPage";
@@ -21,13 +21,16 @@ export function App() {
   const [view, setView] = useState<View>("overview");
   const [showAddCost, setShowAddCost] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(toastTimer.current), []);
   const [toast, setToast] = useState<string | null>(null);
   const deploymentOrigin = typeof window === "undefined" ? "https://stk.aserdargun.com" : window.location.origin;
   const signedOutUrl = encodeURIComponent(`${deploymentOrigin}/signed-out.html`);
 
   const announce = (message: string) => {
     setToast(message);
-    window.setTimeout(() => setToast(null), 3200);
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 3200);
   };
 
   return (
@@ -134,6 +137,7 @@ export function App() {
             />
           ) : view === "costs" ? (
             <CostsPage
+              refreshKey={refreshKey}
               onChanged={(message) => {
                 setRefreshKey((value) => value + 1);
                 announce(message);

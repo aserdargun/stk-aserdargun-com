@@ -9,97 +9,12 @@ import { z } from "zod";
 import { buildDashboard } from "../lib/analytics.js";
 import { isAuthorizedRequest } from "../lib/auth.js";
 import { buildRecurringTableView, summarizeItems, updateEntry } from "../lib/costs.js";
-import { isValidIsoDate } from "../lib/dates.js";
+import { entrySchema, updateEntrySchema, itemSchema, updateItemSchema, filtersSchema, statementImportSchema, slipImportSchema } from "../lib/validation.js";
 import type { EntryRecord, ItemRecord } from "../lib/models.js";
-import { applyStatementImport, applySlipImport, previewStatementImport, previewSlipImport } from "../lib/statement-import.js";
+import { applyStatementImport, applySlipImport, previewStatementImport, previewSlipImport, StatementInputError } from "../lib/statement-import.js";
 import { TableRepository } from "../lib/storage.js";
 
-const dateSchema = z
-  .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, "Use a YYYY-MM-DD date.")
-  .refine(isValidIsoDate, "Use a valid calendar date.");
-const categorySchema = z.enum(["Platform", "Certificate", "Device", "Other"]);
-const billingTypeSchema = z.enum(["recurring", "annual", "one_time"]);
-const statusSchema = z.enum(["active", "closed"]);
-const periodKindSchema = z.enum(["month", "year", "one_time"]);
-const editablePeriodKindSchema = z.enum(["month", "year", "one_time", "adjustment"]);
-const entrySchema = z.object({
-  amount: z.coerce.number().finite(),
-  currency: z.string().trim().min(3).max(3).default("TRY"),
-  periodStart: dateSchema,
-  periodKind: periodKindSchema,
-  membership: z.string().trim().max(120).optional().nullable(),
-  note: z.string().trim().max(500).optional().nullable(),
-});
-const updateEntrySchema = z
-  .object({
-    amount: z.coerce.number().finite(),
-    currency: z.string().trim().min(3).max(3),
-    periodStart: dateSchema,
-    periodKind: editablePeriodKindSchema,
-    membership: z.string().trim().max(120).nullable(),
-    note: z.string().trim().max(500).nullable(),
-  })
-  .partial();
-const itemSchema = z.object({
-  name: z.string().trim().min(1).max(140),
-  category: categorySchema,
-  billingType: billingTypeSchema,
-  plan: z.string().trim().max(120).optional().nullable(),
-  url: z.union([z.url(), z.literal("")]).optional().nullable(),
-  account: z.string().trim().max(160).optional().nullable(),
-  powerWatts: z.coerce.number().nonnegative().optional().nullable(),
-  status: statusSchema.default("active"),
-  closedAt: dateSchema.optional().nullable(),
-  notes: z.string().trim().max(2000).optional().nullable(),
-  initialEntry: entrySchema.optional(),
-});
-const updateItemSchema = itemSchema.omit({ initialEntry: true }).partial();
-const filtersSchema = z.object({
-  search: z.string().trim().max(120).optional(),
-  category: categorySchema.optional(),
-  status: statusSchema.optional(),
-});
-const statementImportSchema = z.object({
-  fileName: z.string().trim().min(1).max(255),
-  data: z.string().min(1),
-  apply: z.boolean().optional().default(false),
-  manualMappings: z
-    .array(
-      z.object({
-        date: dateSchema,
-        amount: z.coerce.number(),
-        description: z.string().trim().min(1).max(500),
-        name: z.string().trim().min(1).max(140),
-        category: categorySchema,
-        billingType: billingTypeSchema,
-        plan: z.string().trim().max(120).optional().nullable(),
-        url: z.union([z.url(), z.literal("")]).optional().nullable(),
-        account: z.string().trim().max(160).optional().nullable(),
-        pattern: z.string().trim().max(120).optional().nullable(),
-      }),
-    )
-    .optional()
-    .default([]),
-});
 
-const slipImportSchema = z.object({
-  fileName: z.string().trim().min(1).max(255),
-  data: z.string().min(1),
-  apply: z.boolean().optional().default(false),
-  manualMapping: z
-    .object({
-      name: z.string().trim().min(1).max(140),
-      category: categorySchema,
-      billingType: billingTypeSchema,
-      plan: z.string().trim().max(120).optional().nullable(),
-      url: z.union([z.url(), z.literal("")]).optional().nullable(),
-      account: z.string().trim().max(160).optional().nullable(),
-      pattern: z.string().trim().max(120).optional().nullable(),
-    })
-    .optional()
-    .nullable(),
-});
 
 let repository: TableRepository | undefined;
 const getRepository = async () => {
@@ -137,6 +52,8 @@ function protectedHandler(handler: HttpHandler): HttpHandler {
       if (error instanceof z.ZodError) {
         return json({ error: "Validation failed.", details: error.issues }, 400);
       }
+      if (error instanceof StatementInputError) return json({ error: error.message }, 400);
+      if (error instanceof SyntaxError) return json({ error: "Send a valid JSON request body." }, 400);
       context.error(error);
       return json({ error: "An unexpected server error occurred." }, 500);
     }
@@ -145,7 +62,7 @@ function protectedHandler(handler: HttpHandler): HttpHandler {
 
 const parseId = (request: HttpRequest, parameter = "id") => {
   const id = Number(request.params[parameter]);
-  return Number.isInteger(id) && id > 0 ? id : null;
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
 };
 
 async function itemDetail(repo: TableRepository, id: number) {

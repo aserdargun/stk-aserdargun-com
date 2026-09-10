@@ -80,9 +80,10 @@ service first appears.
 - **Overview:** lifetime/year metrics and portfolio analytics.
 - **Costs:** all data columns are sortable and filterable, including membership,
   latest-entry date range, and lifetime-spend range.
-- **Table View:** only active recurring services, across the 12 months ending at
-  the latest monthly ledger month. Each cell shows actual monthly spend and the
-  membership effective in that month. The footer contains monthly totals and
+- **Table View:** all active costs, across the 12 months ending at
+  the latest ledger month. Each cell shows recorded costs and the
+  membership effective in that month. On each open, the table is reconciled
+  against the active Costs list. The footer contains monthly totals and
   the rightmost column contains rolling 12-month totals.
 
 ## Local validation
@@ -161,3 +162,19 @@ spending metadata. Never put Azure connection strings or authentication tokens
 in Git. Storage must disallow anonymous access and require HTTPS. Treat a release
 as complete only after checking authentication, data reconciliation, write
 persistence, DNS, and the managed TLS certificate on the live custom domain.
+
+## Data integrity and recovery
+
+- Ledger amounts are finite TRY values; refunds retain their negative sign.
+  Other currencies are rejected because the dashboard does not perform currency conversion.
+- Storage reserves new item and entry IDs using conditional ETag updates, so
+  concurrent creations cannot allocate the same ID. Transient initialization
+  failures can be retried without restarting the API.
+- Clearing membership on a ledger entry stays cleared. The subscription table
+  shows no inferred membership before the first recorded entry.
+- Statement PDFs are limited to 10 MB and 100 pages. Invalid or locked PDFs
+  return an actionable error. Manual mappings must refer to a transaction in
+  the supplied statement; repeated mappings and sequential retries are deduplicated.
+- Dashboard, Costs, Table View, and cost details support retry after load errors.
+  Modal dialogs contain keyboard focus, support Escape, and return focus to
+  their opener. Save operations disable dismissal until they finish.

@@ -31,8 +31,20 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
     window.location.replace("/access-denied.html");
     throw new Error("Owner access required.");
   }
-  const payload = (await response.json()) as T & { error?: string };
-  if (!response.ok) throw new Error(payload.error || "The request could not be completed.");
+  let payload: T & { error?: string; details?: Array<{ path?: Array<string | number>; message?: string }> };
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error(response.ok
+      ? "The server returned an unreadable response. Please try again."
+      : `The server is temporarily unavailable (HTTP ${response.status}). Please try again.`);
+  }
+  if (!response.ok) {
+    const detail = payload.details?.[0];
+    throw new Error(detail?.message
+      ? `${detail.path?.join(" / ") || "Input"}: ${detail.message}`
+      : payload.error || "The request could not be completed.");
+  }
   return payload;
 }
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, AlertTriangle, CalendarRange, RefreshCcw, TableProperties } from "lucide-react";
 import { api } from "../lib/api";
 import { formatDate, formatMembership, formatMoney, formatServiceName, normalizeMembership } from "../lib/format";
@@ -15,16 +15,19 @@ export function TableViewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reconciliation, setReconciliation] = useState<TableReconciliation | null>(null);
+  const loadVersion = useRef(0);
   const [resyncing, setResyncing] = useState(false);
 
   // Run on every mount: fetch the table-view data and cross-check it against
   // the active items list. If the two diverge, surface a banner so the user
   // can re-sync without leaving the page.
   const load = useCallback(async () => {
+    const version = ++loadVersion.current;
     setLoading(true);
     setError(null);
     try {
       const result = await api.reconcileTableView();
+      if (version !== loadVersion.current) return;
       setData(result.tableData);
       setReconciliation({
         activeCount: result.activeCount,
@@ -32,15 +35,18 @@ export function TableViewPage() {
         checkedAt: new Date().toISOString(),
       });
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Table View data is unavailable.");
+      if (version === loadVersion.current) setError(reason instanceof Error ? reason.message : "Table View data is unavailable.");
     } finally {
-      setLoading(false);
+      if (version === loadVersion.current) setLoading(false);
     }
   }, []);
 
+  const [reloadKey, setReloadKey] = useState(0);
+
   useEffect(() => {
     void load();
-  }, [load]);
+    return () => { loadVersion.current += 1; };
+  }, [load, reloadKey]);
 
   const resync = async () => {
     setResyncing(true);
@@ -56,7 +62,7 @@ export function TableViewPage() {
 
   if (loading) return <div className="page-state">Building your subscription table…</div>;
   if (error || !data) {
-    return <div className="page-state error">{error || "Table View data is unavailable."}</div>;
+    return <div className="page-state error" role="alert">{error || "Table View data is unavailable."}<button className="button secondary" onClick={() => setReloadKey((value) => value + 1)}>Try again</button></div>;
   }
 
   const drift = reconciliation && reconciliation.missingFromTable.length > 0

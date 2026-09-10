@@ -15,6 +15,7 @@ declare module "pdfjs-dist/legacy/build/pdf.mjs" {
 
   export interface PdfLoadingTask {
     promise: Promise<PdfDocumentProxy>;
+    destroy(): Promise<void>;
   }
 
   export function getDocument(options: {

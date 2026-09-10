@@ -230,3 +230,46 @@ describe("moveLedgerEntries", () => {
     expect(afterSource?.notes).toContain("Moved ledger to cost #9 (ChatGPT).");
   });
 });
+
+import { vi } from "vitest";
+import { TableClient } from "@azure/data-tables";
+import { TableRepository } from "../src/lib/storage.js";
+
+describe("concurrent ID reservations", () => {
+  it("reserves unique IDs across repository instances and retains the persisted counter", async () => {
+    const counters = new Map<string, { value: string; etag: string }>();
+    const conflict = (statusCode: number) => Object.assign(new Error("Storage conflict"), { statusCode });
+    const client = {
+      async getEntity(_partition: string, key: string) {
+        const entity = counters.get(key);
+        if (!entity) throw conflict(404);
+        return { ...entity };
+      },
+      async createEntity(entity: { rowKey: string; value: string }) {
+        if (counters.has(entity.rowKey)) throw conflict(409);
+        counters.set(entity.rowKey, { value: entity.value, etag: "1" });
+      },
+      async updateEntity(entity: { rowKey: string; value: string }, _mode: string, options: { etag: string }) {
+        const current = counters.get(entity.rowKey)!;
+        if (options.etag !== current.etag) throw conflict(412);
+        counters.set(entity.rowKey, { value: entity.value, etag: String(Number(current.etag) + 1) });
+      },
+      async *listEntities() { yield { id: 54 }; },
+    };
+    const factory = vi.spyOn(TableClient, "fromConnectionString").mockReturnValue(client as unknown as TableClient);
+    try {
+      const ids = await Promise.all(Array.from({ length: 10 }, () => new TableRepository("test").nextItemId()));
+      expect([...ids].sort((a, b) => a - b)).toEqual(Array.from({ length: 10 }, (_, index) => 55 + index));
+      expect(await new TableRepository("test").nextItemId()).toBe(65);
+    } finally { factory.mockRestore(); }
+  });
+  it("allows initialization to recover after a transient storage outage", async () => {
+    const client = { createTable: vi.fn().mockRejectedValueOnce(new Error("Offline")).mockResolvedValue(undefined), getEntity: vi.fn().mockResolvedValue({ value: '"ready"' }) };
+    const factory = vi.spyOn(TableClient, "fromConnectionString").mockReturnValue(client as unknown as TableClient);
+    try {
+      const repo = new TableRepository("test");
+      await expect(repo.initialize()).rejects.toThrow("Offline");
+      await expect(repo.initialize()).resolves.toBeUndefined();
+    } finally { factory.mockRestore(); }
+  });
+});

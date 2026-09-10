@@ -168,7 +168,10 @@ export class TableRepository {
   }
 
   initialize() {
-    this.initialization ??= this.initializeOnce();
+    this.initialization ??= this.initializeOnce().catch((error) => {
+      this.initialization = undefined;
+      throw error;
+    });
     return this.initialization;
   }
 
@@ -329,8 +332,7 @@ export class TableRepository {
   }
 
   async nextItemId() {
-    const items = await this.listItems();
-    return Math.max(0, ...items.map((item) => item.id)) + 1;
+    return this.allocateId("nextItemId", async () => (await this.listItems()).map((item) => item.id));
   }
 
   async listEntries(): Promise<EntryRecord[]> {
@@ -390,8 +392,35 @@ export class TableRepository {
   }
 
   async nextEntryId() {
-    const entries = await this.listEntries();
-    return Math.max(0, ...entries.map((entry) => entry.id)) + 1;
+    return this.allocateId("nextEntryId", async () => (await this.listEntries()).map((entry) => entry.id));
+  }
+
+  private async allocateId(counter: string, existingIds: () => Promise<number[]>) {
+    // Reserve an ID before writing; an ETag prevents concurrent hosts from reusing it.
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      try {
+        let entity;
+        try {
+          entity = await this.meta.getEntity<MetaEntity>(metaPartition, counter);
+        } catch (error) {
+          if (statusCode(error) !== 404) throw error;
+          const id = (await existingIds()).reduce((max, value) => Math.max(max, value), 0) + 1;
+          await this.meta.createEntity({ partitionKey: metaPartition, rowKey: counter, value: JSON.stringify(id) });
+          return id;
+        }
+        const id = Number(JSON.parse(entity.value)) + 1;
+        if (!Number.isSafeInteger(id) || id < 1) throw new Error("Invalid ID counter.");
+        await this.meta.updateEntity(
+          { partitionKey: metaPartition, rowKey: counter, value: JSON.stringify(id) },
+          "Replace",
+          { etag: entity.etag },
+        );
+        return id;
+      } catch (error) {
+        if (![409, 412].includes(statusCode(error) ?? 0)) throw error;
+      }
+    }
+    throw new Error("Could not reserve a ledger ID. Please retry.");
   }
 
   private itemEntity(item: ItemRecord): TableEntity<ItemEntity> {

@@ -5,6 +5,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useRef,
   type FormEvent,
 } from "react";
 import {
@@ -18,9 +19,11 @@ import {
   Search,
   X,
 } from "lucide-react";
+import { useDialog } from "../lib/useDialog";
 import { api } from "../lib/api";
 import { buildItemMonthlySeries } from "../lib/costs";
 import {
+  localToday,
   formatBillingType,
   formatDate,
   formatMembership,
@@ -36,7 +39,6 @@ const ItemMonthlyChart = lazy(() =>
   import("./ItemMonthlyChart").then((module) => ({ default: module.ItemMonthlyChart })),
 );
 
-const today = new Date().toISOString().slice(0, 10);
 
 type EntryDraft = {
   amount: string;
@@ -58,6 +60,7 @@ export function ItemDrawer({
   const [detail, setDetail] = useState<ItemDetail | null>(null);
   const [showEntryForm, setShowEntryForm] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const loadVersion = useRef(0);
   const [editingEntryId, setEditingEntryId] = useState<number | null>(null);
   const [entryDraft, setEntryDraft] = useState<EntryDraft | null>(null);
   const [chartYear, setChartYear] = useState<number>();
@@ -68,18 +71,25 @@ export function ItemDrawer({
   const [moveCandidates, setMoveCandidates] = useState<CostItemSummary[] | null>(null);
   const [moveCandidatesLoading, setMoveCandidatesLoading] = useState(false);
   const [moveConfirming, setMoveConfirming] = useState(false);
+  const busy = submitting || moveConfirming;
+  const dialogRef = useDialog(onClose, busy);
 
   const load = useCallback(async () => {
+    const version = ++loadVersion.current;
+    setError(null);
     try {
-      setDetail(await api.getItem(id));
+      const response = await api.getItem(id);
+      if (version !== loadVersion.current) return;
+      setDetail(response);
       setError(null);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "The cost could not be loaded.");
+      if (version === loadVersion.current) setError(reason instanceof Error ? reason.message : "The cost could not be loaded.");
     }
   }, [id]);
 
   useEffect(() => {
     void load();
+    return () => { loadVersion.current += 1; };
   }, [load]);
 
   useEffect(() => {
@@ -161,17 +171,17 @@ export function ItemDrawer({
   );
   const chartYears = chartData.availableYears.length ? chartData.availableYears : [chartData.year];
   const currentMembership =
-    normalizeMembership(detail?.entries[0]?.membership) || normalizeMembership(detail?.item.plan);
+    normalizeMembership(detail?.entries.length ? detail.entries[0].membership : detail?.item.plan);
 
   const toggleStatus = async () => {
-    if (!detail) return;
+    if (!detail || submitting) return;
     setSubmitting(true);
     setError(null);
     const nextStatus = detail.item.status === "active" ? "closed" : "active";
     try {
       const response = await api.updateItem(id, {
         status: nextStatus,
-        closedAt: nextStatus === "closed" ? today : null,
+        closedAt: nextStatus === "closed" ? localToday() : null,
       });
       setDetail(response);
       onChanged(nextStatus === "closed" ? "Cost closed. Its history remains intact." : "Cost reactivated.");
@@ -184,6 +194,7 @@ export function ItemDrawer({
 
   const addEntry = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submitting) return;
     const form = new FormData(event.currentTarget);
     setSubmitting(true);
     setError(null);
@@ -225,6 +236,7 @@ export function ItemDrawer({
 
   const saveEditedEntry = async (event: FormEvent<HTMLFormElement>, entryId: number) => {
     event.preventDefault();
+    if (submitting) return;
     if (!entryDraft) return;
     setSubmitting(true);
     setError(null);
@@ -251,16 +263,19 @@ export function ItemDrawer({
     <div
       className="drawer-backdrop"
       role="presentation"
-      onMouseDown={(event) => event.target === event.currentTarget && onClose()}
+      onMouseDown={(event) => event.target === event.currentTarget && !busy && onClose()}
     >
-      <aside className="item-drawer" role="dialog" aria-modal="true" aria-label="Cost details">
+      <div ref={dialogRef} tabIndex={-1} className="item-drawer" role="dialog" aria-modal="true" aria-label="Cost details">
         <div className="drawer-top">
-          <button className="icon-button" onClick={onClose} aria-label="Close details">
+          <button className="icon-button" onClick={onClose} disabled={busy} aria-label="Close details">
             <X size={20} />
           </button>
         </div>
         {!detail ? (
-          <div className="page-state">Loading cost history…</div>
+          <div className={`page-state ${error ? "error" : ""}`} role={error ? "alert" : "status"}>
+            {error || "Loading cost history…"}
+            {error && <button className="button secondary" onClick={() => void load()}>Try again</button>}
+          </div>
         ) : (
           <div className="drawer-content">
             <div className="drawer-title">
@@ -284,10 +299,10 @@ export function ItemDrawer({
             </div>
 
             <div className="drawer-actions">
-              <button className="button primary" onClick={() => setShowEntryForm((value) => !value)}>
+              <button className="button primary" disabled={busy} onClick={() => setShowEntryForm((value) => !value)}>
                 <Plus size={17} /> Add entry
               </button>
-              <button className="button secondary" onClick={toggleStatus} disabled={submitting}>
+              <button className="button secondary" onClick={toggleStatus} disabled={busy}>
                 {detail.item.status === "active" ? <Archive size={17} /> : <RotateCcw size={17} />}
                 {detail.item.status === "active" ? "Close cost" : "Reactivate"}
               </button>
@@ -411,7 +426,7 @@ export function ItemDrawer({
                   </label>
                   <label className="field">
                     <span>Entry date</span>
-                    <input name="periodStart" type="date" defaultValue={today} required />
+                    <input name="periodStart" type="date" defaultValue={localToday()} required />
                   </label>
                   <label className="field">
                     <span>Entry type</span>
@@ -445,17 +460,17 @@ export function ItemDrawer({
                   </label>
                 </div>
                 <div className="entry-form-actions">
-                  <button type="button" className="text-button" onClick={() => setShowEntryForm(false)}>
+                  <button type="button" className="text-button" disabled={busy} onClick={() => setShowEntryForm(false)}>
                     Cancel
                   </button>
-                  <button className="button primary small" disabled={submitting}>
+                  <button className="button primary small" disabled={busy}>
                     {submitting ? "Saving…" : "Save entry"}
                   </button>
                 </div>
               </form>
             )}
 
-            {error && <div className="form-error">{error}</div>}
+            {error && <div className="form-error" role="alert">{error}</div>}
 
             <section className="detail-section detail-chart-section">
               <div className="section-heading detail-chart-heading">
@@ -574,8 +589,8 @@ export function ItemDrawer({
                         </label>
                       </div>
                       <div className="ledger-edit-actions">
-                        <button type="button" className="text-button" onClick={cancelEntryEdit}>Cancel</button>
-                        <button className="button primary small" disabled={submitting}>
+                        <button type="button" className="text-button" disabled={busy} onClick={cancelEntryEdit}>Cancel</button>
+                        <button className="button primary small" disabled={busy}>
                           <Check size={15} /> {submitting ? "Saving…" : "Save"}
                         </button>
                       </div>
@@ -589,13 +604,13 @@ export function ItemDrawer({
                           {entry.sourceRef ? ` · ${entry.sourceRef}` : ""}
                         </span>
                         <span className="ledger-membership">
-                          Membership: {formatMembership(entry.membership || detail.item.plan)}
+                          Membership: {formatMembership(entry.membership)}
                         </span>
                         {entry.note && <small>{entry.note}</small>}
                       </div>
                       <div className="ledger-row-side">
                         <strong className={entry.amount < 0 ? "negative" : ""}>{formatMoney(entry.amount)}</strong>
-                        <button className="text-button" onClick={() => beginEntryEdit(entry)}>
+                        <button className="text-button" onClick={() => beginEntryEdit(entry)} disabled={busy}>
                           <Pencil size={13} /> Edit
                         </button>
                       </div>
@@ -606,7 +621,7 @@ export function ItemDrawer({
             </section>
           </div>
         )}
-      </aside>
+      </div>
     </div>
   );
 }

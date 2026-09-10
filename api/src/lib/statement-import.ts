@@ -11,6 +11,8 @@ import type {
 } from "./models.js";
 import type { TableRepository } from "./storage.js";
 
+export class StatementInputError extends Error {}
+
 const round2 = (value: number) => Math.round((value + Number.EPSILON) * 100) / 100;
 
 const MONTH_NAMES = [
@@ -206,14 +208,26 @@ function reconstructLines(items: Array<{ str: string; transform: number[] }>): s
 async function extractPdfLines(base64Data: string): Promise<string[]> {
   const base64 = base64Data.includes(",") ? base64Data.slice(base64Data.indexOf(",") + 1) : base64Data;
   const data = new Uint8Array(Buffer.from(base64, "base64"));
-  const document = await getDocument({ data, disableFontFace: true }).promise;
-  const lines: string[] = [];
-  for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
-    const page = await document.getPage(pageNumber);
-    const content = await page.getTextContent();
-    lines.push(...reconstructLines(content.items));
+  if (!data.length || data.length > 10 * 1024 * 1024) {
+    throw new StatementInputError("Choose a non-empty PDF file no larger than 10 MB.");
   }
-  return lines;
+  const task = getDocument({ data, disableFontFace: true });
+  try {
+    const document = await task.promise;
+    if (document.numPages > 100) throw new StatementInputError("Statements must have 100 pages or fewer.");
+    const lines: string[] = [];
+    for (let pageNumber = 1; pageNumber <= document.numPages; pageNumber += 1) {
+      const page = await document.getPage(pageNumber);
+      const content = await page.getTextContent();
+      lines.push(...reconstructLines(content.items));
+    }
+    return lines;
+  } catch (error) {
+    if (error instanceof StatementInputError) throw error;
+    throw new StatementInputError("This PDF could not be read. Choose an unlocked, text-based credit-card statement.");
+  } finally {
+    await task.destroy();
+  }
 }
 
 export function parseStatementLines(lines: string[]): {
@@ -520,7 +534,7 @@ function chargeToEntry(
   };
 }
 
-function manualMappingToEntry(
+export function manualMappingToEntry(
   itemId: number | null,
   mapping: ManualMappingPayload,
   mappingId: string,
@@ -532,7 +546,7 @@ function manualMappingToEntry(
     serviceKey: `learned:${mappingId}`,
     name: mapping.name,
     itemId,
-    amount: round2(Math.abs(mapping.amount)),
+    amount: round2(mapping.amount),
     currency: "TRY",
     periodStart: oneTime ? mapping.date : `${mapping.date.slice(0, 7)}-01`,
     periodKind: oneTime ? "one_time" : "month",
@@ -671,7 +685,31 @@ export async function applyStatementImport(
   manualMappings: ManualMappingPayload[] = [],
 ) {
   const preview = await previewStatementImport(repo, fileName, base64Data);
+  return applyStatementPreview(repo, preview, manualMappings);
+}
+
+export async function applyStatementPreview(
+  repo: TableRepository,
+  preview: StatementImportPreview,
+  manualMappings: ManualMappingPayload[] = [],
+) {
+  const signature = (row: { date: string; amount: number; description: string }) =>
+    JSON.stringify([row.date, round2(row.amount), row.description]);
+  const unclassified = new Set(preview.unclassified.map(signature));
+  const classified = new Set(preview.charges.map(signature));
+  const seenMappings = new Set<string>();
+  manualMappings = manualMappings.filter((mapping) => {
+    const key = signature(mapping);
+    if (!unclassified.has(key) && !classified.has(key)) {
+      throw new StatementInputError("A mapped transaction is not present in this statement. Preview the file again.");
+    }
+    // A retry may already classify a previously learned merchant automatically.
+    if (!unclassified.has(key) || seenMappings.has(key)) return false;
+    seenMappings.add(key);
+    return true;
+  });
   const now = new Date().toISOString();
+  let itemsCreated = 0;
 
   const itemIdByServiceKey = new Map<string, number>();
   for (const newItem of preview.newItems) {
@@ -691,6 +729,7 @@ export async function applyStatementImport(
       updatedAt: now,
     };
     await repo.saveItem(item);
+    itemsCreated += 1;
     itemIdByServiceKey.set(newItem.serviceKey, item.id);
   }
 
@@ -713,28 +752,11 @@ export async function applyStatementImport(
     learnedMappings.push(learned);
   }
 
-  const manualItemIds = new Map<string, number>();
-  learnedMappings.forEach((learned, index) => {
-    const mapping = manualMappings[index];
-    manualItemIds.set(learned.id, -1); // placeholder; resolved below
-  });
   const existingItems = await repo.listItems();
-  const itemsByNamePlan = new Map<string, ItemRecord>();
-  for (const item of existingItems) {
-    const key = `${item.name.trim().toLowerCase()}|${(item.plan ?? "").trim().toLowerCase()}`;
-    itemsByNamePlan.set(key, item);
-  }
-  learnedMappings.forEach((learned, index) => {
-    const mapping = manualMappings[index];
-    const key = `${mapping.name.trim().toLowerCase()}|${(mapping.plan ?? "").trim().toLowerCase()}`;
-    const existing = itemsByNamePlan.get(key);
-    if (existing) {
-      manualItemIds.set(learned.id, existing.id);
-      return;
-    }
-    // Create lazily; resolve below after we know the next id.
-    manualItemIds.set(learned.id, -2);
-  });
+  const itemKey = (item: { name: string; plan: string | null; account: string | null }) =>
+    JSON.stringify([item.name, item.plan ?? "", item.account ?? ""].map((value) => value.trim().toLowerCase()));
+  const itemsByNamePlan = new Map(existingItems.map((item) => [itemKey(item), item]));
+  const existingEntries = await repo.listEntries();
 
   let entriesCreated = 0;
   for (const entry of preview.newEntries) {
@@ -753,14 +775,15 @@ export async function applyStatementImport(
       createdAt: now,
     };
     await repo.saveEntry(record);
+    existingEntries.push(record);
     entriesCreated += 1;
   }
 
   for (let index = 0; index < manualMappings.length; index += 1) {
     const mapping = manualMappings[index];
     const learned = learnedMappings[index];
-    let itemId = manualItemIds.get(learned.id);
-    if (itemId === -2) {
+    let itemId = itemsByNamePlan.get(itemKey(mapping))?.id;
+    if (itemId === undefined) {
       const newItem: ItemRecord = {
         id: await repo.nextItemId(),
         name: mapping.name,
@@ -778,10 +801,14 @@ export async function applyStatementImport(
       };
       await repo.saveItem(newItem);
       itemId = newItem.id;
-      manualItemIds.set(learned.id, itemId);
+      itemsCreated += 1;
+      itemsByNamePlan.set(itemKey(mapping), newItem);
     }
     if (!itemId || itemId < 1) continue;
     const entry = manualMappingToEntry(itemId, mapping, learned.id, now);
+    if (existingEntries.some((existing) => existing.itemId === itemId
+      && existing.periodStart === entry.periodStart && existing.amount === entry.amount
+      && existing.note === entry.note)) continue;
     const record: EntryRecord = {
       id: await repo.nextEntryId(),
       itemId,
@@ -795,11 +822,12 @@ export async function applyStatementImport(
       createdAt: now,
     };
     await repo.saveEntry(record);
+    existingEntries.push(record);
     entriesCreated += 1;
   }
 
   return {
-    itemsCreated: preview.newItems.length,
+    itemsCreated,
     entriesCreated,
     matchedSkipped: preview.matchedCount,
     summary: preview.summary,

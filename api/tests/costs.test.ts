@@ -54,13 +54,13 @@ describe("cost membership summaries", () => {
     expect(result.lifetimeSpend).toBe(300);
   });
 
-  it("falls back to the legacy plan when the latest membership is absent", () => {
+  it("preserves an explicitly cleared ledger membership", () => {
     const result = summarizeItems(
       [item({ plan: "Legacy Membership" })],
       [entry({ membership: null })],
     )[0];
 
-    expect(result.currentMembership).toBe("Legacy Membership");
+    expect(result.currentMembership).toBeNull();
   });
 });
 
@@ -123,7 +123,7 @@ describe("active Table View", () => {
     expect(result.rows[0].cells[0]).toEqual({
       period: "2025-02",
       amount: 0,
-      membership: "Fallback",
+      membership: null,
     });
     expect(result.rows[0].cells[1].amount).toBe(10);
     expect(result.rows[0].cells[11]).toEqual({
